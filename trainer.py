@@ -51,11 +51,10 @@ class Trainer:
         labels = np.array(labels)
         return images,labels
 
-    def loadTrajectories(trajectories_folder):
+    def loadTrajectories(trajectories_folder, avaliable):
         """
         loads trajectories from the folder containing trajectory files
         """
-        avaliable = loader.getAvaliableTrajectoriesNumbers(trajectories_folder)
         trajectories = []
         for i in avaliable:
             trajectories.append(loader.loadNTrajectory(trajectories_folder,i))
@@ -71,12 +70,15 @@ class Trainer:
         sampling_time -> sampling time for the DMPs
         """
         DMPs = []
+        i = 0
         for trajectory in trajectories:
             dmp = DMP(N,sampling_time)
             x = trajectory[:,0]
             y = trajectory[:,1]
             time = np.array([trajectory[:,2],trajectory[:,2]]).transpose()[:-2]
             dt = np.diff(trajectory[:,2],1)
+            if (dt == 0).any():
+                print("Problem with ", i, " -th trajectory")
             dx = np.diff(x,1)/dt
             dy = np.diff(y,1)/dt
             ddy = np.diff(dy,1)/dt[:-1]
@@ -86,6 +88,7 @@ class Trainer:
             acceleration = np.array([i for i in zip(ddx,ddy)])
             dmp.track(time, path, velocity, acceleration)
             DMPs.append(dmp)
+            i += 1
         DMPs = np.array(DMPs)
         return DMPs
 
@@ -106,19 +109,18 @@ class Trainer:
         outputs = np.array(outputs)
         return outputs
 
-    def getDataForNetwork(images,DMPs,i,j):
+    def getDataForNetwork(images,DMPs,useData):
         """
         Generates data that will be given to the Network
 
         getDataForNetwork(images,DMPs,i,j) -> (input_data,output_data) for the Network
         images -> MNIST images that will be fed to the Network
         DMPs -> DMPs that pair with MNIST images given in the same order
-        i -> lower bound of data that should be prepared for the network
-        j -> upper bound of data that should be prepared for the network
+        useData -> array like containing indexes of images to use
         """
         outputs = Trainer.createOutputParameters(DMPs)
-        input_data = Variable(torch.from_numpy(images[i:j])).float()
-        output_data = Variable(torch.from_numpy(outputs[i:j]),requires_grad= False).float()
+        input_data = Variable(torch.from_numpy(images[useData])).float()
+        output_data = Variable(torch.from_numpy(outputs),requires_grad= False).float()
         return input_data, output_data
 
 
@@ -142,7 +144,7 @@ class Trainer:
         print('Dmp from network:')
         Trainer.printDMPdata(dmp)
         print()
-        print('Dmp from trajectory:')
+        print('Original DMP from trajectory:')
         Trainer.printDMPdata(DMPs[i])
         Trainer.show_dmp(images[i], trajectories[i], dmp)
 

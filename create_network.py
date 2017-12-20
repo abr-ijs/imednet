@@ -17,7 +17,7 @@ from network import Network
 from trajectory_loader import trajectory_loader as loader
 from trainer import Trainer
 
-
+print()
 ## folders containing trajectories and mnist data
 trajectories_folder = 'data/trajectories'
 mnist_folder = 'data/mnist'
@@ -29,7 +29,7 @@ N = 25
 sampling_time = 0.1
 
 #learning params
-epochs = 50
+epochs = 100
 learning_rate=0.01
 momentum = 0
 bunch = 10
@@ -43,27 +43,35 @@ out = 2*N + 7
 #out = 2*N
 layerSizes = [numOfInputs] + HiddenLayer + [out]
 
+print('Loading Mnist images')
 #get mnist data
 images, labels = Trainer.loadMnistData(mnist_folder)
+print(' Done loading Mnist images')
 #get trajectories
-trajectories = Trainer.loadTrajectories(trajectories_folder)
+avaliable = loader.getAvaliableTrajectoriesNumbers(trajectories_folder)
+
+avaliable = avaliable
+print('Loading ',  len(avaliable), ' trajectories')
+trajectories = Trainer.loadTrajectories(trajectories_folder, avaliable)
+print(' Done loading trajectories')
 # get DMPs
+print('Creating DMPs')
 DMPs = Trainer.createDMPs(trajectories, N, sampling_time)
+print(' Done creating DMPs')
 # get data to learn
-lower = 0
-#lower = 0
-#upper = len(trajectories)
-upper = 600
-input_data, output_data = Trainer.getDataForNetwork(images, DMPs,lower, upper)
+
+input_data, output_data = Trainer.getDataForNetwork(images, DMPs, avaliable)
 input_data = input_data/255
 scale = output_data.max()
 output_data = output_data/scale
+
 #show data
 # show = [i for i in range(lower,upper)]
 # for i in show:
 #     Trainer.show_dmp(images[i], trajectories[i], DMPs[i])
 
 #learn
+print()
 print('Starting learning')
 print(" + Learning with parameters: ")
 print("   - Samples of data", len(input_data))
@@ -85,7 +93,7 @@ else:
         torch.nn.init.normal(p,0,1e+6)
 
 model.learn(input_data,output_data, bunch, epochs, learning_rate,momentum)
-print('Learning finished')
+print('Learning finished\n')
 
 parameters = list(model.parameters())
 

@@ -28,22 +28,28 @@ class trajectory_loader:
         load(file) ->  trajectory containing all points in a form 'point = [x,y,t]'
         file -> file containing trajectory in json format
         """
-        json_data = open(file).read()
+        try:
+            json_data = open(file).read()
 
-        data = json.loads(json_data)
-        path = data['Path']
-        path = path.split('], [')
-        path[0] = path[0][1:]
-        path[-1] = path[-1][:-1]
+            data = json.loads(json_data)
+            path = data['Path']
+            path = path.split('], [')
+            path[0] = path[0][1:]
+            path[-1] = path[-1][:-1]
 
-        points = []
+            points = []
 
-        for point in path:
-            point = point.split(',')
-            point = [float(x) for x in point]
-            points.append(point)
+            for point in path:
+                point = point.split(',')
+                point = [float(x) for x in point]
+                if len(point) != 3:
+                    raise Exception('Error in file ' + file)
+                points.append(point)
 
-        return np.array(points)
+            return np.array(points)
+        except:
+            print('Could not load file ' + file)
+
 
     def getAvaliableTrajectoriesNumbers(folder):
         """
