@@ -31,6 +31,7 @@ class Network(torch.nn.Module):
             self.middleLayers.append(layer)
             self.add_module("middleLayer_" + str(i), layer)
         self.outputLayer = torch.nn.Linear(layerSizes[-2],layerSizes[-1])
+
     def forward(self, x):
         """
         Defines the layers connections
@@ -38,15 +39,14 @@ class Network(torch.nn.Module):
         forward(x) -> result of forward propagation through network
         x -> input to the Network
         """
-        sigmoid = torch.nn.Sigmoid()
-        tansig = lambda x: 2*sigmoid(2*x)-1
-        x = tansig(self.inputLayer(x))
+        tanh = torch.nn.Tanh()
+        x = tanh(self.inputLayer(x))
         for layer in self.middleLayers:
-            x = tansig(layer(x))
-        output = tansig(self.outputLayer(x))
+            x = tanh(layer(x))
+        output = self.outputLayer(x)
         return output
 
-    def learn(self,x, y, epochs = 100, learning_rate = 1e-4, log_interval = 10):
+    def learn(self,x, y, bunch = 10, epochs = 100, learning_rate = 1e-4, log_interval = 10):
         """
         teaches the network using provided data
 
@@ -59,10 +59,15 @@ class Network(torch.nn.Module):
         criterion = torch.nn.MSELoss(size_average=False) #For calculating loss (mean squared error)
         optimizer = torch.optim.SGD(self.parameters(), lr=learning_rate) # for updating weights
         for t in range(epochs):
-            y_pred = self(x) # output from the network
-            self.loss = criterion(y_pred,y) #loss
+            i = 0
+            j = bunch
+            while j <= len(x):
+                y_pred = self(x[i:j]) # output from the network
+                self.loss = criterion(y_pred,y[i:j]) #loss
+                optimizer.zero_grad()# setting gradients to zero
+                self.loss.backward()# calculating gradients for every layer
+                optimizer.step()#updating weights
+                i = j
+                j += bunch
             if t % log_interval == 0:
                 print('Epoch: ', t, ' loss: ',self.loss.data[0])
-            optimizer.zero_grad()# setting gradients to zero
-            self.loss.backward()# calculating gradients for every layer
-            optimizer.step()#updating weights
