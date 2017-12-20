@@ -29,11 +29,13 @@ sampling_time = 0.1
 
 #learning params
 epochs = 30
-learning_rate=0.01
+learning_rate=100
+bunch = 1
 
 #layers size
 numOfInputs = 784
 HiddenLayer = [700, 500, 300,100,20,35]
+#HiddenLayer = [100]
 out = 2*N + 7
 layerSizes = [numOfInputs] + HiddenLayer + [out]
 
@@ -57,3 +59,5 @@ print('starting learning')
 model = Network(layerSizes)
 model.learn(input_data,output_data,epochs, learning_rate)
 print('learning finished')
+
+parameters = list(model.parameters())

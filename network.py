@@ -25,11 +25,12 @@ class Network(torch.nn.Module):
         """
         super(Network, self).__init__()
         self.inputLayer = torch.nn.Linear(layerSizes[0],layerSizes[1])
-        self.outputLayer = torch.nn.Linear(layerSizes[-2],layerSizes[-1])
         self.middleLayers = []
         for i in range(1, len(layerSizes) - 2):
-            self.middleLayers.append(torch.nn.Linear(layerSizes[i],layerSizes[i+1]))
-
+            layer = torch.nn.Linear(layerSizes[i],layerSizes[i+1])
+            self.middleLayers.append(layer)
+            self.add_module("middleLayer_" + str(i), layer)
+        self.outputLayer = torch.nn.Linear(layerSizes[-2],layerSizes[-1])
     def forward(self, x):
         """
         Defines the layers connections

@@ -118,5 +118,5 @@ class Trainer:
         """
         outputs = Trainer.createOutputParameters(DMPs)
         input_data = Variable(torch.from_numpy(images[i:j])).float()
-        output_data = Variable(torch.from_numpy(outputs[i:j])).float()
+        output_data = Variable(torch.from_numpy(outputs[i:j]),requires_grad= False).float()
         return input_data, output_data
