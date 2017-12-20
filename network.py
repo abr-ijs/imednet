@@ -31,6 +31,7 @@ class Network(torch.nn.Module):
             self.middleLayers.append(layer)
             self.add_module("middleLayer_" + str(i), layer)
         self.outputLayer = torch.nn.Linear(layerSizes[-2],layerSizes[-1])
+        self.scale = 1
 
     def forward(self, x):
         """
@@ -61,6 +62,7 @@ class Network(torch.nn.Module):
         for t in range(epochs):
             i = 0
             j = bunch
+            self.loss = 0
             while j <= len(x):
                 self.learn_one_step(x[i:j],y[i:j],learning_rate,criterion,optimizer)
                 i = j
@@ -68,11 +70,13 @@ class Network(torch.nn.Module):
             if i < len(x):
                 self.learn_one_step(x[i:],y[i:],learning_rate,criterion,optimizer)
             if t % log_interval == 0:
-                print('Epoch: ', t, ' loss: ',self.loss.data[0])
+                print('Epoch: ', t, ' loss: ',self.loss.data[0]*bunch/len(x))
+
 
     def learn_one_step(self,x,y,learning_rate,criterion,optimizer):
         y_pred = self(x) # output from the network
-        self.loss = criterion(y_pred,y) #loss
+        loss = criterion(y_pred,y) #loss
         optimizer.zero_grad()# setting gradients to zero
-        self.loss.backward()# calculating gradients for every layer
+        loss.backward()# calculating gradients for every layer
         optimizer.step()#updating weights
+        self.loss += loss

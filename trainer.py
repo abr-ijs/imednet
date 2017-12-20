@@ -120,3 +120,35 @@ class Trainer:
         input_data = Variable(torch.from_numpy(images[i:j])).float()
         output_data = Variable(torch.from_numpy(outputs[i:j]),requires_grad= False).float()
         return input_data, output_data
+
+
+    def getDMPFromImage(network,image, N, sampling_time):
+        output = network(image)
+        output = output * network.scale
+        output = output.double().data.numpy()
+        tau = output[0]
+        y0 = output[1:3]
+        dy0 = output[3:5]
+        goal = output[5:7]
+        weights = output[7:]
+        w = weights.reshape(25,2)
+        dmp = DMP(N,sampling_time)
+        dmp.values(N,sampling_time,tau,y0,dy0,goal,w)
+        return dmp
+
+    def showNetworkOutput(network, i, images, input_data,trajectories, DMPs, N, sampling_time):
+        dmp = Trainer.getDMPFromImage(network, input_data[i],N,sampling_time)
+        dmp.joint()
+        print('Dmp from network:')
+        Trainer.printDMPdata(dmp)
+        print()
+        print('Dmp from trajectory:')
+        Trainer.printDMPdata(DMPs[i])
+        Trainer.show_dmp(images[i], trajectories[i], dmp)
+
+    def printDMPdata(dmp):
+        print('Tau: ', dmp.tau)
+        print('y0: ', dmp.y0)
+        print('dy0: ', dmp.dy0)
+        print('goal: ', dmp.goal)
+        print('w_sum: ', dmp.w.sum())

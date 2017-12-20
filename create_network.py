@@ -22,22 +22,25 @@ from trainer import Trainer
 trajectories_folder = 'data/trajectories'
 mnist_folder = 'data/mnist'
 
+parameters_file = 'net_parameters'
 
 #DMP data
 N = 25
 sampling_time = 0.1
 
 #learning params
-epochs = 1000
+epochs = 50
 learning_rate=0.01
 momentum = 0
-bunch = 1
+bunch = 10
+load = True
 
 #layers size
 numOfInputs = 784
-HiddenLayer = [700, 500, 300,100,20,35]
+HiddenLayer = [700, 500, 400, 300, 200, 100, 80, 50, 35, 20, 35, 50]
 #HiddenLayer = [100]
 out = 2*N + 7
+#out = 2*N
 layerSizes = [numOfInputs] + HiddenLayer + [out]
 
 #get mnist data
@@ -50,9 +53,11 @@ DMPs = Trainer.createDMPs(trajectories, N, sampling_time)
 lower = 0
 #lower = 0
 #upper = len(trajectories)
-upper = 10
+upper = 600
 input_data, output_data = Trainer.getDataForNetwork(images, DMPs,lower, upper)
-
+input_data = input_data/255
+scale = output_data.max()
+output_data = output_data/scale
 #show data
 # show = [i for i in range(lower,upper)]
 # for i in show:
@@ -60,18 +65,30 @@ input_data, output_data = Trainer.getDataForNetwork(images, DMPs,lower, upper)
 
 #learn
 print('Starting learning')
-print(" Learning with: ")
-print(" - Samples of data", len(input_data))
-print(" - Epochs: ", epochs)
-print(" - Learning rate: ", learning_rate)
-print(" - Bunch size: ", bunch)
+print(" + Learning with parameters: ")
+print("   - Samples of data", len(input_data))
+print("   - Epochs: ", epochs)
+print("   - Learning rate: ", learning_rate)
+print("   - Momentum: ", momentum)
+print("   - Bunch size: ", bunch)
 
 
 model = Network(layerSizes)
+model.scale = scale.data[0]
 #inicalizacija
-for p in list(model.parameters()):
-    torch.nn.init.normal(p,0,1e+6)
+if load:
+    print(' + Loaded parameters from file: ', parameters_file)
+    model.load_state_dict(torch.load(parameters_file)) # loading parameters
+else:
+    print(' + Initialized paramters randomly')
+    for p in list(model.parameters()):
+        torch.nn.init.normal(p,0,1e+6)
+
 model.learn(input_data,output_data, bunch, epochs, learning_rate,momentum)
-print('learning finished')
+print('Learning finished')
 
 parameters = list(model.parameters())
+
+torch.save(model.state_dict(), parameters_file) # saving parameters
+
+Trainer.showNetworkOutput(model, 2, images,input_data, trajectories,DMPs, N, sampling_time)
