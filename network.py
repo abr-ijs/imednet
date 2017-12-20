@@ -46,7 +46,7 @@ class Network(torch.nn.Module):
         output = self.outputLayer(x)
         return output
 
-    def learn(self,x, y, bunch = 10, epochs = 100, learning_rate = 1e-4, log_interval = 10):
+    def learn(self,x, y, bunch = 10, epochs = 100, learning_rate = 1e-4,momentum=0, log_interval = 10):
         """
         teaches the network using provided data
 
@@ -57,17 +57,22 @@ class Network(torch.nn.Module):
         log_interval -> on each epoch divided by log_interval log will be printed
         """
         criterion = torch.nn.MSELoss(size_average=False) #For calculating loss (mean squared error)
-        optimizer = torch.optim.SGD(self.parameters(), lr=learning_rate) # for updating weights
+        optimizer = torch.optim.SGD(self.parameters(), lr=learning_rate, momentum=momentum) # for updating weights
         for t in range(epochs):
             i = 0
             j = bunch
             while j <= len(x):
-                y_pred = self(x[i:j]) # output from the network
-                self.loss = criterion(y_pred,y[i:j]) #loss
-                optimizer.zero_grad()# setting gradients to zero
-                self.loss.backward()# calculating gradients for every layer
-                optimizer.step()#updating weights
+                self.learn_one_step(x[i:j],y[i:j],learning_rate,criterion,optimizer)
                 i = j
                 j += bunch
+            if i < len(x):
+                self.learn_one_step(x[i:],y[i:],learning_rate,criterion,optimizer)
             if t % log_interval == 0:
                 print('Epoch: ', t, ' loss: ',self.loss.data[0])
+
+    def learn_one_step(self,x,y,learning_rate,criterion,optimizer):
+        y_pred = self(x) # output from the network
+        self.loss = criterion(y_pred,y) #loss
+        optimizer.zero_grad()# setting gradients to zero
+        self.loss.backward()# calculating gradients for every layer
+        optimizer.step()#updating weights

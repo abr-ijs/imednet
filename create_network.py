@@ -30,7 +30,8 @@ sampling_time = 0.1
 #learning params
 epochs = 1000
 learning_rate=0.01
-bunch = 10
+momentum = 0
+bunch = 1
 
 #layers size
 numOfInputs = 784
@@ -46,20 +47,31 @@ trajectories = Trainer.loadTrajectories(trajectories_folder)
 # get DMPs
 DMPs = Trainer.createDMPs(trajectories, N, sampling_time)
 # get data to learn
-input_data, output_data = Trainer.getDataForNetwork(images, DMPs,0,100)
+lower = 0
+#lower = 0
+#upper = len(trajectories)
+upper = 10
+input_data, output_data = Trainer.getDataForNetwork(images, DMPs,lower, upper)
 
 #show data
-show = [i for i in range(0)]
-for i in show:
-    Trainer.show_dmp(images[i], trajectories[i], DMPs[i])
+# show = [i for i in range(lower,upper)]
+# for i in show:
+#     Trainer.show_dmp(images[i], trajectories[i], DMPs[i])
 
 #learn
-print('starting learning')
+print('Starting learning')
+print(" Learning with: ")
+print(" - Samples of data", len(input_data))
+print(" - Epochs: ", epochs)
+print(" - Learning rate: ", learning_rate)
+print(" - Bunch size: ", bunch)
+
+
 model = Network(layerSizes)
 #inicalizacija
 for p in list(model.parameters()):
-    torch.nn.init.normal(p,0,1000)
-model.learn(input_data,output_data, bunch, epochs, learning_rate)
+    torch.nn.init.normal(p,0,1e+6)
+model.learn(input_data,output_data, bunch, epochs, learning_rate,momentum)
 print('learning finished')
 
 parameters = list(model.parameters())
