@@ -29,15 +29,17 @@ N = 25
 sampling_time = 0.1
 
 #learning params
-epochs = 100
+epochs = 200
 learning_rate=0.01
 momentum = 0
 bunch = 10
 load = True
+#load = False
+
 
 #layers size
 numOfInputs = 784
-HiddenLayer = [700, 500, 400, 300, 200, 100, 80, 50, 35, 20, 35, 50]
+HiddenLayer = [ 600, 400, 200,  80, 50, 20, 35, 50]
 #HiddenLayer = [100]
 out = 2*N + 7
 #out = 2*N
@@ -50,7 +52,7 @@ print(' Done loading Mnist images')
 #get trajectories
 avaliable = loader.getAvaliableTrajectoriesNumbers(trajectories_folder)
 
-avaliable = avaliable
+avaliable = avaliable[:50]
 print('Loading ',  len(avaliable), ' trajectories')
 trajectories = Trainer.loadTrajectories(trajectories_folder, avaliable)
 print(' Done loading trajectories')
@@ -60,10 +62,7 @@ DMPs = Trainer.createDMPs(trajectories, N, sampling_time)
 print(' Done creating DMPs')
 # get data to learn
 
-input_data, output_data = Trainer.getDataForNetwork(images, DMPs, avaliable)
-input_data = input_data/255
-scale = output_data.max()
-output_data = output_data/scale
+input_data, output_data, scale = Trainer.getDataForNetwork(images, DMPs, avaliable)
 
 #show data
 # show = [i for i in range(lower,upper)]
@@ -82,7 +81,7 @@ print("   - Bunch size: ", bunch)
 
 
 model = Network(layerSizes)
-model.scale = scale.data[0]
+model.scale = scale
 #inicalizacija
 if load:
     print(' + Loaded parameters from file: ', parameters_file)
@@ -99,4 +98,4 @@ parameters = list(model.parameters())
 
 torch.save(model.state_dict(), parameters_file) # saving parameters
 
-Trainer.showNetworkOutput(model, 2, images,input_data, trajectories,DMPs, N, sampling_time)
+Trainer.showNetworkOutput(model, 1, images, trajectories, avaliable,DMPs, N, sampling_time)

@@ -107,7 +107,9 @@ class Trainer:
             learn = np.append(learn,dmp.w)
             outputs.append(learn)
         outputs = np.array(outputs)
-        return outputs
+        scale = np.array([outputs[:,i].max() for i in range(outputs.shape[1])])
+        outputs = outputs / scale
+        return outputs, scale
 
     def getDataForNetwork(images,DMPs,useData):
         """
@@ -118,16 +120,16 @@ class Trainer:
         DMPs -> DMPs that pair with MNIST images given in the same order
         useData -> array like containing indexes of images to use
         """
-        outputs = Trainer.createOutputParameters(DMPs)
+        outputs, scale = Trainer.createOutputParameters(DMPs)
         input_data = Variable(torch.from_numpy(images[useData])).float()
+        input_data = input_data/255
         output_data = Variable(torch.from_numpy(outputs),requires_grad= False).float()
-        return input_data, output_data
+        return input_data, output_data, scale
 
 
     def getDMPFromImage(network,image, N, sampling_time):
         output = network(image)
-        output = output * network.scale
-        output = output.double().data.numpy()
+        output = output.double().data.numpy()*network.scale
         tau = output[0]
         y0 = output[1:3]
         dy0 = output[3:5]
@@ -138,7 +140,8 @@ class Trainer:
         dmp.values(N,sampling_time,tau,y0,dy0,goal,w)
         return dmp
 
-    def showNetworkOutput(network, i, images, input_data,trajectories, DMPs, N, sampling_time):
+    def showNetworkOutput(network, i, images, trajectories, avaliable, DMPs, N, sampling_time):
+        input_data, output_data, scale = Trainer.getDataForNetwork(images, DMPs, avaliable)
         dmp = Trainer.getDMPFromImage(network, input_data[i],N,sampling_time)
         dmp.joint()
         print('Dmp from network:')
@@ -146,7 +149,7 @@ class Trainer:
         print()
         print('Original DMP from trajectory:')
         Trainer.printDMPdata(DMPs[i])
-        Trainer.show_dmp(images[i], trajectories[i], dmp)
+        Trainer.show_dmp(images[avaliable[i]], trajectories[i], dmp)
 
     def printDMPdata(dmp):
         print('Tau: ', dmp.tau)
