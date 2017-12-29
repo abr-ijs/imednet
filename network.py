@@ -65,6 +65,9 @@ class Network(torch.nn.Module):
             i = 0
             j = bunch
             self.loss = Variable(torch.Tensor([0]))
+            permutations = torch.randperm(len(x))
+            x = x[permutations]
+            y = y[permutations]
             while j <= len(x):
                 self.learn_one_step(x[i:j],y[i:j],learning_rate,criterion,optimizer)
                 i = j
