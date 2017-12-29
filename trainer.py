@@ -107,7 +107,7 @@ class Trainer:
             learn = np.append(learn,dmp.w)
             outputs.append(learn)
         outputs = np.array(outputs)
-        scale = np.array([outputs[:,i].max() for i in range(outputs.shape[1])])
+        scale = np.array([np.abs(outputs[:,i]).max() for i in range(outputs.shape[1])])
         outputs = outputs / scale
         return outputs, scale
 
@@ -122,7 +122,7 @@ class Trainer:
         """
         outputs, scale = Trainer.createOutputParameters(DMPs)
         input_data = Variable(torch.from_numpy(images[useData])).float()
-        input_data = input_data/255
+        input_data = input_data/128 - 1
         output_data = Variable(torch.from_numpy(outputs),requires_grad= False).float()
         return input_data, output_data, scale
 
@@ -135,7 +135,7 @@ class Trainer:
         dy0 = output[3:5]
         goal = output[5:7]
         weights = output[7:]
-        w = weights.reshape(25,2)
+        w = weights.reshape(N,2)
         dmp = DMP(N,sampling_time)
         dmp.values(N,sampling_time,tau,y0,dy0,goal,w)
         return dmp

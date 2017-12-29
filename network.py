@@ -32,6 +32,7 @@ class Network(torch.nn.Module):
             self.add_module("middleLayer_" + str(i), layer)
         self.outputLayer = torch.nn.Linear(layerSizes[-2],layerSizes[-1])
         self.scale = 1
+        self.loss = 0
 
     def forward(self, x):
         """
@@ -59,10 +60,11 @@ class Network(torch.nn.Module):
         """
         criterion = torch.nn.MSELoss(size_average=False) #For calculating loss (mean squared error)
         optimizer = torch.optim.SGD(self.parameters(), lr=learning_rate, momentum=momentum) # for updating weights
+        oldLoss = 0
         for t in range(epochs):
             i = 0
             j = bunch
-            self.loss = 0
+            self.loss = Variable(torch.Tensor([0]))
             while j <= len(x):
                 self.learn_one_step(x[i:j],y[i:j],learning_rate,criterion,optimizer)
                 i = j
@@ -70,7 +72,12 @@ class Network(torch.nn.Module):
             if i < len(x):
                 self.learn_one_step(x[i:],y[i:],learning_rate,criterion,optimizer)
             if t % log_interval == 0:
-                print('Epoch: ', t, ' loss: ',self.loss.data[0]*bunch/len(x))
+                self.loss = self.loss * bunch/len(x)
+                print('Epoch: ', t, ' loss: ', self.loss.data[0])
+                if (self.loss - oldLoss).data[0] == 0:
+                    print("Loss hasn't changed in last ", log_interval ," iterations .Quiting...")
+                    return
+                oldLoss = self.loss
 
 
     def learn_one_step(self,x,y,learning_rate,criterion,optimizer):
@@ -79,4 +86,4 @@ class Network(torch.nn.Module):
         optimizer.zero_grad()# setting gradients to zero
         loss.backward()# calculating gradients for every layer
         optimizer.step()#updating weights
-        self.loss += loss
+        self.loss = self.loss + loss
