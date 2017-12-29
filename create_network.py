@@ -31,14 +31,15 @@ sampling_time = 0.1
 
 #learning params
 epochs = 100
-learning_rate=0.01
-momentum = 0.1
+learning_rate=0.001
+momentum = 0
 bunch = 8
+oneDigidOnly = False
 data = 5
-#digit = 1
+digit = 9
 #load = True
 
-load = False
+load = True
 
 
 #layers size
@@ -56,10 +57,12 @@ print(' Done loading Mnist images')
 #get trajectories
 avaliable = loader.getAvaliableTrajectoriesNumbers(trajectories_folder)
 
-avaliable = avaliable[:data]
-indexes = avaliable
-#indexes = np.where(labels==digit)
-#indexes = np.intersect1d(indexes,avaliable)
+if oneDigidOnly:
+    indexes = np.where(labels==digit)
+    indexes = np.intersect1d(indexes,avaliable)
+else:
+    avaliable = avaliable[:data]
+    indexes = avaliable
 
 print('Loading ',  len(indexes), ' trajectories')
 trajectories = Trainer.loadTrajectories(trajectories_folder, indexes)
