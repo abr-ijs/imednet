@@ -23,7 +23,7 @@ class Trainer:
     Helper class containing methods for preparing data for learning
     """
 
-    def show_dmp(image,trajectory, dmp):
+    def show_dmp(image,trajectory, dmp, save = -1):
         """
         Plots and shows mnist image, trajectory and dmp to one picture
 
@@ -32,6 +32,7 @@ class Trainer:
         dmp -> DMP created from the trajectory
         """
         dmp.joint()
+        fig = plt.figure()
         if (image != None).any():
             plt.imshow((np.reshape(image, (28, 28))).astype(np.uint8), cmap='gray')
         plt.plot(dmp.Y[:,0], dmp.Y[:,1],'--r', label='dmp')
@@ -39,7 +40,11 @@ class Trainer:
         plt.legend()
         plt.xlim([0,28])
         plt.ylim([0,28])
-        plt.show()
+        if save != -1:
+            plt.savefig("images/" + str(save) + ".pdf")
+            plt.close(fig)
+        else:
+            plt.show()
 
     def loadMnistData(mnist_folder):
         """
@@ -129,7 +134,7 @@ class Trainer:
 
     def getDMPFromImage(network,image, N, sampling_time):
         output = network(image)
-        output = output.double().data.numpy()*network.scale
+        output = output.double().data.numpy()[0]*network.scale
         tau = output[0]
         y0 = output[1:3]
         dy0 = output[3:5]

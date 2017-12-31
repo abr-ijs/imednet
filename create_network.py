@@ -30,21 +30,34 @@ N = 25
 sampling_time = 0.1
 
 #learning params
-epochs = 100
+epochs = 50
 learning_rate=0.001
 momentum = 0
-bunch = 8
+bunch = 32
 oneDigidOnly = False
-data = 5
-digit = 9
+data = 5000
+digit = 2
 #load = True
 
 load = True
 
 
+# 
+# wrong = []
+# for i in range(160,500):
+#     DMPs[i].joint()
+#     if DMPs[i].Y.max() > 28 or DMPs[i].Y.min() < 0:
+#         wrong.append(indexes[i])
+#         print(indexes[i])
+#
+# print('rm ' + " ".join(['image_' +str(i) + '.json' for i in wrong]))
+
+
+
 #layers size
 numOfInputs = 784
 HiddenLayer = [ 600, 350, 150, 40]
+conv = [10,5]
 #HiddenLayer = [100]
 out = 2*N + 7
 #out = 2*N
@@ -79,10 +92,12 @@ input_data, output_data, scale = Trainer.getDataForNetwork(images, DMPs, indexes
 
 #scale = np.load(scale_file)
 
-#show data
-# show = [i for i in range(lower,upper)]
-# for i in show:
-#     Trainer.show_dmp(images[i], trajectories[i], DMPs[i])
+# for i in range(int(len(indexes))):
+#     Trainer.show_dmp(images[indexes[i]],trajectories[i],DMPs[i],indexes[i])
+
+#for i in range(int(len(indexes))):
+#    DMPs[i].Y - trajectoires[i]
+
 
 #learn
 print()
@@ -95,7 +110,7 @@ print("   - Momentum: ", momentum)
 print("   - Bunch size: ", bunch)
 
 
-model = Network(layerSizes)
+model = Network(layerSizes, conv)
 model.scale = scale
 np.save(scale_file, scale)
 #inicalizacija

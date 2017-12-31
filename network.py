@@ -10,9 +10,10 @@ VERSION 1.0
 """
 import torch
 from torch.autograd import Variable
+import numpy as np
 
 class Network(torch.nn.Module):
-    def __init__(self, layerSizes = [784,200,50]):
+    def __init__(self, layerSizes = [784,200,50], conv = None):
         """
         Creates a custom Network
 
@@ -24,7 +25,15 @@ class Network(torch.nn.Module):
                 outputLayer -> torch.nn.Linear(200,50)
         """
         super(Network, self).__init__()
-        self.inputLayer = torch.nn.Linear(layerSizes[0],layerSizes[1])
+        self.conv = conv
+        if self.conv:
+            self.imageSize = int(np.sqrt(layerSizes[0]))
+            self.convSize = (self.imageSize - conv[1] + 1)**2 * conv[0]
+            self.firstLayer = torch.nn.Conv2d(1,conv[0],conv[1])
+            self.inputLayer = torch.nn.Linear(self.convSize, layerSizes[1])
+
+        else:
+            self.inputLayer = torch.nn.Linear(layerSizes[0],layerSizes[1])
         self.middleLayers = []
         for i in range(1, len(layerSizes) - 2):
             layer = torch.nn.Linear(layerSizes[i],layerSizes[i+1])
@@ -42,6 +51,11 @@ class Network(torch.nn.Module):
         x -> input to the Network
         """
         tanh = torch.nn.Tanh()
+        if self.conv:
+            x = x.view(-1,1,self.imageSize, self.imageSize)
+            x = self.firstLayer(x)
+            x = x.view(-1,self.convSize)
+
         x = tanh(self.inputLayer(x))
         for layer in self.middleLayers:
             x = tanh(layer(x))
