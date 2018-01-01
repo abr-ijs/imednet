@@ -30,19 +30,18 @@ N = 25
 sampling_time = 0.1
 
 #learning params
-epochs = 50
+epochs = 100
 learning_rate=0.001
 momentum = 0
 bunch = 32
 oneDigidOnly = False
 data = 5000
-digit = 2
-#load = True
+digit = 0
 
 load = True
 
 
-# 
+#
 # wrong = []
 # for i in range(160,500):
 #     DMPs[i].joint()
