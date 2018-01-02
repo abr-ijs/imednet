@@ -35,11 +35,12 @@ class Trainer:
         fig = plt.figure()
         if (image != None).any():
             plt.imshow((np.reshape(image, (28, 28))).astype(np.uint8), cmap='gray')
-        plt.plot(dmp.Y[:,0], dmp.Y[:,1],'--r', label='dmp')
+        if dmp != None:
+            plt.plot(dmp.Y[:,0], dmp.Y[:,1],'--r', label='dmp')
         plt.plot(trajectory[:,0], trajectory[:,1],'-g', label='trajectory')
         plt.legend()
         plt.xlim([0,28])
-        plt.ylim([0,28])
+        plt.ylim([28,0])
         if save != -1:
             plt.savefig("images/" + str(save) + ".pdf")
             plt.close(fig)
@@ -116,7 +117,7 @@ class Trainer:
         outputs = outputs / scale
         return outputs, scale
 
-    def getDataForNetwork(images,DMPs,useData):
+    def getDataForNetwork(images,DMPs,useData = None):
         """
         Generates data that will be given to the Network
 
@@ -126,7 +127,10 @@ class Trainer:
         useData -> array like containing indexes of images to use
         """
         outputs, scale = Trainer.createOutputParameters(DMPs)
-        input_data = Variable(torch.from_numpy(images[useData])).float()
+        if useData != None:
+            input_data = Variable(torch.from_numpy(images[useData])).float()
+        else:
+            input_data = Variable(torch.from_numpy(images)).float()
         input_data = input_data/128 - 1
         output_data = Variable(torch.from_numpy(outputs),requires_grad= False).float()
         return input_data, output_data, scale
@@ -162,3 +166,45 @@ class Trainer:
         print('dy0: ', dmp.dy0)
         print('goal: ', dmp.goal)
         print('w_sum: ', dmp.w.sum())
+
+    def rotationMatrix(theta, dimensions = 3):
+        c, s = np.cos(theta)[0], np.sin(theta)[0]
+        if dimensions == 3:
+            return np.array([[c,-s, 0],[s,c, 0], [0,0,1]])
+        else:
+            return np.array([[c,-s],[s,c]])
+
+    def translate(points, movement):
+        pivotPoint = np.array(movement)
+        new_points = np.array(points) + pivotPoint
+        return new_points
+
+    def rotateAround(trajectory, pivotPoint, theta)
+        pivotPoint = np.append(pivotPoint,0)
+        transformed_trajectory = Trainer.translate(trajectory, -pivotPoint)
+        transformed_trajectory = Trainer.rotationMatrix(theta).dot(transformed_trajectory.transpose()).transpose()
+        transformed_trajectory = Trainer.translate(trajectory, pivotPoint)
+        return transformed_trajectory
+
+    def rotateImage(image, theta):
+        new_image = image.reshape(28,28)
+        points =  np.array([[j,i,0] for j in np.arange(28) for i in range(28)])
+        transformed = Trainer.rotateAround(points, [12,12], theta)
+        t = (points[:28,1], points[:28,1])
+        return interpn(t, image.reshape(28,28), transformed, method = 'linear', bounds_error=False, fill_value=0)
+
+    def randomlyRotateData(trajectoires, images, n):
+        transformed_trajectories = np.array([])
+        transformed_images = np.array([])
+        for i in range(len(trajectoires)):
+            trajectory = trajectoires[i]
+            image = images[i]
+            transformed_images = np.append(transformed_images, image)
+            transformed_trajectories = np.append(transformed_trajectories, trajectory)
+            for j in range(n):
+                theta = np.random.rand(1)*np.pi*2
+                new_trajetory = Trainer.rotateAround(trajectory, [12,12], theta)
+                new_image = rotateImage(image, theta)
+                transformed_images = np.append(transformed_images, new_image)
+                transformed_trajectories = np.append(transformed_trajectories, new_trajetory)
+        return transformed_trajectories, transformed_images

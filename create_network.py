@@ -34,7 +34,7 @@ epochs = 100
 learning_rate=0.001
 momentum = 0
 bunch = 32
-oneDigidOnly = False
+oneDigidOnly = True
 data = 5000
 digit = 0
 
@@ -79,6 +79,11 @@ else:
 print('Loading ',  len(indexes), ' trajectories')
 trajectories = Trainer.loadTrajectories(trajectories_folder, indexes)
 print(' Done loading trajectories')
+
+print('Multiplying data')
+#trajectories, images = Trainer.randomlyRotateData(trajectories, images, 2)
+images = images[indexes]
+
 # get DMPs
 print('Creating DMPs')
 DMPs = Trainer.createDMPs(trajectories, N, sampling_time)
@@ -87,7 +92,7 @@ print(' Done creating DMPs')
 
 
 
-input_data, output_data, scale = Trainer.getDataForNetwork(images, DMPs, indexes)
+input_data, output_data, scale = Trainer.getDataForNetwork(images, DMPs)
 
 #scale = np.load(scale_file)
 
