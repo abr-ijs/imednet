@@ -30,14 +30,14 @@ N = 25
 sampling_time = 0.1
 
 #learning params
-epochs = 100
+epochs = 30
 learning_rate=0.001
 momentum = 0
 bunch = 32
 oneDigidOnly = True
 data = 5000
-artificial_samples = 4
-digit = 2
+artificial_samples = 3
+digit = 3
 
 load = True
 
@@ -68,7 +68,7 @@ else:
 print('Loading ',  len(indexes), ' trajectories')
 trajectories = Trainer.loadTrajectories(trajectories_folder, indexes)
 print(' Done loading trajectories')
-
+test = images[-100:]
 print('Multiplying data')
 images = images[indexes]
 trajectories, images = Trainer.randomlyRotateData(trajectories, images, artificial_samples)
@@ -140,3 +140,6 @@ torch.save(model.state_dict(), parameters_file) # saving parameters
 #Trainer.showNetworkOutput(model, 1, images, trajectories,DMPs, N, sampling_time, indexes)
 i = 0
 Trainer.showNetworkOutput(model, i, images, trajectories,DMPs, N, sampling_time)
+
+
+Trainer.showNetworkOutput(model, -1, test[:5], None, None, N, sampling_time)

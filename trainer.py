@@ -33,12 +33,13 @@ class Trainer:
         dmp -> DMP created from the trajectory
         """
         fig = plt.figure()
-        if (image != None).any():
+        if image is not None:
             plt.imshow((np.reshape(image, (28, 28))).astype(np.uint8), cmap='gray')
-        if dmp != None:
+        if dmp is not None:
             dmp.joint()
             plt.plot(dmp.Y[:,0], dmp.Y[:,1],'--r', label='dmp')
-        plt.plot(trajectory[:,0], trajectory[:,1],'-g', label='trajectory')
+        if trajectory is not None:
+            plt.plot(trajectory[:,0], trajectory[:,1],'-g', label='trajectory')
         plt.legend()
         plt.xlim([0,28])
         plt.ylim([28,0])
@@ -127,19 +128,32 @@ class Trainer:
         DMPs -> DMPs that pair with MNIST images given in the same order
         useData -> array like containing indexes of images to use
         """
-        outputs, scale = Trainer.createOutputParameters(DMPs)
         if useData is not None:
             input_data = Variable(torch.from_numpy(images[useData])).float()
         else:
             input_data = Variable(torch.from_numpy(images)).float()
         input_data = input_data/128 - 1
-        output_data = Variable(torch.from_numpy(outputs),requires_grad= False).float()
+        if DMPs is not None:
+            outputs, scale = Trainer.createOutputParameters(DMPs)
+            output_data = Variable(torch.from_numpy(outputs),requires_grad= False).float()
+        else:
+            output_data = None
+            scale = 1
         return input_data, output_data, scale
 
 
     def getDMPFromImage(network,image, N, sampling_time):
         output = network(image)
-        output = output.double().data.numpy()[0]*network.scale
+        if len(output) == 57:
+            return Trainer.createDMP(data, network.scale)
+        else:
+            dmps = []
+            for data in output:
+                dmps.append(Trainer.createDMP(data, network.scale))
+        return dmps
+
+    def createDMP(output, scale):
+        output = output.double().data.numpy()[0]*scale
         tau = output[0]
         y0 = output[1:3]
         dy0 = output[3:5]
@@ -152,13 +166,27 @@ class Trainer:
 
     def showNetworkOutput(network, i, images, trajectories, DMPs, N, sampling_time, avaliable = None):
         input_data, output_data, scale = Trainer.getDataForNetwork(images, DMPs, avaliable)
-        dmp = Trainer.getDMPFromImage(network, input_data[i],N,sampling_time)
-        dmp.joint()
-        print('Dmp from network:')
-        Trainer.printDMPdata(dmp)
-        print()
-        print('Original DMP from trajectory:')
-        Trainer.printDMPdata(DMPs[i])
+        scale = network.scale
+        if i != -1:
+            dmp = Trainer.getDMPFromImage(network, input_data[i],N,sampling_time)[0]
+            dmp.joint()
+        else:
+            dmps = Trainer.getDMPFromImage(network, input_data,N,sampling_time)
+            for dmp in dmps:
+                dmp.joint()
+
+        if i != -1:
+            print('Dmp from network:')
+            Trainer.printDMPdata(dmp)
+            print()
+        if DMPs is not None and i != -1:
+            print('Original DMP from trajectory:')
+            Trainer.printDMPdata(DMPs[i])
+        if i == -1:
+            plt.ion()
+            for i in range(len(dmps)):
+                Trainer.show_dmp(images[i], None, dmps[i])
+            plt.ioff()
         if avaliable is not None:
             Trainer.show_dmp(images[avaliable[i]], trajectories[i], dmp)
         else:
