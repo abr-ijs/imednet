@@ -150,7 +150,7 @@ class Trainer:
         dmp.values(N,sampling_time,tau,y0,dy0,goal,w)
         return dmp
 
-    def showNetworkOutput(network, i, images, trajectories, avaliable, DMPs, N, sampling_time):
+    def showNetworkOutput(network, i, images, trajectories, DMPs, N, sampling_time, avaliable = None):
         input_data, output_data, scale = Trainer.getDataForNetwork(images, DMPs, avaliable)
         dmp = Trainer.getDMPFromImage(network, input_data[i],N,sampling_time)
         dmp.joint()
@@ -159,7 +159,10 @@ class Trainer:
         print()
         print('Original DMP from trajectory:')
         Trainer.printDMPdata(DMPs[i])
-        Trainer.show_dmp(images[avaliable[i]], trajectories[i], dmp)
+        if avaliable is not None:
+            Trainer.show_dmp(images[avaliable[i]], trajectories[i], dmp)
+        else:
+            Trainer.show_dmp(images[i], trajectories[i], dmp)
 
     def printDMPdata(dmp):
         print('Tau: ', dmp.tau)
@@ -169,7 +172,7 @@ class Trainer:
         print('w_sum: ', dmp.w.sum())
 
     def rotationMatrix(theta, dimensions = 3):
-        c, s = np.cos(theta)[0], np.sin(theta)[0]
+        c, s = np.cos(theta), np.sin(theta)
         if dimensions == 3:
             return np.array([[c,-s, 0],[s,c, 0], [0,0,1]])
         else:
@@ -184,7 +187,7 @@ class Trainer:
         pivotPoint = np.append(pivotPoint,0)
         transformed_trajectory = Trainer.translate(trajectory, -pivotPoint)
         transformed_trajectory = Trainer.rotationMatrix(theta).dot(transformed_trajectory.transpose()).transpose()
-        transformed_trajectory = Trainer.translate(trajectory, pivotPoint)
+        transformed_trajectory = Trainer.translate(transformed_trajectory, pivotPoint)
         return transformed_trajectory
 
     def rotateImage(image, theta):
@@ -203,15 +206,11 @@ class Trainer:
             transformed_images.append(image)
             transformed_trajectories.append(trajectory)
             for j in range(n):
-                theta = np.random.rand(1)*np.pi*2
+                theta = (np.random.rand(1)*np.pi*2)[0]
                 new_trajectory = Trainer.rotateAround(trajectory, [12,12], theta)
                 new_image = Trainer.rotateImage(image, theta)
                 transformed_images.append(new_image)
                 transformed_trajectories.append(new_trajectory)
-        print(len(transformed_images))
-        print(len(transformed_trajectories))
         transformed_trajectories = np.array(transformed_trajectories)
         transformed_images = np.array(transformed_images)
-        print(transformed_images.shape)
-        print(transformed_trajectories.shape)
         return transformed_trajectories, transformed_images

@@ -82,7 +82,8 @@ print(' Done loading trajectories')
 
 print('Multiplying data')
 trajectories, images = Trainer.randomlyRotateData(trajectories, images, 2)
-images = images[indexes]
+#images = images[indexes]
+print('Done multiplying data. Now having ',  len(trajectories), ' data')
 
 # get DMPs
 print('Creating DMPs')
@@ -133,4 +134,5 @@ parameters = list(model.parameters())
 
 torch.save(model.state_dict(), parameters_file) # saving parameters
 
-Trainer.showNetworkOutput(model, 1, images, trajectories, indexes,DMPs, N, sampling_time)
+#Trainer.showNetworkOutput(model, 1, images, trajectories,DMPs, N, sampling_time, indexes)
+Trainer.showNetworkOutput(model, 1, images, trajectories,DMPs, N, sampling_time)
