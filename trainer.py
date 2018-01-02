@@ -195,17 +195,23 @@ class Trainer:
         return interpn(t, image.reshape(28,28), transformed, method = 'linear', bounds_error=False, fill_value=0)
 
     def randomlyRotateData(trajectories, images, n):
-        transformed_trajectories = np.array([])
-        transformed_images = np.array([])
+        transformed_trajectories = []
+        transformed_images =[]
         for i in range(len(trajectories)):
             trajectory = trajectories[i]
             image = images[i]
-            transformed_images = np.append(transformed_images, image)
-            transformed_trajectories = np.append(transformed_trajectories, trajectory)
+            transformed_images.append(image)
+            transformed_trajectories.append(trajectory)
             for j in range(n):
                 theta = np.random.rand(1)*np.pi*2
                 new_trajectory = Trainer.rotateAround(trajectory, [12,12], theta)
                 new_image = Trainer.rotateImage(image, theta)
-                transformed_images = np.append(transformed_images, new_image)
-                transformed_trajectories = np.append(transformed_trajectories, new_trajectory)
+                transformed_images.append(new_image)
+                transformed_trajectories.append(new_trajectory)
+        print(len(transformed_images))
+        print(len(transformed_trajectories))
+        transformed_trajectories = np.array(transformed_trajectories)
+        transformed_images = np.array(transformed_images)
+        print(transformed_images.shape)
+        print(transformed_trajectories.shape)
         return transformed_trajectories, transformed_images

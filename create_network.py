@@ -30,7 +30,7 @@ N = 25
 sampling_time = 0.1
 
 #learning params
-epochs = 100
+epochs = 30
 learning_rate=0.001
 momentum = 0
 bunch = 32
@@ -81,7 +81,7 @@ trajectories = Trainer.loadTrajectories(trajectories_folder, indexes)
 print(' Done loading trajectories')
 
 print('Multiplying data')
-#trajectories, images = Trainer.randomlyRotateData(trajectories, images, 2)
+trajectories, images = Trainer.randomlyRotateData(trajectories, images, 2)
 images = images[indexes]
 
 # get DMPs
