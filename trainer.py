@@ -13,6 +13,7 @@ import torch
 from torch.autograd import Variable
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.interpolate import interpn
 
 from trajectory_loader import trajectory_loader as loader
 from DMP_class import DMP
@@ -31,11 +32,11 @@ class Trainer:
         trajectory -> a trajectory containing all the points in format point = [x,y]
         dmp -> DMP created from the trajectory
         """
-        dmp.joint()
         fig = plt.figure()
         if (image != None).any():
             plt.imshow((np.reshape(image, (28, 28))).astype(np.uint8), cmap='gray')
         if dmp != None:
+            dmp.joint()
             plt.plot(dmp.Y[:,0], dmp.Y[:,1],'--r', label='dmp')
         plt.plot(trajectory[:,0], trajectory[:,1],'-g', label='trajectory')
         plt.legend()
@@ -127,7 +128,7 @@ class Trainer:
         useData -> array like containing indexes of images to use
         """
         outputs, scale = Trainer.createOutputParameters(DMPs)
-        if useData != None:
+        if (useData != None).any():
             input_data = Variable(torch.from_numpy(images[useData])).float()
         else:
             input_data = Variable(torch.from_numpy(images)).float()
@@ -179,7 +180,7 @@ class Trainer:
         new_points = np.array(points) + pivotPoint
         return new_points
 
-    def rotateAround(trajectory, pivotPoint, theta)
+    def rotateAround(trajectory, pivotPoint, theta):
         pivotPoint = np.append(pivotPoint,0)
         transformed_trajectory = Trainer.translate(trajectory, -pivotPoint)
         transformed_trajectory = Trainer.rotationMatrix(theta).dot(transformed_trajectory.transpose()).transpose()
@@ -189,22 +190,22 @@ class Trainer:
     def rotateImage(image, theta):
         new_image = image.reshape(28,28)
         points =  np.array([[j,i,0] for j in np.arange(28) for i in range(28)])
-        transformed = Trainer.rotateAround(points, [12,12], theta)
+        transformed = Trainer.rotateAround(points, [12,12], theta)[:,:2]
         t = (points[:28,1], points[:28,1])
         return interpn(t, image.reshape(28,28), transformed, method = 'linear', bounds_error=False, fill_value=0)
 
-    def randomlyRotateData(trajectoires, images, n):
+    def randomlyRotateData(trajectories, images, n):
         transformed_trajectories = np.array([])
         transformed_images = np.array([])
-        for i in range(len(trajectoires)):
-            trajectory = trajectoires[i]
+        for i in range(len(trajectories)):
+            trajectory = trajectories[i]
             image = images[i]
             transformed_images = np.append(transformed_images, image)
             transformed_trajectories = np.append(transformed_trajectories, trajectory)
             for j in range(n):
                 theta = np.random.rand(1)*np.pi*2
-                new_trajetory = Trainer.rotateAround(trajectory, [12,12], theta)
-                new_image = rotateImage(image, theta)
+                new_trajectory = Trainer.rotateAround(trajectory, [12,12], theta)
+                new_image = Trainer.rotateImage(image, theta)
                 transformed_images = np.append(transformed_images, new_image)
-                transformed_trajectories = np.append(transformed_trajectories, new_trajetory)
+                transformed_trajectories = np.append(transformed_trajectories, new_trajectory)
         return transformed_trajectories, transformed_images
