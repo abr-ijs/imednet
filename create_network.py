@@ -30,27 +30,16 @@ N = 25
 sampling_time = 0.1
 
 #learning params
-epochs = 30
+epochs = 100
 learning_rate=0.001
 momentum = 0
 bunch = 32
 oneDigidOnly = True
 data = 5000
-digit = 0
+artificial_samples = 4
+digit = 2
 
 load = True
-
-
-#
-# wrong = []
-# for i in range(160,500):
-#     DMPs[i].joint()
-#     if DMPs[i].Y.max() > 28 or DMPs[i].Y.min() < 0:
-#         wrong.append(indexes[i])
-#         print(indexes[i])
-#
-# print('rm ' + " ".join(['image_' +str(i) + '.json' for i in wrong]))
-
 
 
 #layers size
@@ -82,7 +71,7 @@ print(' Done loading trajectories')
 
 print('Multiplying data')
 images = images[indexes]
-trajectories, images = Trainer.randomlyRotateData(trajectories, images, 2)
+trajectories, images = Trainer.randomlyRotateData(trajectories, images, artificial_samples)
 print('Done multiplying data. Now having ',  len(trajectories), ' data')
 
 # get DMPs
@@ -92,16 +81,30 @@ print(' Done creating DMPs')
 # get data to learn
 
 
+#Code to find wrong data
+# wrong = []
+# for i in range(160,500):
+#     DMPs[i].joint()
+#     if DMPs[i].Y.max() > 28 or DMPs[i].Y.min() < 0:
+#         wrong.append(indexes[i])
+#         print(indexes[i])
+#
+# print('rm ' + " ".join(['image_' +str(i) + '.json' for i in wrong]))
+
+# wrong = []
+# for i in range(50,100):
+#     DMPs[i].joint()
+#     if DMPs[i].Y.max() > 28 or DMPs[i].Y.min() < 0:
+#         wrong.append(i)
+#         print(i)
+
 
 input_data, output_data, scale = Trainer.getDataForNetwork(images, DMPs)
 
 #scale = np.load(scale_file)
 
 # for i in range(int(len(indexes))):
-#     Trainer.show_dmp(images[indexes[i]],trajectories[i],DMPs[i],indexes[i])
-
-#for i in range(int(len(indexes))):
-#    DMPs[i].Y - trajectoires[i]
+#     Trainer.show_dmp(images[i],trajectories[i],DMPs[i],indexes[i])
 
 
 #learn
@@ -135,4 +138,5 @@ parameters = list(model.parameters())
 torch.save(model.state_dict(), parameters_file) # saving parameters
 
 #Trainer.showNetworkOutput(model, 1, images, trajectories,DMPs, N, sampling_time, indexes)
-Trainer.showNetworkOutput(model, 1, images, trajectories,DMPs, N, sampling_time)
+i = 0
+Trainer.showNetworkOutput(model, i, images, trajectories,DMPs, N, sampling_time)
