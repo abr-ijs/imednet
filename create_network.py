@@ -81,8 +81,8 @@ trajectories = Trainer.loadTrajectories(trajectories_folder, indexes)
 print(' Done loading trajectories')
 
 print('Multiplying data')
+images = images[indexes]
 trajectories, images = Trainer.randomlyRotateData(trajectories, images, 2)
-#images = images[indexes]
 print('Done multiplying data. Now having ',  len(trajectories), ' data')
 
 # get DMPs
