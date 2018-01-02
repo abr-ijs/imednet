@@ -128,7 +128,7 @@ class Trainer:
         useData -> array like containing indexes of images to use
         """
         outputs, scale = Trainer.createOutputParameters(DMPs)
-        if (useData != None).any():
+        if useData is not None:
             input_data = Variable(torch.from_numpy(images[useData])).float()
         else:
             input_data = Variable(torch.from_numpy(images)).float()
