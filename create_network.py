@@ -30,16 +30,18 @@ N = 25
 sampling_time = 0.1
 
 #learning params
-epochs = 30
+epochs = 100
 learning_rate=0.001
 momentum = 0
 bunch = 32
-oneDigidOnly = True
-data = 5000
-artificial_samples = 3
-digit = 3
+oneDigidOnly = False
+data = 800
+s_data = 500
+artificial_samples = 9
+digit = 0
 
 load = True
+
 
 
 #layers size
@@ -62,7 +64,7 @@ if oneDigidOnly:
     indexes = np.where(labels==digit)
     indexes = np.intersect1d(indexes,avaliable)
 else:
-    avaliable = avaliable[:data]
+    avaliable = avaliable[s_data:data]
     indexes = avaliable
 
 print('Loading ',  len(indexes), ' trajectories')
@@ -130,7 +132,7 @@ else:
     for p in list(model.parameters()):
         torch.nn.init.normal(p,0,1e+2)
 
-model.learn(input_data,output_data, bunch, epochs, learning_rate,momentum)
+model.learn(input_data,output_data, bunch, epochs, learning_rate,momentum, 10, True)
 print('Learning finished\n')
 
 parameters = list(model.parameters())
