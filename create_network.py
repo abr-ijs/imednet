@@ -35,8 +35,8 @@ learning_rate=0.001
 momentum = 0
 bunch = 32
 oneDigidOnly = False
-data = 800
-s_data = 500
+data = 2400
+s_data = 2000
 artificial_samples = 9
 digit = 0
 
@@ -100,10 +100,9 @@ print(' Done creating DMPs')
 #         wrong.append(i)
 #         print(i)
 
+scale = np.load(scale_file)
+input_data, output_data, scale = Trainer.getDataForNetwork(images, DMPs, scale)
 
-input_data, output_data, scale = Trainer.getDataForNetwork(images, DMPs)
-
-#scale = np.load(scale_file)
 
 # for i in range(int(len(indexes))):
 #     Trainer.show_dmp(images[i],trajectories[i],DMPs[i],indexes[i])

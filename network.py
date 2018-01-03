@@ -10,6 +10,7 @@ VERSION 1.0
 """
 import torch
 from torch.autograd import Variable
+import matplotlib.pyplot as plt
 import numpy as np
 
 class Network(torch.nn.Module):
@@ -62,7 +63,7 @@ class Network(torch.nn.Module):
         output = self.outputLayer(x)
         return output
 
-    def learn(self,x, y, bunch = 10, epochs = 100, learning_rate = 1e-4,momentum=0, log_interval = 10):
+    def learn(self,x, y, bunch = 10, epochs = 100, learning_rate = 1e-4,momentum=0, log_interval = 10, livePlot = False):
         """
         teaches the network using provided data
 
@@ -75,6 +76,12 @@ class Network(torch.nn.Module):
         criterion = torch.nn.MSELoss(size_average=False) #For calculating loss (mean squared error)
         optimizer = torch.optim.SGD(self.parameters(), lr=learning_rate, momentum=momentum) # for updating weights
         oldLoss = 0
+        if livePlot:
+            plt.figure()
+            plt.xlabel('Epoch')
+            plt.ylabel('Error')
+            plt.ion()
+            plt.show()
         for t in range(epochs):
             i = 0
             j = bunch
@@ -91,6 +98,8 @@ class Network(torch.nn.Module):
             if t % log_interval == 0:
                 self.loss = self.loss * bunch/len(x)
                 print('Epoch: ', t, ' loss: ', self.loss.data[0])
+                plt.plot(t, self.loss.data[0],'ob')
+                plt.pause(0.5)
                 if (self.loss - oldLoss).data[0] == 0:
                     print("Loss hasn't changed in last ", log_interval ," iterations .Quiting...")
                     return

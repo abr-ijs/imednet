@@ -100,7 +100,7 @@ class Trainer:
         DMPs = np.array(DMPs)
         return DMPs
 
-    def createOutputParameters(DMPs):
+    def createOutputParameters(DMPs, scale = None):
         """
         Returns desired output parameters for the network from the given DMPs
 
@@ -115,11 +115,12 @@ class Trainer:
             learn = np.append(learn,dmp.w)
             outputs.append(learn)
         outputs = np.array(outputs)
-        scale = np.array([np.abs(outputs[:,i]).max() for i in range(outputs.shape[1])])
+        if scale is None:
+            scale = np.array([np.abs(outputs[:,i]).max() for i in range(outputs.shape[1])])
         outputs = outputs / scale
         return outputs, scale
 
-    def getDataForNetwork(images,DMPs,useData = None):
+    def getDataForNetwork(images,DMPs, scale = None, useData = None):
         """
         Generates data that will be given to the Network
 
@@ -134,7 +135,10 @@ class Trainer:
             input_data = Variable(torch.from_numpy(images)).float()
         input_data = input_data/128 - 1
         if DMPs is not None:
-            outputs, scale = Trainer.createOutputParameters(DMPs)
+            if scale is None:
+                outputs, scale = Trainer.createOutputParameters(DMPs)
+            else:
+                outputs, scale = Trainer.createOutputParameters(DMPs, scale)
             output_data = Variable(torch.from_numpy(outputs),requires_grad= False).float()
         else:
             output_data = None
