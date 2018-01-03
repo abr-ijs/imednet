@@ -144,16 +144,13 @@ class Trainer:
 
     def getDMPFromImage(network,image, N, sampling_time):
         output = network(image)
-        if len(output) == 57:
-            return Trainer.createDMP(data, network.scale)
-        else:
-            dmps = []
-            for data in output:
-                dmps.append(Trainer.createDMP(data, network.scale))
+        dmps = []
+        for data in output:
+            dmps.append(Trainer.createDMP(data, network.scale,sampling_time,N))
         return dmps
 
-    def createDMP(output, scale):
-        output = output.double().data.numpy()[0]*scale
+    def createDMP(output, scale, sampling_time,N):
+        output = output.double().data.numpy()*scale
         tau = output[0]
         y0 = output[1:3]
         dy0 = output[3:5]
@@ -168,16 +165,14 @@ class Trainer:
         input_data, output_data, scale = Trainer.getDataForNetwork(images, DMPs, avaliable)
         scale = network.scale
         if i != -1:
-            dmp = Trainer.getDMPFromImage(network, input_data[i],N,sampling_time)[0]
+            input_data = input_data[i]
+        dmps = Trainer.getDMPFromImage(network, input_data,N,sampling_time)
+        for dmp in dmps:
             dmp.joint()
-        else:
-            dmps = Trainer.getDMPFromImage(network, input_data,N,sampling_time)
-            for dmp in dmps:
-                dmp.joint()
 
         if i != -1:
             print('Dmp from network:')
-            Trainer.printDMPdata(dmp)
+            Trainer.printDMPdata(dmps[0])
             print()
         if DMPs is not None and i != -1:
             print('Original DMP from trajectory:')
@@ -187,10 +182,11 @@ class Trainer:
             for i in range(len(dmps)):
                 Trainer.show_dmp(images[i], None, dmps[i])
             plt.ioff()
-        if avaliable is not None:
-            Trainer.show_dmp(images[avaliable[i]], trajectories[i], dmp)
         else:
-            Trainer.show_dmp(images[i], trajectories[i], dmp)
+            if avaliable is not None:
+                Trainer.show_dmp(images[avaliable[i]], trajectories[i], dmps[0])
+            else:
+                Trainer.show_dmp(images[i], trajectories[i], dmps[0])
 
     def printDMPdata(dmp):
         print('Tau: ', dmp.tau)
