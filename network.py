@@ -87,6 +87,9 @@ class Network(torch.nn.Module):
             j = bunch
             self.loss = Variable(torch.Tensor([0]))
             permutations = torch.randperm(len(x))
+            if self.isCuda():
+                self.loss = self.loss.cuda()
+                permutations = permutations.cuda()
             x = x[permutations]
             y = y[permutations]
             while j <= len(x):
@@ -98,8 +101,9 @@ class Network(torch.nn.Module):
             if t % log_interval == 0:
                 self.loss = self.loss * bunch/len(x)
                 print('Epoch: ', t, ' loss: ', self.loss.data[0])
-                plt.plot(t, self.loss.data[0],'ob')
-                plt.pause(0.5)
+                if livePlot:
+                        plt.plot(t, self.loss.data[0],'ob')
+                        plt.pause(0.5)
                 if (self.loss - oldLoss).data[0] == 0:
                     print("Loss hasn't changed in last ", log_interval ," iterations .Quiting...")
                     return
@@ -113,3 +117,6 @@ class Network(torch.nn.Module):
         loss.backward()# calculating gradients for every layer
         optimizer.step()#updating weights
         self.loss = self.loss + loss
+
+    def isCuda(self):
+        return self.firstLayer.weight.is_cuda

@@ -30,18 +30,21 @@ N = 25
 sampling_time = 0.1
 
 #learning params
-epochs = 100
+epochs = 1000
 learning_rate=0.001
 momentum = 0
 bunch = 32
 oneDigidOnly = False
-data = 2400
-s_data = 2000
+data = 5000
+s_data = 0
 artificial_samples = 9
 digit = 0
 
-load = True
+load = False
 
+
+cuda = True
+plot = False
 
 
 #layers size
@@ -100,8 +103,8 @@ print(' Done creating DMPs')
 #         wrong.append(i)
 #         print(i)
 
-scale = np.load(scale_file)
-input_data, output_data, scale = Trainer.getDataForNetwork(images, DMPs, scale)
+#scale = np.load(scale_file)
+input_data, output_data, scale = Trainer.getDataForNetwork(images, DMPs)
 
 
 # for i in range(int(len(indexes))):
@@ -131,7 +134,12 @@ else:
     for p in list(model.parameters()):
         torch.nn.init.normal(p,0,1e+2)
 
-model.learn(input_data,output_data, bunch, epochs, learning_rate,momentum, 10, True)
+if cuda:
+    model.cuda()
+    input_data = input_data.cuda()
+    output_data = output_data.cuda()
+
+model.learn(input_data,output_data, bunch, epochs, learning_rate,momentum, 10, plot)
 print('Learning finished\n')
 
 parameters = list(model.parameters())
@@ -139,8 +147,9 @@ parameters = list(model.parameters())
 torch.save(model.state_dict(), parameters_file) # saving parameters
 
 #Trainer.showNetworkOutput(model, 1, images, trajectories,DMPs, N, sampling_time, indexes)
-i = 0
-Trainer.showNetworkOutput(model, i, images, trajectories,DMPs, N, sampling_time)
+if plot:
+    i = 0
+    Trainer.showNetworkOutput(model, i, images, trajectories,DMPs, N, sampling_time)
 
 
-Trainer.showNetworkOutput(model, -1, test[:5], None, None, N, sampling_time)
+    Trainer.showNetworkOutput(model, -1, test[:5], None, None, N, sampling_time)
