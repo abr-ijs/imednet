@@ -30,7 +30,7 @@ N = 25
 sampling_time = 0.1
 
 #learning params
-epochs = 1000
+epochs = 100
 learning_rate=0.001
 momentum = 0
 bunch = 32
@@ -40,11 +40,13 @@ s_data = 0
 artificial_samples = 9
 digit = 0
 
-load = False
+load = True
 
 
-cuda = True
+cuda = False
 plot = False
+
+load_from_cuda = False
 
 
 #layers size
@@ -96,13 +98,6 @@ print(' Done creating DMPs')
 #
 # print('rm ' + " ".join(['image_' +str(i) + '.json' for i in wrong]))
 
-# wrong = []
-# for i in range(50,100):
-#     DMPs[i].joint()
-#     if DMPs[i].Y.max() > 28 or DMPs[i].Y.min() < 0:
-#         wrong.append(i)
-#         print(i)
-
 #scale = np.load(scale_file)
 input_data, output_data, scale = Trainer.getDataForNetwork(images, DMPs)
 
@@ -128,7 +123,11 @@ np.save(scale_file, scale)
 #inicalizacija
 if load:
     print(' + Loaded parameters from file: ', parameters_file)
-    model.load_state_dict(torch.load(parameters_file)) # loading parameters
+    if load_from_cuda:
+        model.load_state_dict(torch.load(parameters_file, map_location=lambda storage, loc: storage)) # loading parameters
+    else:
+        model.load_state_dict(torch.load(parameters_file)) # loading parameters
+
 else:
     print(' + Initialized paramters randomly')
     for p in list(model.parameters()):
@@ -148,8 +147,7 @@ torch.save(model.state_dict(), parameters_file) # saving parameters
 
 #Trainer.showNetworkOutput(model, 1, images, trajectories,DMPs, N, sampling_time, indexes)
 if plot:
-    i = 0
-    Trainer.showNetworkOutput(model, i, images, trajectories,DMPs, N, sampling_time)
-
+    for i in range(0,5):
+        Trainer.showNetworkOutput(model, i, images, trajectories,DMPs, N, sampling_time)
 
     Trainer.showNetworkOutput(model, -1, test[:5], None, None, N, sampling_time)
