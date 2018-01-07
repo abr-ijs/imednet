@@ -234,7 +234,7 @@ class Trainer:
             transformed_images.append(image)
             transformed_trajectories.append(trajectory)
             for j in range(n):
-                theta = (np.random.rand(1)*np.pi*2)[0]
+                theta = (np.random.rand(1)*np.pi/9)[0]
                 new_trajectory = Trainer.rotateAround(trajectory, [12,12], theta)
                 new_image = Trainer.rotateImage(image, theta)
                 transformed_images.append(new_image)
