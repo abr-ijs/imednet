@@ -24,38 +24,38 @@ trajectories_folder = 'data/trajectories'
 mnist_folder = 'data/mnist'
 scale_file = 'scale.npy'
 
-parameters_file = 'net_parameters'
+parameters_file = 'net_parameters_matlab'
 
 #DMP data
 N = 25
 sampling_time = 0.1
 
 #learning params
-epochs = 0
-learning_rate=0.001
-momentum = 0
+epochs = 500
+learning_rate=0.0005
+momentum = 0.5
 bunch = 32
 
-load = True
+load = False
 
-cuda = False
-plot = True
+cuda = True
+plot = False
 
-load_from_cuda = True
+load_from_cuda = False
 
 
 #layers size
 numOfInputs = 1600
-HiddenLayer = [ 600, 350, 150, 40]
-conv = [10,5]
+HiddenLayer = [ 1500, 1300, 1000, 600,200,20,35]
+conv = None
 #HiddenLayer = [100]
 out = 2*N + 7
 #out = 2*N
 layerSizes = [numOfInputs] + HiddenLayer + [out]
 
 
-images, outputs, scale = matLoader.loadData('/storage/share/MNIST Drawing Project/Stevila/slike_780.4251')
-input_data, output_data = matLoader(images, outputs)
+images, outputs, scale = matLoader.loadData('slike_780.4251')
+input_data, output_data = matLoader.dataForNetwork(images, outputs)
 
 
 #learn
@@ -90,7 +90,7 @@ if cuda:
     input_data = input_data.cuda()
     output_data = output_data.cuda()
 
-model.learn(input_data,output_data, bunch, epochs, learning_rate,momentum, 10, plot)
+model.learn(input_data,output_data, bunch, epochs, learning_rate,momentum, 1, plot)
 print('Learning finished\n')
 
 parameters = list(model.parameters())

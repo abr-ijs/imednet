@@ -1,6 +1,7 @@
 import scipy.io as sio
 import torch
 from torch.autograd import Variable
+import numpy as np
 
 class matLoader:
 
@@ -25,9 +26,8 @@ class matLoader:
             learn = np.append(learn,w)
             outputs.append(learn)
         outputs = np.array(outputs)
-        if scale is None:
-            scale = np.array([np.abs(outputs[:,i]).max() for i in range(outputs.shape[1])])
-            scale[np.where(scale == 0)] = 1
+        scale = np.array([np.abs(outputs[:,i]).max() for i in range(outputs.shape[1])])
+        scale[np.where(scale == 0)] = 1
         outputs = outputs / scale
         return images, outputs, scale
 

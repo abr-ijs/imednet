@@ -119,4 +119,4 @@ class Network(torch.nn.Module):
         self.loss = self.loss + loss
 
     def isCuda(self):
-        return self.firstLayer.weight.is_cuda
+        return self.inputLayer.weight.is_cuda
