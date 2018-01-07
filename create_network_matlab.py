@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 from network import Network
 from trajectory_loader import trajectory_loader as loader
 from trainer import Trainer
-from matloader import matLoader
+from matLoader import matLoader
 
 print()
 ## folders containing trajectories and mnist data
