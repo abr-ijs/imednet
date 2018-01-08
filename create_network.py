@@ -34,9 +34,9 @@ epochs = 2000
 learning_rate=0.01
 momentum = 0.2
 decay = [1e-9,1e-6]
-bunch = 32
+bunch = 16
 oneDigidOnly = False
-data = 1000
+data = 100
 s_data = 0
 artificial_samples = 0
 digit = 0
@@ -150,6 +150,6 @@ torch.save(model.state_dict(), parameters_file) # saving parameters
 #Trainer.showNetworkOutput(model, 1, images, trajectories,DMPs, N, sampling_time, indexes)
 if plot:
     for i in np.random.rand(10)*(data-s_data):
-        Trainer.showNetworkOutput(model, i, images, trajectories,DMPs, N, sampling_time, cuda = cuda)
+        Trainer.showNetworkOutput(model, int(i), images, trajectories,DMPs, N, sampling_time, cuda = cuda)
 
     Trainer.showNetworkOutput(model, -1, test[:5], None, None, N, sampling_time, cuda = cuda)

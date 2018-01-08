@@ -81,6 +81,8 @@ class Network(torch.nn.Module):
             plt.figure()
             plt.xlabel('Epoch')
             plt.ylabel('Error')
+            ax = plt.axes();
+            ax.set_yscale('log')
             plt.ion()
             plt.show()
         for t in range(epochs):
