@@ -63,7 +63,7 @@ class Network(torch.nn.Module):
         output = self.outputLayer(x)
         return output
 
-    def learn(self,x, y, bunch = 10, epochs = 100, learning_rate = 1e-4,momentum=0, log_interval = 10, livePlot = False):
+    def learn(self,x, y, bunch = 10, epochs = 100, learning_rate = 1e-4,momentum=0, log_interval = 10, livePlot = False, decay = [0,0]):
         """
         teaches the network using provided data
 
@@ -74,7 +74,8 @@ class Network(torch.nn.Module):
         log_interval -> on each epoch divided by log_interval log will be printed
         """
         criterion = torch.nn.MSELoss(size_average=False) #For calculating loss (mean squared error)
-        optimizer = torch.optim.SGD(self.parameters(), lr=learning_rate, momentum=momentum) # for updating weights
+        #optimizer = torch.optim.SGD(self.parameters(), lr=learning_rate, mometum=momentum) # for updating weights
+        optimizer = torch.optim.Adagrad(self.parameters(), lr=learning_rate, lr_decay = decay[0], weight_decay = decay[1]) #, momentum=momentum) # for updating weights
         oldLoss = 0
         if livePlot:
             plt.figure()

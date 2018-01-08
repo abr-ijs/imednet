@@ -30,12 +30,13 @@ N = 25
 sampling_time = 0.1
 
 #learning params
-epochs = 100
-learning_rate=0.001
-momentum = 0
-bunch = 32
+epochs = 5000
+learning_rate=0.1
+momentum = 0.2
+decay = [0.0001,0.0001]
+bunch = 16
 oneDigidOnly = False
-data = 5000
+data = 10000
 s_data = 0
 artificial_samples = 9
 digit = 0
@@ -43,7 +44,7 @@ digit = 0
 load = True
 
 
-cuda = False
+cuda = True
 plot = False
 
 load_from_cuda = False
@@ -89,14 +90,14 @@ print(' Done creating DMPs')
 
 
 #Code to find wrong data
-# wrong = []
-# for i in range(160,500):
-#     DMPs[i].joint()
-#     if DMPs[i].Y.max() > 28 or DMPs[i].Y.min() < 0:
-#         wrong.append(indexes[i])
-#         print(indexes[i])
+#wrong = []
+#for i in range(500,6100):
+#    DMPs[i].joint()
+#    if DMPs[i].Y.max() > 28 or DMPs[i].Y.min() < 0:
+#        wrong.append(indexes[i])
+#        print(indexes[i])
 #
-# print('rm ' + " ".join(['image_' +str(i) + '.json' for i in wrong]))
+#print('rm ' + " ".join(['image_' +str(i) + '.json' for i in wrong]))
 
 #scale = np.load(scale_file)
 input_data, output_data, scale = Trainer.getDataForNetwork(images, DMPs)
@@ -131,14 +132,14 @@ if load:
 else:
     print(' + Initialized paramters randomly')
     for p in list(model.parameters()):
-        torch.nn.init.normal(p,0,1e+2)
+        torch.nn.init.normal(p,0,0.1)
 
 if cuda:
     model.cuda()
     input_data = input_data.cuda()
     output_data = output_data.cuda()
 
-model.learn(input_data,output_data, bunch, epochs, learning_rate,momentum, 10, plot)
+model.learn(input_data,output_data, bunch, epochs, learning_rate,momentum, 10, plot, decay)
 print('Learning finished\n')
 
 parameters = list(model.parameters())
