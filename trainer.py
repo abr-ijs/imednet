@@ -117,6 +117,7 @@ class Trainer:
         outputs = np.array(outputs)
         if scale is None:
             scale = np.array([np.abs(outputs[:,i]).max() for i in range(outputs.shape[1])])
+            scale[7:] = scale[7:].max()
         outputs = outputs / scale
         return outputs, scale
 
@@ -146,14 +147,18 @@ class Trainer:
         return input_data, output_data, scale
 
 
-    def getDMPFromImage(network,image, N, sampling_time):
+    def getDMPFromImage(network,image, N, sampling_time, cuda = False):
+        if cuda:
+          image = image.cuda()
         output = network(image)
         dmps = []
         for data in output:
-            dmps.append(Trainer.createDMP(data, network.scale,sampling_time,N))
+            dmps.append(Trainer.createDMP(data, network.scale,sampling_time,N, cuda))
         return dmps
 
-    def createDMP(output, scale, sampling_time,N):
+    def createDMP(output, scale, sampling_time,N, cuda = False):
+        if cuda:
+          output = output.cpu()
         output = output.double().data.numpy()*scale
         tau = output[0]
         y0 = output[1:3]
@@ -165,12 +170,12 @@ class Trainer:
         dmp.values(N,sampling_time,tau,y0,dy0,goal,w)
         return dmp
 
-    def showNetworkOutput(network, i, images, trajectories, DMPs, N, sampling_time, avaliable = None):
+    def showNetworkOutput(network, i, images, trajectories, DMPs, N, sampling_time, avaliable = None, cuda = False):
         input_data, output_data, scale = Trainer.getDataForNetwork(images, DMPs, avaliable)
         scale = network.scale
         if i != -1:
             input_data = input_data[i]
-        dmps = Trainer.getDMPFromImage(network, input_data,N,sampling_time)
+        dmps = Trainer.getDMPFromImage(network, input_data,N,sampling_time, cuda)
         for dmp in dmps:
             dmp.joint()
 

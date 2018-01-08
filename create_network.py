@@ -30,22 +30,22 @@ N = 25
 sampling_time = 0.1
 
 #learning params
-epochs = 5000
-learning_rate=0.1
+epochs = 2000
+learning_rate=0.01
 momentum = 0.2
-decay = [0.0001,0.0001]
-bunch = 16
+decay = [1e-9,1e-6]
+bunch = 32
 oneDigidOnly = False
-data = 10000
+data = 1000
 s_data = 0
-artificial_samples = 9
+artificial_samples = 0
 digit = 0
 
-load = True
+load = False
 
 
 cuda = True
-plot = False
+plot = True
 
 load_from_cuda = False
 
@@ -115,6 +115,7 @@ print("   - Samples of data", len(input_data))
 print("   - Epochs: ", epochs)
 print("   - Learning rate: ", learning_rate)
 print("   - Momentum: ", momentum)
+print("   - Decay: ", decay)
 print("   - Bunch size: ", bunch)
 
 
@@ -148,7 +149,7 @@ torch.save(model.state_dict(), parameters_file) # saving parameters
 
 #Trainer.showNetworkOutput(model, 1, images, trajectories,DMPs, N, sampling_time, indexes)
 if plot:
-    for i in range(0,5):
-        Trainer.showNetworkOutput(model, i, images, trajectories,DMPs, N, sampling_time)
+    for i in np.random.rand(10)*(data-s_data):
+        Trainer.showNetworkOutput(model, i, images, trajectories,DMPs, N, sampling_time, cuda = cuda)
 
-    Trainer.showNetworkOutput(model, -1, test[:5], None, None, N, sampling_time)
+    Trainer.showNetworkOutput(model, -1, test[:5], None, None, N, sampling_time, cuda = cuda)
