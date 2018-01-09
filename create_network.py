@@ -30,22 +30,21 @@ N = 25
 sampling_time = 0.1
 
 #learning params
-epochs = 2000
+epochs = 10000
 learning_rate=0.01
 momentum = 0.2
 decay = [1e-9,1e-6]
-bunch = 16
+bunch = 1
 oneDigidOnly = False
-data = 100
+data = 1000
 s_data = 0
 artificial_samples = 0
 digit = 0
 
 load = False
 
-
 cuda = True
-plot = True
+plot = False
 
 load_from_cuda = False
 
@@ -53,7 +52,7 @@ load_from_cuda = False
 #layers size
 numOfInputs = 784
 HiddenLayer = [ 600, 350, 150, 40]
-conv = [10,5]
+conv = None
 #HiddenLayer = [100]
 out = 2*N + 7
 #out = 2*N
