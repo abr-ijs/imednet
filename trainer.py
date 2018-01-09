@@ -152,8 +152,11 @@ class Trainer:
           image = image.cuda()
         output = network(image)
         dmps = []
-        for data in output:
-            dmps.append(Trainer.createDMP(data, network.scale,sampling_time,N, cuda))
+        if len(image.size()) == 1:
+            dmps.append(Trainer.createDMP(output, network.scale,sampling_time,N, cuda))
+        else:
+            for data in output:
+                dmps.append(Trainer.createDMP(data, network.scale,sampling_time,N, cuda))
         return dmps
 
     def createDMP(output, scale, sampling_time,N, cuda = False):
