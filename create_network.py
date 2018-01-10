@@ -36,8 +36,8 @@ momentum = 0.2
 decay = [1e-9,1e-6]
 bunch = 1
 oneDigidOnly = False
-data = 250
-s_data = 0
+data = 200
+s_data = 100
 artificial_samples = 0
 digit = 0
 
