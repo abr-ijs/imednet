@@ -36,8 +36,10 @@ momentum = 0.2
 decay = [1e-9,1e-6]
 bunch = 1
 oneDigidOnly = False
-data = 100
-s_data = 0
+#Good data: 0-100, 5000-5100
+#Bad data: 100-200
+data = 300
+s_data = 200
 artificial_samples = 0
 digit = 0
 
@@ -69,9 +71,8 @@ if oneDigidOnly:
     indexes = np.where(labels==digit)
     indexes = np.intersect1d(indexes,avaliable)
 else:
-    avaliable1 = avaliable[s_data:data]
-    avaliable2 = avaliable[5000:5100]
-    indexes = np.append(avaliable1, avaliable2)
+    avaliable = avaliable[s_data:data]
+    indexes = avaliable
 
 print('Loading ',  len(indexes), ' trajectories')
 trajectories = Trainer.loadTrajectories(trajectories_folder, indexes)
