@@ -36,19 +36,29 @@ momentum = 0.2
 decay = [1e-9,1e-6]
 bunch = 1
 oneDigidOnly = False
-#Good data: 0-100, 5000-5100
+#Good data: 0-100, 200-300, 5000-5100
 #Bad data: 100-200
-data = 300
-s_data = 200
+use_data = np.arange(0,100)
+use_data = np.append(use_data,np.arange(200,300))
+use_data = np.append(use_data,np.arange(5000,5100))
+data = 400
+s_data = 300
 artificial_samples = 0
 digit = 0
 
-load = False
+use_good_data = False
+plot_only =False
 
-cuda = True
-plot = False
-
-load_from_cuda = False
+if plot_only:
+    load = True
+    cuda = False
+    plot = True
+    load_from_cuda = True
+else:
+    load = False
+    cuda = True
+    plot = False
+    load_from_cuda = False
 
 
 #layers size
@@ -71,7 +81,10 @@ if oneDigidOnly:
     indexes = np.where(labels==digit)
     indexes = np.intersect1d(indexes,avaliable)
 else:
-    avaliable = avaliable[s_data:data]
+    if use_good_data:
+        avaliable = avaliable[use_data]
+    else:
+        avaliable = avaliable[s_data:data]
     indexes = avaliable
 
 print('Loading ',  len(indexes), ' trajectories')
