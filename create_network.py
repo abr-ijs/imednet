@@ -30,14 +30,14 @@ N = 25
 sampling_time = 0.1
 
 #learning params
-epochs = 10000
+epochs = 20000
 learning_rate=0.01
 momentum = 0.2
 decay = [1e-9,1e-6]
 bunch = 1
 oneDigidOnly = False
-data = 5100
-s_data = 5000
+data = 100
+s_data = 0
 artificial_samples = 0
 digit = 0
 
@@ -69,8 +69,9 @@ if oneDigidOnly:
     indexes = np.where(labels==digit)
     indexes = np.intersect1d(indexes,avaliable)
 else:
-    avaliable = avaliable[s_data:data]
-    indexes = avaliable
+    avaliable1 = avaliable[s_data:data]
+    avaliable2 = avaliable[5000:5100]
+    indexes = np.append(avaliable1, avaliable2)
 
 print('Loading ',  len(indexes), ' trajectories')
 trajectories = Trainer.loadTrajectories(trajectories_folder, indexes)
