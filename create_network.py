@@ -36,18 +36,18 @@ momentum = 0.2
 decay = [1e-9,1e-6]
 bunch = 1
 oneDigidOnly = False
-#Good data: 0-100, 200-600, 5000-5100
+#Good data: 0-100, 200-800, 5000-5100
 #Bad data: 100-200
 use_data = np.arange(0,100)
-use_data = np.append(use_data,np.arange(200,600))
+use_data = np.append(use_data,np.arange(200,800))
 use_data = np.append(use_data,np.arange(5000,5100))
-data = 800
-s_data = 600
+data = 1000
+s_data = 800
 artificial_samples = 0
 digit = 0
 
 use_good_data = False
-plot_only =False
+plot_only = False
 
 if plot_only:
     load = True
