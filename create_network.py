@@ -36,17 +36,17 @@ momentum = 0.2
 decay = [1e-9,1e-6]
 bunch = 1
 oneDigidOnly = False
-#Good data: 0-100, 200-500, 5000-5100
+#Good data: 0-100, 200-600, 5000-5100
 #Bad data: 100-200
 use_data = np.arange(0,100)
-use_data = np.append(use_data,np.arange(200,500))
+use_data = np.append(use_data,np.arange(200,600))
 use_data = np.append(use_data,np.arange(5000,5100))
-data = 600
-s_data = 500
+data = 700
+s_data = 600
 artificial_samples = 0
 digit = 0
 
-use_good_data = False
+use_good_data = True
 plot_only =False
 
 if plot_only:
@@ -76,7 +76,7 @@ print('Loading Mnist images')
 images, labels = Trainer.loadMnistData(mnist_folder)
 print(' Done loading Mnist images')
 #get trajectories
-avaliable = loader.getAvaliableTrajectoriesNumbers(trajectories_folder)
+avaliable = np.array(loader.getAvaliableTrajectoriesNumbers(trajectories_folder))
 
 if oneDigidOnly:
     indexes = np.where(labels==digit)
