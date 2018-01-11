@@ -41,12 +41,12 @@ oneDigidOnly = False
 use_data = np.arange(0,100)
 use_data = np.append(use_data,np.arange(200,600))
 use_data = np.append(use_data,np.arange(5000,5100))
-data = 700
+data = 800
 s_data = 600
 artificial_samples = 0
 digit = 0
 
-use_good_data = True
+use_good_data = False
 plot_only =False
 
 if plot_only:
