@@ -66,8 +66,7 @@ class Trainer:
         trajectories = []
         for i in avaliable:
             t = loader.loadNTrajectory(trajectories_folder,i)
-            if t is not None:
-                trajectories.append(t)
+            trajectories.append(t)
         trajectories = np.array(trajectories)
         return trajectories
 

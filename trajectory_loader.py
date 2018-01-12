@@ -46,10 +46,9 @@ class trajectory_loader:
                     raise Exception('Error in file ' + file)
                 points.append(point)
             points = np.array(points)
-            w = np.where(points[:,2] == 0)[0][-1]
-            points = points[w:]
-            if points.shape[0] > 4:
-                return points
+            if np.where(points[:,2] == 0)[0].size > 1:
+                print('File ' + file + 'is corrupted')
+            return points
         except:
             print('Could not load file ' + file)
 
