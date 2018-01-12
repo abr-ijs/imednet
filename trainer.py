@@ -65,7 +65,9 @@ class Trainer:
         """
         trajectories = []
         for i in avaliable:
-            trajectories.append(loader.loadNTrajectory(trajectories_folder,i))
+            t = loader.loadNTrajectory(trajectories_folder,i)
+            if t is not None:
+                trajectories.append(t)
         trajectories = np.array(trajectories)
         return trajectories
 
@@ -94,7 +96,10 @@ class Trainer:
             path = np.array([i for i in zip(x,y)])[:-2]
             velocity = np.array([i for i in zip(dx,dy)])[:-1]
             acceleration = np.array([i for i in zip(ddx,ddy)])
-            dmp.track(time, path, velocity, acceleration)
+            try:
+                dmp.track(time, path, velocity, acceleration)
+            except:
+                print("Problem with ", i, " -th trajectory")
             DMPs.append(dmp)
             i += 1
         DMPs = np.array(DMPs)

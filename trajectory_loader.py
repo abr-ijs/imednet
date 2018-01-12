@@ -48,7 +48,8 @@ class trajectory_loader:
             points = np.array(points)
             w = np.where(points[:,2] == 0)[0][-1]
             points = points[w:]
-            return points
+            if points.shape[0] > 4:
+                return points
         except:
             print('Could not load file ' + file)
 
