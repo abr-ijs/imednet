@@ -38,16 +38,15 @@ bunch = 1
 oneDigidOnly = False
 #Good data: 0-100, 200-4500, 5000-5100
 #Bad data: 100-200
-#use_data = np.arange(0,100)
-#use_data = np.append(use_data,np.arange(200,4500))
-use_data = np.arange(1000,1500)
-#use_data = np.append(use_data,np.arange(5000,5100))
-data = 5200
-s_data = 5100
+use_data = np.arange(0,100)
+use_data = np.append(use_data,np.arange(200,4500))
+use_data = np.append(use_data,np.arange(5000,5100))
+data = 4500
+s_data = 2500
 artificial_samples = 0
 digit = 0
 
-use_good_data = True
+use_good_data = False
 plot_only = False
 
 if plot_only:
