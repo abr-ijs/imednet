@@ -46,7 +46,7 @@ s_data = 2500
 artificial_samples = 0
 digit = 0
 
-use_good_data = False
+use_good_data = True
 plot_only = False
 
 if plot_only:
