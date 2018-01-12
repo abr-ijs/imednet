@@ -45,8 +45,10 @@ class trajectory_loader:
                 if len(point) != 3:
                     raise Exception('Error in file ' + file)
                 points.append(point)
-
-            return np.array(points)
+            points = np.array(points)
+            w = np.where(points[:,0] == 0)[0][-1]
+            points = points[w:]
+            return points
         except:
             print('Could not load file ' + file)
 
