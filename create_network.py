@@ -41,8 +41,8 @@ oneDigidOnly = False
 use_data = np.arange(0,100)
 use_data = np.append(use_data,np.arange(200,4500))
 use_data = np.append(use_data,np.arange(5000,5100))
-data = 5000
-s_data = 4500
+data = 5607
+s_data = 5100
 artificial_samples = 0
 digit = 0
 

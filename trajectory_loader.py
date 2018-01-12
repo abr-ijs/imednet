@@ -46,7 +46,7 @@ class trajectory_loader:
                     raise Exception('Error in file ' + file)
                 points.append(point)
             points = np.array(points)
-            w = np.where(points[:,0] == 0)[0][-1]
+            w = np.where(points[:,2] == 0)[0][-1]
             points = points[w:]
             return points
         except:
