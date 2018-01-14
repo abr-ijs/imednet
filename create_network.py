@@ -43,7 +43,7 @@ use_data = np.append(use_data,np.arange(200,4500))
 use_data = np.append(use_data,np.arange(5000,5100))
 data = 4500
 s_data = 2500
-artificial_samples = 0
+artificial_samples = 5
 digit = 0
 
 use_good_data = True
