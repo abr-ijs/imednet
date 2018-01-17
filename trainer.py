@@ -166,6 +166,7 @@ class Trainer:
     def createDMP(output, scale, sampling_time,N, cuda = False):
         if cuda:
           output = output.cpu()
+          output = output[0]
         output = output.double().data.numpy()*scale
         tau = output[0]
         y0 = output[1:3]
