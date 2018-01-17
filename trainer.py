@@ -201,8 +201,10 @@ class Trainer:
         else:
             if avaliable is not None:
                 Trainer.show_dmp(images[avaliable[i]], trajectories[i], dmps[0])
-            else:
+            elif trajectories is not None:
                 Trainer.show_dmp(images[i], trajectories[i], dmps[0])
+            else:
+                Trainer.show_dmp(images[i], None, dmps[0])
 
     def printDMPdata(dmp):
         print('Tau: ', dmp.tau)
@@ -254,3 +256,18 @@ class Trainer:
         transformed_trajectories = np.array(transformed_trajectories)
         transformed_images = np.array(transformed_images)
         return transformed_trajectories, transformed_images
+
+
+    def testOnImage(file, model):
+        image = plt.imread(file)
+        transformed = np.zeros([28,28])
+        for i in range(28):
+            for j in range(28):
+                transformed[i,j] = image[i,j].sum()/3
+        transformed /= transformed.max()
+        plt.figure()
+        plt.imshow(image)
+        plt.figure()
+        plt.imshow(transformed,cmap='gray')
+        plt.show()
+        Trainer.showNetworkOutput(model, 0, np.array([transformed.reshape(784)*255]), None, None, N, sampling_time, cuda = cuda)
