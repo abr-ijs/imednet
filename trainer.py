@@ -272,3 +272,6 @@ class Trainer:
         plt.imshow(transformed,cmap='gray')
         plt.show()
         Trainer.showNetworkOutput(model, 0, np.array([transformed.reshape(784)*255]), None, None, N, sampling_time, cuda = cuda)
+    def databaseSplit(self,):
+
+        pass

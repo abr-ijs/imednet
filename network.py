@@ -4,17 +4,18 @@ Network
 
 Created on Dec 14 2017
 
-@author: Marcel Salmic
+@author: Marcel Salmic, Rok Pahic
 
-VERSION 1.0
+VERSION 1.1
 """
 import torch
 from torch.autograd import Variable
 import matplotlib.pyplot as plt
 import numpy as np
+from tensorboardX import SummaryWriter
 
 class Network(torch.nn.Module):
-    def __init__(self, layerSizes = [784,200,50], conv = None):
+    def __init__(self, layerSizes = [784,200,50], conv = None , scale = None):
         """
         Creates a custom Network
 
@@ -41,7 +42,7 @@ class Network(torch.nn.Module):
             self.middleLayers.append(layer)
             self.add_module("middleLayer_" + str(i), layer)
         self.outputLayer = torch.nn.Linear(layerSizes[-2],layerSizes[-1])
-        self.scale = 1
+        self.scale = scale
         self.loss = 0
 
     def forward(self, x):
@@ -73,10 +74,14 @@ class Network(torch.nn.Module):
         learning_rate -> how much the weight will be changed each epoch
         log_interval -> on each epoch divided by log_interval log will be printed
         """
+        writer = SummaryWriter('log2')
+
         criterion = torch.nn.MSELoss(size_average=False) #For calculating loss (mean squared error)
         #optimizer = torch.optim.SGD(self.parameters(), lr=learning_rate, mometum=momentum) # for updating weights
         optimizer = torch.optim.Adagrad(self.parameters(), lr=learning_rate, lr_decay = decay[0], weight_decay = decay[1]) #, momentum=momentum) # for updating weights
         oldLoss = 0
+
+
         if livePlot:
             plt.figure()
             plt.xlabel('Epoch')
@@ -111,6 +116,9 @@ class Network(torch.nn.Module):
                     print("Loss hasn't changed in last ", log_interval ," iterations .Quiting...")
                     return
                 oldLoss = self.loss
+            writer.add_scalar('data/scalar1', self.loss, t)
+
+        writer.close()
 
 
     def learn_one_step(self,x,y,learning_rate,criterion,optimizer):

@@ -17,6 +17,8 @@ from network import Network
 from trajectory_loader import trajectory_loader as loader
 from trainer import Trainer
 
+
+
 print()
 ## folders containing trajectories and mnist data
 trajectories_folder = 'data/trajectories'
@@ -48,6 +50,7 @@ digit = 0
 
 use_good_data = True
 plot_only = False
+
 
 if plot_only:
     load = True
@@ -94,8 +97,8 @@ print(' Done loading trajectories')
 test = images[-100:]
 print('Multiplying data')
 images = images[indexes]
-trajectories, images = Trainer.randomlyRotateData(trajectories, images, artificial_samples)
-print('Done multiplying data. Now having ',  len(trajectories), ' data')
+#trajectories, images = Trainer.randomlyRotateData(trajectories, images, artificial_samples)
+#print('Done multiplying data. Now having ',  len(trajectories), ' data')
 
 # get DMPs
 print('Creating DMPs')
