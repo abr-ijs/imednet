@@ -18,13 +18,13 @@ from scipy.interpolate import interpn
 from trajectory_loader import trajectory_loader as loader
 from DMP_class import DMP
 
-
+import random
 class Trainer:
     """
     Helper class containing methods for preparing data for learning
     """
 
-    def show_dmp(image,trajectory, dmp, save = -1):
+    def show_dmp(self,image,trajectory, dmp, save = -1):
         """
         Plots and shows mnist image, trajectory and dmp to one picture
 
@@ -32,22 +32,31 @@ class Trainer:
         trajectory -> a trajectory containing all the points in format point = [x,y]
         dmp -> DMP created from the trajectory
         """
+
         fig = plt.figure()
         if image is not None:
-            plt.imshow((np.reshape(image, (28, 28))).astype(np.uint8), cmap='gray')
+            plt.imshow((np.reshape(image, (40, 40))),cmap='gray')
+
         if dmp is not None:
             dmp.joint()
             plt.plot(dmp.Y[:,0], dmp.Y[:,1],'--r', label='dmp')
         if trajectory is not None:
             plt.plot(trajectory[:,0], trajectory[:,1],'-g', label='trajectory')
         plt.legend()
-        plt.xlim([0,28])
-        plt.ylim([28,0])
-        if save != -1:
-            plt.savefig("images/" + str(save) + ".pdf")
-            plt.close(fig)
-        else:
-            plt.show()
+        plt.xlim([0,40])
+        plt.ylim([40,0])
+        plt.show()
+        fig.canvas.draw()
+        matrix = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
+        #if save != -1:
+        #    plt.savefig("images/" + str(save) + ".pdf")
+        #    plt.close(fig)
+        #else:
+        #    plt.show()
+
+        return matrix.reshape(fig.canvas.get_width_height()[::-1]+(3,))
+
+
 
     def loadMnistData(mnist_folder):
         """
@@ -113,10 +122,10 @@ class Trainer:
         """
         outputs = []
         for dmp in DMPs:
-            learn = np.append(dmp.tau[0],dmp.y0)
-            learn = np.append(learn,dmp.dy0)
-            learn = np.append(learn,dmp.goal)
-            learn = np.append(learn,dmp.w)
+            learn = np.append(dmp.tau[0], dmp.y0)
+            learn = np.append(learn, dmp.dy0)
+            learn = np.append(learn, dmp.goal)
+            learn = np.append(learn, dmp.w)
             outputs.append(learn)
         outputs = np.array(outputs)
         if scale is None:
@@ -163,17 +172,22 @@ class Trainer:
                 dmps.append(Trainer.createDMP(data, network.scale,sampling_time,N, cuda))
         return dmps
 
-    def createDMP(output, scale, sampling_time,N, cuda = False):
+    def createDMP(self,output, scale, sampling_time,N, cuda = False):
         if cuda:
           output = output.cpu()
           output = output[0]
         output = output.double().data.numpy()*scale
-        tau = output[0]
-        y0 = output[1:3]
+        tau = 3 #output[0]    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        '''y0 = output[1:3]
         dy0 = output[3:5]
         goal = output[5:7]
         weights = output[7:]
-        w = weights.reshape(N,2)
+        w = weights.reshape(N,2)'''
+        y0 = output[0:2]
+        dy0 = 0*output[0:2]
+        goal = output[2:4]
+        weights = output[4:]
+        w = weights.reshape(N, 2)
         dmp = DMP(N,sampling_time)
         dmp.values(N,sampling_time,tau,y0,dy0,goal,w)
         return dmp
@@ -207,7 +221,7 @@ class Trainer:
             else:
                 Trainer.show_dmp(images[i], None, dmps[0])
 
-    def printDMPdata(dmp):
+    def printDMPdata(self,dmp):
         print('Tau: ', dmp.tau)
         print('y0: ', dmp.y0)
         print('dy0: ', dmp.dy0)
@@ -272,6 +286,51 @@ class Trainer:
         plt.imshow(transformed,cmap='gray')
         plt.show()
         Trainer.showNetworkOutput(model, 0, np.array([transformed.reshape(784)*255]), None, None, N, sampling_time, cuda = cuda)
-    def databaseSplit(self,):
 
-        pass
+    def databaseSplit(self, images, outputs, train_set = 0.7, validation_set = 0.15, test_set = 0.15):
+
+        r=len(images)
+
+        trl=round(r*train_set)
+        tel=round(r*test_set)
+        val=r-trl-tel
+
+        indeks = np.append(np.zeros(trl), np.ones(tel))
+        indeks = np.append(indeks, 2*np.ones(val))
+
+        random.shuffle(indeks)
+        x_t=[]
+        y_t =[]
+        x_v= []
+        y_v = []
+        x_te= []
+        y_te= []
+
+        for i in range(0, len(indeks)):
+
+            if indeks[i] == 0:
+                x_t.append(images[i])
+                y_t.append(outputs[i])
+
+            if indeks[i] == 2:
+                x_v.append(images[i])
+                y_v.append(outputs[i])
+            if indeks[i] == 1:
+                x_te.append(images[i])
+                y_te.append(outputs[i])
+
+        x_train = np.array(x_t)
+        y_train = np.array(y_t)
+        x_validate = np.array(x_v)
+        y_validate = np.array(y_v)
+        x_test = np.array(x_te)
+        y_test = np.array(y_te)
+
+        input_data_train = Variable(torch.from_numpy(x_train)).float()
+        output_data_train = Variable(torch.from_numpy(y_train), requires_grad=False).float()
+        input_data_test = Variable(torch.from_numpy(x_test)).float()
+        output_data_test = Variable(torch.from_numpy(y_test), requires_grad=False).float()
+        input_data_validate = Variable(torch.from_numpy(x_validate)).float()
+        output_data_validate = Variable(torch.from_numpy(y_validate), requires_grad=False).float()
+
+        return input_data_train, output_data_train,input_data_test, output_data_test,  input_data_validate, output_data_validate

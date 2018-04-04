@@ -12,17 +12,17 @@ class matLoader:
         for image in data['im'][0,0][0]:
             images.append(image.astype('float').reshape(40*40))
         images = np.array(images)
-        DMP_data = data['DMP_object'][0,0][0]
+        DMP_data = data['DMP_object'][0, 0][0]
         outputs = []
         for dmp in DMP_data:
-            tau = dmp['tau'][0,0][0,0]
+            #tau = dmp['tau'][0, 0][0, 0]
             w = dmp['w'][0,0]
             goal = dmp['goal'][0,0][0]
             y0 = dmp['y0'][0,0][0]
-            dy0 = np.array([0,0])
-            learn = np.append(tau,y0)
-            learn = np.append(learn,dy0)
-            learn = np.append(learn,goal)
+            #dy0 = np.array([0,0])
+            #learn = np.append(tau,y0)
+            #learn = np.append(learn,dy0)
+            learn = np.append(y0,goal)#korekcija
             learn = np.append(learn,w)
             outputs.append(learn)
         outputs = np.array(outputs)

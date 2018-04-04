@@ -35,10 +35,9 @@ load_from_cuda = False
 
 #Prepare directory and description file...................................
 directory_path = '/home/rpahic/Documents/Neural_networks/'
-directory_name = 'NN ' +  str(datetime.now())
+directory_name = 'NN ' + str(datetime.now())
 parameters_file = directory_path + directory_name + '/net_parameters'
 makedirs(directory_path+directory_name)
-
 
 file = open(directory_path+directory_name+'/Network_description.txt','w')
 
@@ -49,7 +48,6 @@ file.write('Network created: ' + str(datetime.now()))
 
 images, outputs, scale = matLoader.loadData(dateset_name)
 
-input_data, output_data = matLoader.dataForNetwork(images, outputs)
 
 #Create network and save model.................................................
 
@@ -60,18 +58,20 @@ sampling_time = 0.1
 
 #layers size
 numOfInputs = 1600
-HiddenLayer = [ 1500, 1300, 1000, 600,200,20,35]
+HiddenLayer = [1500, 1300, 1000, 600, 200, 20, 35]
 conv = None
+
 #HiddenLayer = [100]
-out = 2*N + 7
+out = 2*N + 4
 #out = 2*N
+
 layerSizes = [numOfInputs] + HiddenLayer + [out]
 
 
 file.write('\nNeurons: '+ str(layerSizes))
 
 
-model = Network(layerSizes, conv,scale)
+model = Network(layerSizes, conv, scale)
 
 
 #inicalizacija
@@ -89,8 +89,7 @@ else:
 
 if cuda:
     model.cuda()
-    input_data = input_data.cuda()
-    output_data = output_data.cuda()
+
 
 
 torch.save(model, (directory_path+directory_name+'/model.pt'))
@@ -98,17 +97,32 @@ torch.save(model, (directory_path+directory_name+'/model.pt'))
 #Set learning.....................................................................
 
 #learning params
-epochs = 500
+epochs = -1
 learning_rate = 0.0005
 momentum = 0.5
 bunch = 32
+training_ratio = 0.7
+validation_ratio = 0.15
+test_ratio = 1- training_ratio-validation_ratio
 
-learn_info = "\n Learning with parameters:\n" +"   - Samples of data: "+ str(len(input_data)) + "\n   - Epochs: "+str(epochs)+"\n   - Learning rate: "+ str(learning_rate) + "\n   - Momentum: "+ str(momentum)+"\n   - Bunch size: "+ str(bunch)
+
+
+
+learn_info = "\n Learning with parameters:\n" + "   - Samples of data: "+ str(len(images)) + \
+             "\n   - Epochs: "+str(epochs)+"\n   - Learning rate: "+ str(learning_rate) + \
+             "\n   - Momentum: "+ str(momentum)+"\n   - Bunch size: "+ str(bunch) \
+             +"\n   - training ratio: "+ str(training_ratio) +"\n   - validation ratio: "+ str(validation_ratio) +"\n   - test ratio: "+ str(test_ratio)
+
 #learn
 file.write(learn_info)
 print('Starting learning')
 print(learn_info)
 
+
+model.learn(images, outputs, directory_path + directory_name, bunch, epochs, learning_rate, momentum, 1, plot)
+
+
+print('Learning finished\n')
 
 parameters = list(model.parameters())
 
@@ -120,35 +134,9 @@ file.close()
 
 
 '''
-print()
-## folders containing trajectories and mnist data
-trajectories_folder = 'data/trajectories'
-mnist_folder = 'data/mnist'
-scale_file = 'scale.npy'
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#Create network-model, safe
-
-
-
-
-model.learn(input_data,output_data, bunch, epochs, learning_rate,momentum, 1, plot)
-print('Learning finished\n')
 
 
 

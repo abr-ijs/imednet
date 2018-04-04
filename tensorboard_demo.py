@@ -9,7 +9,7 @@ from torchvision import datasets
 import tensorboardX
 tensorboardX.SummaryWriter.
 resnet18 = models.resnet18(False)
-writer = SummaryWriter('log1')
+writer = tensorboardX.SummaryWriter('log1')
 sample_rate = 44100
 freqs = [262, 294, 330, 349, 392, 440, 440, 440, 440, 440, 440]
 
