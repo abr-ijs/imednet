@@ -13,7 +13,7 @@ from torch.autograd import Variable
 import numpy as np
 import matplotlib.pyplot as plt
 
-from network import Network
+from network import Network, training_parameters
 from trajectory_loader import trajectory_loader as loader
 from trainer import Trainer
 from matLoader import matLoader
@@ -87,8 +87,8 @@ else:
     for p in list(model.parameters()):
         torch.nn.init.normal(p,0,1e+2)
 
-if cuda:
-    model.cuda()
+
+
 
 
 
@@ -97,32 +97,23 @@ torch.save(model, (directory_path+directory_name+'/model.pt'))
 #Set learning.....................................................................
 
 #learning params
-epochs = -1
+
+train_param = training_parameters()
+train_param.epochs = -1
 learning_rate = 0.0005
 momentum = 0.5
-bunch = 32
-training_ratio = 0.7
-validation_ratio = 0.15
-test_ratio = 1- training_ratio-validation_ratio
+train_param.bunch = 128
+train_param.training_ratio = 0.7
+train_param.validation_ratio = 0.15
+train_param.test_ratio = 0.15
+train_param.val_fail = 30
+
+
+trener = Trainer()
+trener.learn(model, images, outputs, directory_path + directory_name, train_param, file, learning_rate, momentum)
 
 
 
-
-learn_info = "\n Learning with parameters:\n" + "   - Samples of data: "+ str(len(images)) + \
-             "\n   - Epochs: "+str(epochs)+"\n   - Learning rate: "+ str(learning_rate) + \
-             "\n   - Momentum: "+ str(momentum)+"\n   - Bunch size: "+ str(bunch) \
-             +"\n   - training ratio: "+ str(training_ratio) +"\n   - validation ratio: "+ str(validation_ratio) +"\n   - test ratio: "+ str(test_ratio)
-
-#learn
-file.write(learn_info)
-print('Starting learning')
-print(learn_info)
-
-
-model.learn(images, outputs, directory_path + directory_name, bunch, epochs, learning_rate, momentum, 1, plot)
-
-
-print('Learning finished\n')
 
 parameters = list(model.parameters())
 

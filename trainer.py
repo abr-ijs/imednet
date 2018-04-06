@@ -10,20 +10,33 @@ VERSION 1.0
 """
 from mnist import MNIST# pip3 install python-mnist
 import torch
-from torch.autograd import Variable
+
 import numpy as np
-import matplotlib.pyplot as plt
+
 from scipy.interpolate import interpn
 
 from trajectory_loader import trajectory_loader as loader
 from DMP_class import DMP
+from tensorboardX import SummaryWriter
+import subprocess
+import webbrowser
+import sys
+import time
 
+import tkinter as tk
+from datetime import datetime
+import math
 import random
+from torch.autograd import Variable
+import matplotlib.pyplot as plt
+
+
+
 class Trainer:
     """
     Helper class containing methods for preparing data for learning
     """
-
+    train=False
     def show_dmp(self,image,trajectory, dmp, save = -1):
         """
         Plots and shows mnist image, trajectory and dmp to one picture
@@ -334,3 +347,201 @@ class Trainer:
         output_data_validate = Variable(torch.from_numpy(y_validate), requires_grad=False).float()
 
         return input_data_train, output_data_train,input_data_test, output_data_test,  input_data_validate, output_data_validate
+
+    def learn(self, model, images, outputs, path, train_param, file, learning_rate = 1e-4, momentum = 0, decay = [0,0]):
+        """
+        teaches the network using provided data
+
+        x -> input for the Network
+        y -> desired output of the network for given x
+        epochs -> how many times to repeat learning_rate
+        learning_rate -> how much the weight will be changed each epoch
+        log_interval -> on each epoch divided by log_interval log will be printed
+        """
+        root = tk.Tk()
+
+
+        button = tk.Button(root,
+                           text="QUIT",
+                           fg="red",
+                           command = self.cancel_training)
+
+        button.pack(side=tk.LEFT)
+
+
+
+        #prepare parameters
+        starting_time = datetime.now()
+        train_param.data_samples = len(images)
+        val_count = 0
+        old_time_d = 0
+        oldLoss = 0
+
+
+        file.write(train_param.write_out())
+        print('Starting learning')
+        print(train_param.write_out())
+
+        # learn
+
+        writer = SummaryWriter(path+'/log')
+
+
+
+        command = ["tensorboard", "--logdir=" + path+"/log"]
+        proces = subprocess.Popen(command)
+        print(proces.pid)
+        print('init')
+
+
+
+        # Divide data
+        print("Dividing data")
+        input_data_train, output_data_train, input_data_test, output_data_test, input_data_validate, output_data_validate = self.databaseSplit(images, outputs)
+
+        dummy = model(torch.autograd.Variable(torch.rand(1,1600)))
+        writer.add_graph(model, dummy)
+        window = webbrowser.open_new('http://fangorn:6006')
+
+
+        if train_param.cuda:
+            model = model.cuda()
+            input_data_train = input_data_train.cuda()
+            output_data_train = output_data_train.cuda()
+            input_data_test = input_data_test.cuda()
+            output_data_test = output_data_test.cuda()
+            input_data_validate = input_data_validate.cuda()
+            output_data_validate = output_data_validate.cuda()
+
+
+
+        print('finish dividing')
+
+        criterion = torch.nn.MSELoss(size_average=False) #For calculating loss (mean squared error)
+        #optimizer = torch.optim.SGD(self.parameters(), lr=learning_rate, mometum=momentum) # for updating weights
+        optimizer = torch.optim.Adagrad(model.parameters(), lr=learning_rate, lr_decay = decay[0], weight_decay = decay[1]) #, momentum=momentum) # for updating weights
+
+
+
+        y_val = model(input_data_validate)
+        oldValLoss = criterion(y_val, output_data_validate).data[0]
+
+
+        #Infiniti epochs
+        if train_param.epochs == -1:
+            inf_k = 0
+        else:
+            inf_k = 1
+
+        self.train = True
+
+        t = 0
+
+        while self.train:
+            root.update()
+            t = t+1
+            i = 0
+            j = train_param.bunch
+            self.loss = Variable(torch.Tensor([0]))
+            permutations = torch.randperm(len(input_data_train))
+            if model.isCuda():
+                self.loss = self.loss.cuda()
+                permutations = permutations.cuda()
+            input_data_train = input_data_train[permutations]
+            output_data_train = output_data_train[permutations]
+
+            while j <= len(input_data_train):
+                self.learn_one_step(model,input_data_train[i:j], output_data_train[i:j], learning_rate,criterion,optimizer)
+                i = j
+                j += train_param.bunch
+            if i < len(input_data_train):
+                self.learn_one_step(model,input_data_train[i:], output_data_train[i:], learning_rate,criterion,optimizer)
+
+
+            if (t-1)%train_param.log_interval ==0:
+
+                self.loss = self.loss * train_param.bunch / len(input_data_train)
+                if t == 1:
+
+                    oldLoss = self.loss
+
+                print('Epoch: ', t, ' loss: ', self.loss.data[0])
+                time_d = datetime.now()-starting_time
+                writer.add_scalar('data/time', t, time_d.total_seconds())
+                writer.add_scalar('data/training_loss', math.log( self.loss), t)
+                writer.add_scalar('data/epochs_speed', 60*train_param.log_interval/(time_d.total_seconds()-old_time_d), t)
+                writer.add_scalar('data/gradient', (self.loss-oldLoss)/train_param.log_interval, t)
+                old_time_d = time_d.total_seconds()
+                oldLoss = self.loss
+
+
+            if (t-1)%train_param.validation_interval == 0:
+                y_val = model(input_data_validate)
+                val_loss = criterion(y_val, output_data_validate)
+                writer.add_scalar('data/val_loss', math.log(val_loss), t)
+
+                if val_loss.data[0] > oldValLoss:
+                    val_count = val_count+1
+                else:
+
+                    val_count = 0
+                    oldValLoss = val_loss.data[0]
+
+                writer.add_scalar('data/val_count', val_count, t)
+
+
+                '''
+                #mat_t = input_data_validate.data[0, :].view(-1, 40)
+
+                dmp_v = trainer.createDMP(y_val[0], self.scale, 0.01, 25, True)
+                dmp = trainer.createDMP(output_data_validate[0], self.scale, 0.01, 25, True)
+
+                dmp.joint()
+                dmp_v.joint()
+
+                mat = trainer.show_dmp(images[0], None, dmp)       #ni prava slika!!!!!!!!!!!!!!!
+
+
+                mat_n = np.array(mat, dtype='f')
+                mat_n = mat_n.swapaxes(1, 2)
+                mat_n = mat_n.swapaxes(0, 1)
+                mat_t = torch.from_numpy(mat_n)
+
+
+                writer.add_image("result", mat_t)
+
+
+
+            '''
+            if (t - 1) % train_param.test_interval == 0:
+                y_test = model(input_data_test)
+                test_loss = criterion(y_test, output_data_test)
+                writer.add_scalar('data/test_loss', math.log(test_loss), t)
+
+
+            #End condition
+            if inf_k*t > inf_k*train_param.epochs:
+                self.train = False
+
+            if val_count > 30:
+                self.train = False
+
+        writer.close()
+        proces.terminate()
+
+        print('Learning finished\n')
+
+
+
+
+    def learn_one_step(self,model,x,y,learning_rate,criterion,optimizer):
+        y_pred = model(x) # output from the network
+        loss = criterion(y_pred,y) #loss
+        optimizer.zero_grad()# setting gradients to zero
+        loss.backward()# calculating gradients for every layer
+        optimizer.step()#updating weights
+        self.loss = self.loss + loss
+
+    def cancel_training(self):
+        print("User stop")
+        self.train = False
