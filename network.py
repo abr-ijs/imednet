@@ -68,7 +68,7 @@ class Network(torch.nn.Module):
 
 
 class training_parameters():
-
+    #Before
     epochs = 1000
     bunch = 32
     val_fail = 5
@@ -85,9 +85,20 @@ class training_parameters():
     test_ratio = 0.15
     data_samples = 0
 
-
-
     learn_function = "Adagrad"
+
+    #After
+
+    real_epochs = 0
+    min_train_loss = -1
+    min_val_loss = -1
+    min_test_loss = -1
+    elapsed_time = -1
+    val_count = -1
+    stop_criterion = ""
+    min_grad = -1
+
+
 
 
     def __init__(self):
@@ -100,12 +111,27 @@ class training_parameters():
                      "\n   - Bunch size: " + str(self.bunch) \
                      + "\n   - training ratio: " + str(self.training_ratio) + "\n   - validation ratio: " + \
                      str(self.validation_ratio) + "\n   - test ratio: " + str(self.test_ratio)+\
-                    "\n     -   validation_interval" + str(self.validation_interval)+ \
-                     "\n     -  test_interval" + str(self.test_interval)+ \
-                     "\n     -   log_interval" + str(self.log_interval) +\
-            "\n cuda =" + str(self.cuda)
+                    "\n     -   validation_interval: " + str(self.validation_interval)+ \
+                     "\n     -  test_interval: " + str(self.test_interval)+ \
+                     "\n     -   log_interval: " + str(self.log_interval) +\
+                    "\n     -   cuda = " + str(self.cuda)+ \
+                     "\n     -  Validation fail: " + str(self.val_fail)
 
 
         return learn_info
 
+
+    def write_out_after(self):
+
+        learn_info = "\n Learning finished with this parameters:\n" + "   - Number of epochs: " + str(self.real_epochs) + \
+                     "\n   - Last train loss: " + str(self.min_train_loss) + \
+                     "\n   - Last validation loss: " + str(self.min_val_loss) + \
+                     "\n   Last test loss: " + str(self.min_test_loss) + \
+                     "\n   - Elapsed time: " + str(self.elapsed_time) + \
+                     "\n   - last validation count: " + str(self.val_count) + \
+                     "\n     -   Stop criterion: " + str(self.stop_criterion) + \
+                     "\n     -  Minimal gradient: " + str(self.min_grad)
+
+
+        return learn_info
 

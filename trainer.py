@@ -37,6 +37,7 @@ class Trainer:
     Helper class containing methods for preparing data for learning
     """
     train=False
+    user_stop =""
     def show_dmp(self,image,trajectory, dmp, save = -1):
         """
         Plots and shows mnist image, trajectory and dmp to one picture
@@ -364,7 +365,7 @@ class Trainer:
         button = tk.Button(root,
                            text="QUIT",
                            fg="red",
-                           command = self.cancel_training)
+                           command=self.cancel_training)
 
         button.pack(side=tk.LEFT)
 
@@ -522,10 +523,24 @@ class Trainer:
             #End condition
             if inf_k*t > inf_k*train_param.epochs:
                 self.train = False
+                train_param.stop_criterion = "max epochs reached"
 
             if val_count > 30:
                 self.train = False
+                train_param.stop_criterion = "max validation fail reached"
 
+
+        train_param.real_epochs = t
+        train_param.min_train_loss = self.loss
+        train_param.min_val_loss = val_loss.data
+        train_param.min_test_loss = test_loss.data
+        train_param.elapsed_time = time_d.total_seconds()
+        train_param.val_count = val_count
+        k = (self.loss-oldLoss)/train_param.log_interval
+        train_param.min_grad = k.data
+        train_param.stop_criterion = train_param.stop_criterion +self.user_stop
+
+        file.write(train_param.write_out_after())
         writer.close()
         proces.terminate()
 
@@ -543,5 +558,6 @@ class Trainer:
         self.loss = self.loss + loss
 
     def cancel_training(self):
-        print("User stop")
+
+        self.user_stop = "User stop"
         self.train = False
