@@ -15,18 +15,20 @@ class matLoader:
         DMP_data = data['DMP_object'][0, 0][0]
         outputs = []
         for dmp in DMP_data:
-            #tau = dmp['tau'][0, 0][0, 0]
+            tau = dmp['tau'][0, 0][0, 0]
             w = dmp['w'][0,0]
             goal = dmp['goal'][0,0][0]
             y0 = dmp['y0'][0,0][0]
             #dy0 = np.array([0,0])
-            #learn = np.append(tau,y0)
+            learn = np.append(tau,y0)
             #learn = np.append(learn,dy0)
-            learn = np.append(y0,goal)#korekcija
+            learn = np.append(learn,goal)#korekcija
             learn = np.append(learn,w)
             outputs.append(learn)
         outputs = np.array(outputs)
-        scale = np.array([np.abs(outputs[:,i]).max() for i in range(outputs.shape[1])])
+
+        scale = np.array([np.abs(outputs[:,i]).max() for i in range(0,5)])
+        scale = np.concatenate((scale,np.array([np.abs(outputs[:,5:outputs.shape[1]]).max() for i in range(5,outputs.shape[1])])))
         scale[np.where(scale == 0)] = 1
         outputs = outputs / scale
         return images, outputs, scale

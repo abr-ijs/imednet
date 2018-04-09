@@ -62,8 +62,8 @@ HiddenLayer = [1500, 1300, 1000, 600, 200, 20, 35]
 conv = None
 
 #HiddenLayer = [100]
-out = 2*N + 4
-#out = 2*N
+#out = 2*N + 4
+out = 2*N
 
 layerSizes = [numOfInputs] + HiddenLayer + [out]
 

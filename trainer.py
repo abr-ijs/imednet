@@ -38,6 +38,7 @@ class Trainer:
     """
     train=False
     user_stop =""
+    plot_im = False
     def show_dmp(self,image,trajectory, dmp, save = -1):
         """
         Plots and shows mnist image, trajectory and dmp to one picture
@@ -59,7 +60,7 @@ class Trainer:
         plt.legend()
         plt.xlim([0,40])
         plt.ylim([40,0])
-        plt.show()
+
         fig.canvas.draw()
         matrix = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
         #if save != -1:
@@ -186,24 +187,23 @@ class Trainer:
                 dmps.append(Trainer.createDMP(data, network.scale,sampling_time,N, cuda))
         return dmps
 
-    def createDMP(self,output, scale, sampling_time,N, cuda = False):
+    def createDMP(self, output, scale, sampling_time, N, cuda = False):
         if cuda:
           output = output.cpu()
           output = output[0]
         output = output.double().data.numpy()*scale
-        tau = 3 #output[0]    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        '''y0 = output[1:3]
-        dy0 = output[3:5]
-        goal = output[5:7]
-        weights = output[7:]
-        w = weights.reshape(N,2)'''
-        y0 = output[0:2]
-        dy0 = 0*output[0:2]
-        goal = output[2:4]
-        weights = output[4:]
+        tau = output[0]
+        y0 = output[1:3]
+        goal = output[3:5]
+        weights = output[5:]
+        w = weights.reshape(N,2)
+        #y0 = output[0:2]
+        #dy0 = 0*output[0:2]
+        #goal = output[2:4]
+        #weights = output[4:]
         w = weights.reshape(N, 2)
         dmp = DMP(N,sampling_time)
-        dmp.values(N,sampling_time,tau,y0,dy0,goal,w)
+        dmp.values(N,sampling_time,tau,y0,[0,0],goal,w)
         return dmp
 
     def showNetworkOutput(network, i, images, trajectories, DMPs, N, sampling_time, avaliable = None, cuda = False):
@@ -347,7 +347,7 @@ class Trainer:
         input_data_validate = Variable(torch.from_numpy(x_validate)).float()
         output_data_validate = Variable(torch.from_numpy(y_validate), requires_grad=False).float()
 
-        return input_data_train, output_data_train,input_data_test, output_data_test,  input_data_validate, output_data_validate
+        return input_data_train, output_data_train, input_data_test, output_data_test,  input_data_validate, output_data_validate
 
     def learn(self, model, images, outputs, path, train_param, file, learning_rate = 1e-4, momentum = 0, decay = [0,0]):
         """
@@ -366,9 +366,13 @@ class Trainer:
                            text="QUIT",
                            fg="red",
                            command=self.cancel_training)
+        button1 = tk.Button(root,
+                           text="plot",
+                           fg="blue",
+                           command=self.plot_image)
 
         button.pack(side=tk.LEFT)
-
+        button1.pack(side=tk.RIGHT)
 
 
         #prepare parameters
@@ -420,12 +424,12 @@ class Trainer:
 
         criterion = torch.nn.MSELoss(size_average=False) #For calculating loss (mean squared error)
         #optimizer = torch.optim.SGD(self.parameters(), lr=learning_rate, mometum=momentum) # for updating weights
-        optimizer = torch.optim.Adagrad(model.parameters(), lr=learning_rate, lr_decay = decay[0], weight_decay = decay[1]) #, momentum=momentum) # for updating weights
-
+        #optimizer = torch.optim.Adagrad(model.parameters(), lr=learning_rate, lr_decay = decay[0], weight_decay = decay[1]) #, momentum=momentum) # for updating weights
+        optimizer = torch.optim.Adagrad(model.parameters())
 
 
         y_val = model(input_data_validate)
-        oldValLoss = criterion(y_val, output_data_validate).data[0]
+        oldValLoss = criterion(y_val, output_data_validate[:, 5:]).data[0]
 
 
         #Infiniti epochs
@@ -438,6 +442,9 @@ class Trainer:
 
         t = 0
 
+
+
+
         while self.train:
             root.update()
             t = t+1
@@ -446,17 +453,17 @@ class Trainer:
             self.loss = Variable(torch.Tensor([0]))
             permutations = torch.randperm(len(input_data_train))
             if model.isCuda():
-                self.loss = self.loss.cuda()
                 permutations = permutations.cuda()
+                self.loss = self.loss.cuda()
             input_data_train = input_data_train[permutations]
             output_data_train = output_data_train[permutations]
 
             while j <= len(input_data_train):
-                self.learn_one_step(model,input_data_train[i:j], output_data_train[i:j], learning_rate,criterion,optimizer)
+                self.learn_one_step(model,input_data_train[i:j], output_data_train[i:j, 5:], learning_rate,criterion,optimizer)
                 i = j
                 j += train_param.bunch
             if i < len(input_data_train):
-                self.learn_one_step(model,input_data_train[i:], output_data_train[i:], learning_rate,criterion,optimizer)
+                self.learn_one_step(model,input_data_train[i:], output_data_train[i:, 5:], learning_rate,criterion,optimizer)
 
 
             if (t-1)%train_param.log_interval ==0:
@@ -478,7 +485,7 @@ class Trainer:
 
             if (t-1)%train_param.validation_interval == 0:
                 y_val = model(input_data_validate)
-                val_loss = criterion(y_val, output_data_validate)
+                val_loss = criterion(y_val, output_data_validate[:, 5:])/ len(output_data_validate)
                 writer.add_scalar('data/val_loss', math.log(val_loss), t)
 
                 if val_loss.data[0] > oldValLoss:
@@ -489,12 +496,13 @@ class Trainer:
                     oldValLoss = val_loss.data[0]
 
                 writer.add_scalar('data/val_count', val_count, t)
+                print('Validatin: ', t, ' loss: ', val_loss.data[0])
 
 
                 '''
                 #mat_t = input_data_validate.data[0, :].view(-1, 40)
 
-                dmp_v = trainer.createDMP(y_val[0], self.scale, 0.01, 25, True)
+                
                 dmp = trainer.createDMP(output_data_validate[0], self.scale, 0.01, 25, True)
 
                 dmp.joint()
@@ -507,16 +515,22 @@ class Trainer:
                 mat_n = mat_n.swapaxes(1, 2)
                 mat_n = mat_n.swapaxes(0, 1)
                 mat_t = torch.from_numpy(mat_n)
+                
+                dmp = self.createDMP(output_data_validate[0], model.scale, 0.01, 25, True)
+
+                plot_vector = torch.cat((output_data_validate[0,0:5], y_val[0,:]), 0)
+                dmp_v = self.createDMP(plot_vector, model.scale, 0.01, 25, True)
+
+                dmp.joint()
+                dmp_v.joint()
+                mat = self.show_dmp((input_data_validate.data[0]).cpu().numpy(), None, dmp)
+                writer.add_image('matplotlib', mat)
+                '''
 
 
-                writer.add_image("result", mat_t)
-
-
-
-            '''
             if (t - 1) % train_param.test_interval == 0:
                 y_test = model(input_data_test)
-                test_loss = criterion(y_test, output_data_test)
+                test_loss = criterion(y_test, output_data_test[:, 5:])/ len(output_data_test)
                 writer.add_scalar('data/test_loss', math.log(test_loss), t)
 
 
@@ -531,14 +545,14 @@ class Trainer:
 
 
         train_param.real_epochs = t
-        train_param.min_train_loss = self.loss
-        train_param.min_val_loss = val_loss.data
-        train_param.min_test_loss = test_loss.data
+        train_param.min_train_loss = self.loss.data[0]
+        train_param.min_val_loss = val_loss.data[0]
+        train_param.min_test_loss = test_loss.data[0]
         train_param.elapsed_time = time_d.total_seconds()
         train_param.val_count = val_count
         k = (self.loss-oldLoss)/train_param.log_interval
-        train_param.min_grad = k.data
-        train_param.stop_criterion = train_param.stop_criterion +self.user_stop
+        train_param.min_grad = k.data[0]
+        train_param.stop_criterion = train_param.stop_criterion + self.user_stop
 
         file.write(train_param.write_out_after())
         writer.close()
@@ -561,3 +575,7 @@ class Trainer:
 
         self.user_stop = "User stop"
         self.train = False
+
+    def plot_image(self):
+
+        self.plot_im = True
