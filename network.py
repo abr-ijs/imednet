@@ -51,7 +51,9 @@ class Network(torch.nn.Module):
         forward(x) -> result of forward propagation through network
         x -> input to the Network
         """
-        activation_fn = torch.nn.ReLU6()
+        #activation_fn = torch.nn.ReLU6()
+        activation_fn = torch.nn.Tanh()
+
         if self.conv:
             x = x.view(-1, 1, self.imageSize, self.imageSize)
             x = self.firstLayer(x)
@@ -76,16 +78,16 @@ class training_parameters():
 
     cuda = True
 
-    validation_interval = 10
-    log_interval = 5
-    test_interval = 20
+    validation_interval = 1
+    log_interval = 1
+    test_interval = 1
 
     training_ratio = 0.7
     validation_ratio = 0.15
     test_ratio = 0.15
     data_samples = 0
 
-    learn_function = "Adagrad"
+
 
     #After
 

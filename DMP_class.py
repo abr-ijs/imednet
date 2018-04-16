@@ -264,26 +264,26 @@ class DMP(object):
 
 
 #-----------------------------------------------------------------------------------7
-    def plot_j(self,modul):
+    def plot_j(self, modul = False):
 
         import matplotlib.pyplot as plt
 
         plt.figure(1,figsize=[10,10])
         plt.subplot(311)
         plt.plot(self.t,self.Y)
-        if modul == 1:
+        if modul:
             plt.plot(self.t_or,self.s)
         plt.title('Discplacment')
 
         plt.subplot(312)
         plt.plot(self.t,self.dY)
-        if modul == 1:
+        if modul:
             plt.plot(self.t_or,self.v)
         plt.title('Velocity')
 
         plt.subplot(313)
         plt.plot(self.t,self.ddY)
-        if modul == 1:
+        if modul:
             plt.plot(self.t_or,self.a)
         plt.title('Aceleration')
 

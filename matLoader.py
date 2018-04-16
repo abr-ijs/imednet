@@ -5,7 +5,7 @@ import numpy as np
 
 class matLoader:
 
-    def loadData(file):
+    def loadData(file, load_original_trajectories=False):
         data = sio.loadmat(file)
         data = data['slike']
         images = []
@@ -16,9 +16,9 @@ class matLoader:
         outputs = []
         for dmp in DMP_data:
             tau = dmp['tau'][0, 0][0, 0]
-            w = dmp['w'][0,0]
-            goal = dmp['goal'][0,0][0]
-            y0 = dmp['y0'][0,0][0]
+            w = dmp['w'][0, 0]
+            goal = dmp['goal'][0, 0][0]
+            y0 = dmp['y0'][0, 0][0]
             #dy0 = np.array([0,0])
             learn = np.append(tau,y0)
             #learn = np.append(learn,dy0)
@@ -27,13 +27,21 @@ class matLoader:
             outputs.append(learn)
         outputs = np.array(outputs)
 
-        scale = np.array([np.abs(outputs[:,i]).max() for i in range(0,5)])
-        scale = np.concatenate((scale,np.array([np.abs(outputs[:,5:outputs.shape[1]]).max() for i in range(5,outputs.shape[1])])))
+        scale = np.array([np.abs(outputs[:, i]).max() for i in range(0, 5)])
+        scale = np.concatenate((scale, np.array([np.abs(outputs[:, 5:outputs.shape[1]]).max() for i in range(5, outputs.shape[1])])))
         scale[np.where(scale == 0)] = 1
         outputs = outputs / scale
-        return images, outputs, scale
+
+        original_trj = []
+        if load_original_trajectories:
+            trj_data = data['trj'][0, 0][0]
+
+            original_trj = [(trj) for trj in trj_data[40:60]]
+
+
+        return images, outputs, scale , original_trj
 
     def dataForNetwork(images, outputs):
         input_data = Variable(torch.from_numpy(images)).float()
-        output_data = Variable(torch.from_numpy(outputs),requires_grad= False).float()
+        output_data = Variable(torch.from_numpy(outputs), requires_grad=False).float()
         return input_data, output_data
