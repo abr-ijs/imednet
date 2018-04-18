@@ -25,7 +25,7 @@ from os import makedirs
 
 dateset_name = 'slike_780.4251'
 
-load = True
+load = False
 
 cuda = True
 plot = False
@@ -77,7 +77,7 @@ model = Network(layerSizes, conv, scale)
 
 #inicalizacija
 if load:
-    net_id = '2018-04-16 13:59:49.416206'
+    net_id = '2018-04-16 14:56:33.147655'
     load_parameters_file = directory_path + 'NN ' + net_id
     print(' + Loaded parameters from file: ', load_parameters_file)
     model.load_state_dict(torch.load(load_parameters_file+'/net_parameters'))  # loading parameters

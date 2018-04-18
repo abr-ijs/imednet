@@ -422,7 +422,7 @@ class Trainer:
 
         # Divide data
         print("Dividing data")
-        input_data_train, output_data_train, input_data_test, output_data_test, input_data_validate, output_data_validate = self.databaseSplit(images, outputs)
+        input_data_train_b, output_data_train_b, input_data_test_b, output_data_test_b, input_data_validate_b, output_data_validate_b = self.databaseSplit(images, outputs)
 
         #dummy = model(torch.autograd.Variable(torch.rand(1,1600)))
         #writer.add_graph(model, dummy)
@@ -431,12 +431,12 @@ class Trainer:
 
         if train_param.cuda:
             model = model.cuda()
-            input_data_train = input_data_train.cuda()
-            output_data_train = output_data_train.cuda()
-            input_data_test = input_data_test.cuda()
-            output_data_test = output_data_test.cuda()
-            input_data_validate = input_data_validate.cuda()
-            output_data_validate = output_data_validate.cuda()
+            input_data_train_b = input_data_train_b.cuda()
+            output_data_train_b = output_data_train_b.cuda()
+            input_data_test_b = input_data_test_b.cuda()
+            output_data_test_b = output_data_test_b.cuda()
+            input_data_validate_b = input_data_validate_b.cuda()
+            output_data_validate_b = output_data_validate_b.cuda()
 
 
 
@@ -449,11 +449,12 @@ class Trainer:
         #optimizer = torch.optim.SGD(model.parameters(), lr = 0.4) # for updating weights
         #optimizer = torch.optim.RMSprop(model.parameters())
 
-        optimizer = correct_adam.Adam(model.parameters(), lr = 0.00005, amsgrad=True)
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 50)
+        optimizer = correct_adam.SCG(model.parameters())
+        #optimizer = correct_adam.Adam(model.parameters(), lr = 0.0001, amsgrad=True)
+        #scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 200)
 
-        y_val = model(input_data_validate)
-        oldValLoss = criterion(y_val, output_data_validate[:, 5:]).data[0]
+        y_val = model(input_data_validate_b)
+        oldValLoss = criterion(y_val, output_data_validate_b[:, 5:]).data[0]
         bestValLoss = oldValLoss
         best_nn_parameters = copy.deepcopy(model.state_dict())
         #Infiniti epochs
@@ -466,34 +467,30 @@ class Trainer:
 
         t = 0
 
-        t_init = 50
+        t_init = 200
         lr = 0
 
         while self.train:
+
+            input_data_train = input_data_train_b.clone()
+            output_data_train = output_data_train_b.clone()
+            input_data_test = input_data_test_b.clone()
+            output_data_test = output_data_test_b.clone()
+            input_data_validate = input_data_validate_b.clone()
+            output_data_validate = output_data_validate_b.clone()
+
             root.update()
             t = t+1
             i = 0
             j = train_param.bunch
 
 
-            scheduler.step()
-            if t%t_init == 0:
-                scheduler.last_epoch = -1
+            #scheduler.step()
+            #if t%t_init == 0:
+            #    scheduler.last_epoch = -1
 
 
-            writer.add_scalar('data/learning_rate', scheduler.get_lr()[0], t)
-
-            if self.reseting_optimizer:
-                for param_group in optimizer.param_groups:
-                    param_group['exp_avg'] = 0
-                    param_group['exp_avg_sq'] = 0
-
-
-
-
-
-
-
+            #writer.add_scalar('data/learning_rate', scheduler.get_lr()[0], t)
 
 
 
@@ -597,6 +594,9 @@ class Trainer:
                 test_loss = criterion(y_test, output_data_test[:, 5:])
                 writer.add_scalar('data/test_loss', math.log(test_loss), t)
 
+            if (t-1) % 1500 == 0:
+                optimizer.reset = True
+                print('reset optimizer')
 
             if self.reseting_optimizer:
                 optimizer.reset = True
@@ -650,11 +650,24 @@ class Trainer:
 
 
     def learn_one_step(self, model, x, y, learning_rate, criterion, optimizer):
+
+        def wrap():
+            optimizer.zero_grad()
+            y_pred = model(x)
+            loss = criterion(y_pred, y)
+            loss.backward()
+            return loss
+
+        '''
         y_pred = model(x) # output from the network
         loss = criterion(y_pred,y) #loss
         optimizer.zero_grad()# setting gradients to zero
         loss.backward()# calculating gradients for every layer
-        optimizer.step()#updating weights
+        
+        
+        optimizer.step()#updating weights'''
+        loss = optimizer.step(wrap())
+
         self.loss = self.loss + loss
 
     def cancel_training(self):

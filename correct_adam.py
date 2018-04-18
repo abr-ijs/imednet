@@ -109,108 +109,144 @@ class Adam(Optimizer):
 
 
 
-'''class SGD(Optimizer):
-    r"""Implements stochastic gradient descent (optionally with momentum).
+class SCG(Optimizer):
 
-    Nesterov momentum is based on the formula from
-    `On the importance of initialization and momentum in deep learning`__.
 
-    Args:
-        params (iterable): iterable of parameters to optimize or dicts defining
-            parameter groups
-        lr (float): learning rate
-        momentum (float, optional): momentum factor (default: 0)
-        weight_decay (float, optional): weight decay (L2 penalty) (default: 0)
-        dampening (float, optional): dampening for momentum (default: 0)
-        nesterov (bool, optional): enables Nesterov momentum (default: False)
-
-    Example:
+    sigma0 = 5.e-5
+    lamb = 5.e-7
+    lamb_ = 0
 
 
 
-    __ http://www.cs.toronto.edu/%7Ehinton/absps/momentum.pdf
 
-    .. note::
-        The implementation of SGD with Momentum/Nesterov subtly differs from
-        Sutskever et. al. and implementations in some other frameworks.
-
-        Considering the specific case of Momentum, the update can be written as
-
-        .. math::
-                  v = \rho * v + g \\
-                  p = p - lr * v
-
-        where p, g, v and :math:`\rho` denote the parameters, gradient,
-        velocity, and momentum respectively.
-
-        This is in contrast to Sutskever et. al. and
-        other frameworks which employ an update of the form
-
-        .. math::
-             v = \rho * v + lr * g \\
-             p = p - v
-
-        The Nesterov version is analogously modified.
-    """
-
-    def __init__(self, params, lr=required, momentum=0, dampening=0,
+    def __init__(self, params, lr = 0.1, momentum=0, dampening=0,
                  weight_decay=0, nesterov=False):
-        if lr is not required and lr < 0.0:
-            raise ValueError("Invalid learning rate: {}".format(lr))
-        if momentum < 0.0:
-            raise ValueError("Invalid momentum value: {}".format(momentum))
-        if weight_decay < 0.0:
-            raise ValueError("Invalid weight_decay value: {}".format(weight_decay))
+
+
+
+
+
+
 
         defaults = dict(lr=lr, momentum=momentum, dampening=dampening,
                         weight_decay=weight_decay, nesterov=nesterov)
         if nesterov and (momentum <= 0 or dampening != 0):
             raise ValueError("Nesterov momentum requires a momentum and zero dampening")
-        super(SGD, self).__init__(params, defaults)
+        super(SCG, self).__init__(params, defaults)
 
     def __setstate__(self, state):
-        super(SGD, self).__setstate__(state)
+        super(SCG, self).__setstate__(state)
         for group in self.param_groups:
             group.setdefault('nesterov', False)
 
 
 
-def step(self, closure=None):
-    """Performs a single optimization step.
+    def step(self, closure):
+        """Performs a single optimization step.
 
-    Arguments:
-        closure (callable, optional): A closure that reevaluates the model
-            and returns the loss.
-    """
-    loss = None
-    if closure is not None:
-        loss = closure()
+        Arguments:
+            closure (callable, optional): A closure that reevaluates the model
+                and returns the loss.
+        """
+        #loss = None
+        #if closure is not None:
+        #    loss = closure()
 
-    for group in self.param_groups:
-        weight_decay = group['weight_decay']
-        momentum = group['momentum']
-        dampening = group['dampening']
-        nesterov = group['nesterov']
+        for group in self.param_groups:
+            weight_decay = group['weight_decay']
+            momentum = group['momentum']
+            dampening = group['dampening']
+            nesterov = group['nesterov']
 
-        for p in group['params']:
-            if p.grad is None:
-                continue
-            d_p = p.grad.data
-            if weight_decay != 0:
-                d_p.add_(weight_decay, p.data)
-            if momentum != 0:
-                param_state = self.state[p]
-                if 'momentum_buffer' not in param_state:
-                    buf = param_state['momentum_buffer'] = torch.zeros_like(p.data)
-                    buf.mul_(momentum).add_(d_p)
-                else:
-                    buf = param_state['momentum_buffer']
-                    buf.mul_(momentum).add_(1 - dampening, d_p)
-                if nesterov:
-                    d_p = d_p.add(momentum, buf)
-                else:
-                    d_p = buf
+            for p in group['params']:
+                if p.grad is None:
+                    continue
 
-            p.data.add_(-group['lr'], d_p)
+                w_k = p.data
+                p_k_new = - p.grad.data
+                r_k_new = p_k_new.clone
+                success = True
+                k = 0
+                lamda_k = self.lamb
+                I_lamda_k = self.lamb_
 
-    return loss'''
+                while k<3:
+                    p_k = p_k_new.clone
+                    r_k = r_k_new.clone
+
+                    if success:
+                        success = False
+
+                        #Calculate second order information
+
+                        p_k_norm = torch.norm( p_k, p = 1)
+
+                        sigma_k = self.sigma / p_k_norm
+
+                        p.data = w_k
+                        loss_wk = closure()
+                        grad_wk = p.grad.data
+                        p.data.add_(sigma_k,p_k)
+                        closure()
+                        grad_wk_sigma = p.grad.data
+
+
+                        s_k = (grad_wk_sigma - grad_wk) / sigma_k
+                        tau_k = p_k * s_k
+
+                    #scale
+                    tau_k = tau_k +(lamda_k-I_lamda_k)*(p_k_norm**2)
+
+
+
+
+                    #Hessian matrix positive definite
+
+                    if tau_k <= 0:
+                        I_lamda_k = 2*(lamda_k-tau_k/(p_k_norm**2))
+
+                        tau_k = -tau_k + lamda_k*(p_k_norm**2)
+
+                        lamda_k = I_lamda_k
+
+                    #Calculate step size
+                    phi_k = p_k*r_k
+                    alpha_k = phi_k/tau_k
+
+
+
+                    #Comparison parameter
+                    p.data = w_k+alpha_k*p_k
+                    loss_wk_alpha = closure()
+
+                    delta_k = 2*tau_k*(loss_wk-loss_wk_alpha)/phi_k**2
+
+                    if delta_k >= 0:
+                        # Reduction in error
+                        p.data.add_(alpha_k, p_k)
+                        r_k_new = -p.grad.data
+                        I_lamda_k = 0
+                        success = True
+
+                        #restart every lenght of parameter iterations
+                        if k % 200== 0:
+                            p_k_new = r_k_new
+
+                        else:
+                            beta_k = (torch.norm(r_k_new)**2-r_k_new*r_k)/phi_k
+                            p_k_new = r_k_new + beta_k*p_k
+
+                        if delta_k>=0.75:
+                            lamda_k = lamda_k/4
+                    else:
+                        I_lamda_k = lamda_k
+                        success=False
+
+
+
+
+
+
+
+
+        return loss
