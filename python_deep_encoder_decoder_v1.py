@@ -77,7 +77,8 @@ model = Network(layerSizes, conv, scale)
 
 #inicalizacija
 if load:
-    net_id = '2018-04-16 14:56:33.147655'
+    net_id = '2018-04-16 10:03:11.290010'
+    #2018 - 04 - 16 10: 03:11.290010 0.0024
     load_parameters_file = directory_path + 'NN ' + net_id
     print(' + Loaded parameters from file: ', load_parameters_file)
     model.load_state_dict(torch.load(load_parameters_file+'/net_parameters'))  # loading parameters
@@ -117,6 +118,7 @@ train_param.val_fail = 60
 
 trener = Trainer()
 if load==True:
+    #pass
     trener.indeks = np.load(directory_path + 'NN ' + net_id +'/net_indeks.npy')
 
 best_nn_parameters = trener.learn(model, images, outputs, directory_path + directory_name, train_param, file, learning_rate, momentum)

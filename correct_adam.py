@@ -149,32 +149,46 @@ class SCG(Optimizer):
             sigma = group['sigma0']
 
             success = group['success']
-            lamda_1 = group['lamda_1']
-            lamda_1_I = group['lamda_1_I']
+            lamda_k = group['lamda_1']
+            lamda_k_I = group['lamda_1_I']
             k = group['k']
             k = k+1
-            if k == 1:
-                E_k = closure
 
-                iterator_w=[]
+
+            if k == 1:
+                loss_wk = closure()
+
+                iterator_w = []
                 iterator_grad = []
+
 
                 for p in group['params']:
 
                     iterator_w.append(torch.autograd.Variable(p.data))
-                    iterator_grad.append(-p.grad.data)
+                    iterator_grad.append(torch.autograd.Variable(-p.grad.data))
 
 
                 r_k = utils.parameters_to_vector(iterator_grad)
                 w_k = utils.parameters_to_vector(iterator_w)
 
                 p_k = r_k.clone()
+            else:
+                iterator_w = []
+                iterator_grad = []
+
+                for p in group['params']:
+                    iterator_w.append(torch.autograd.Variable(p.data))
+                    iterator_grad.append(torch.autograd.Variable(-p.grad.data))
+
+                r_k = utils.parameters_to_vector(iterator_grad)
+                w_k = utils.parameters_to_vector(iterator_w)
+                p_k = group['p_k']
+                loss_wk = group['loss_wk']
+
 
 
             p_k_norm_2 = torch.norm(p_k)**2
             p_k_norm = p_k_norm_2 ** 0.5
-
-
 
             if success:
                 success = False
@@ -183,95 +197,111 @@ class SCG(Optimizer):
 
                 sigma_k = sigma / p_k_norm
 
-
-                utils.vector_to_parameters((w_k + sigma_k*p_k),iterator_w)
-                iterator_w[0][0, 0] = 5
+                utils.vector_to_parameters(w_k + sigma_k*p_k,iterator_w)
                 i = 0
                 for p in group['params']:
+                    p.data = iterator_w[i].data
+                    i = i + 1
 
-                    p.data = iterator_w[i]
-                    i=i+1
+                test=closure()
 
-                uio=iterator_w[0][0,0]=5
-                #s_k = (grad_wk_sigma + r_k) / sigma_k
+                iterator_grad = []
 
-            '''for p in group['params']:
+                for p in group['params']:
+                    iterator_grad.append(torch.autograd.Variable(p.grad.data))
 
-                grad_wk = p.grad.data
-                p.data.add_(sigma_k, p_k)
+                grad_sigma = utils.parameters_to_vector(iterator_grad)
 
-            closure()
+                s_k = (grad_sigma + r_k) / sigma_k
 
-                grad_wk_sigma = p.grad.data
+                tau_k = torch.dot(p_k , s_k)
 
-                s_k = (grad_wk_sigma - grad_wk) / sigma_k
-                tau_k = p_k * s_k
+            else:
 
+                tau_k = group['tau_k']
+
+            # scale
+            tau_k = tau_k + (lamda_k - lamda_k_I) * (p_k_norm_2)
+
+            # Hessian matrix positive definite
+
+            if tau_k.data[0] <= 0:
+                lamda_k_I = 2 * (lamda_k - tau_k / (p_k_norm_2))
+
+                tau_k = -tau_k + lamda_k * (p_k_norm_2)
+
+                lamda_k = lamda_k_I
+
+            # Calculate step size
+            phi_k = torch.dot(p_k , r_k)
+            alpha_k = phi_k / tau_k
+
+
+
+            # Comparison parameter
+
+            utils.vector_to_parameters(w_k + alpha_k * p_k, iterator_w)
+            i = 0
             for p in group['params']:
+                p.data = iterator_w[i].data
+                i = i + 1
 
-                if p.grad is None:
-                    continue
+            loss_wk_alpha = closure()
 
-                self.k = self.k +1
+            delta_k = 2 * tau_k * (loss_wk - loss_wk_alpha) / phi_k ** 2
 
-
-                p_k = p_k_new.clone
-                r_k = r_k_new.clone
-
-
-                #scale
-                tau_k = tau_k +(lamda_k-I_lamda_k)*(p_k_norm_2)
+            if delta_k.data[0] >= 0:
+                # Reduction in error
 
 
+                w_k = w_k + alpha_k * p_k
+                loss_wk = loss_wk_alpha
+                iterator_grad = []
+                for p in group['params']:
 
-
-                #Hessian matrix positive definite
-
-                if tau_k <= 0:
-                    I_lamda_k = 2*(lamda_k-tau_k/(p_k_norm_2))
-
-                    tau_k = -tau_k + lamda_k*(p_k_norm_2)
-
-                    lamda_k = I_lamda_k
-
-                #Calculate step size
-                phi_k = p_k*r_k
-                alpha_k = phi_k/tau_k
+                    iterator_grad.append(torch.autograd.Variable(-p.grad.data))
+                r_k_old = r_k.clone()
+                r_k = utils.parameters_to_vector(iterator_grad)
 
 
 
-                #Comparison parameter
-                p.data = w_k+alpha_k*p_k
-                loss_wk_alpha = closure()
+                lamda_k_I = 0
+                success = True
 
-                delta_k = 2*tau_k*(loss_wk-loss_wk_alpha)/phi_k**2
+                # restart every lenght of parameter iterations
+                if k % r_k.shape[0] == 0:
+                    p_k = r_k
 
-                if delta_k >= 0:
-                    # Reduction in error
-                    p.data.add_(alpha_k, p_k)
-                    r_k_new = -p.grad.data
-                    I_lamda_k = 0
-                    success = True
-
-                    #restart every lenght of parameter iterations
-                    if k % 200== 0:
-                        p_k_new = r_k_new
-
-                    else:
-                        beta_k = (torch.norm(r_k_new)**2-r_k_new*r_k)/phi_k
-                        p_k_new = r_k_new + beta_k*p_k
-
-                    if delta_k>=0.75:
-                        lamda_k = lamda_k/4
                 else:
-                    I_lamda_k = lamda_k
-                    success=False
+                    beta_k = (torch.norm(r_k) ** 2 -torch.dot(r_k, r_k_old)) / phi_k
+                    p_k = r_k + beta_k * p_k
+
+                if delta_k.data[0] >= 0.75:
+                    lamda_k = lamda_k / 4
 
 
+            else:
+                lamda_k_I = lamda_k
+                success = False
 
+                #vrni stari wk
 
+                utils.vector_to_parameters(w_k, iterator_w)
+                i = 0
+                for p in group['params']:
+                    p.data = iterator_w[i].data
+                    i = i + 1
 
+                loss_wk = closure()
 
+            if delta_k.data[0] < 0.25:
+                lamda_k = lamda_k +(tau_k*(1-delta_k)/p_k_norm_2)
 
-
-        return loss'''
+            group['success'] = success
+            group['lamda_1'] = lamda_k
+            group['lamda_1_I'] = lamda_k_I
+            group['tau_k'] = tau_k
+            group['k'] = k
+            group['p_k'] = p_k
+            group['loss_wk'] = loss_wk
+        return loss_wk

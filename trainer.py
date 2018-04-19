@@ -594,12 +594,12 @@ class Trainer:
                 test_loss = criterion(y_test, output_data_test[:, 5:])
                 writer.add_scalar('data/test_loss', math.log(test_loss), t)
 
-            if (t-1) % 1500 == 0:
+            '''if (t-1) % 1500 == 0:
                 optimizer.reset = True
                 print('reset optimizer')
 
             if self.reseting_optimizer:
-                optimizer.reset = True
+                optimizer.reset = True'''
 
 
             #End condition
@@ -666,7 +666,7 @@ class Trainer:
         
         
         optimizer.step()#updating weights'''
-        loss = optimizer.step(wrap())
+        loss = optimizer.step(wrap)
 
         self.loss = self.loss + loss
 
