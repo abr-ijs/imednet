@@ -1,7 +1,7 @@
 import math
 import torch
 from torch.optim import Optimizer
-
+from torch.nn import utils
 class Adam(Optimizer):
     """Implements Adam algorithm.
 
@@ -112,26 +112,11 @@ class Adam(Optimizer):
 class SCG(Optimizer):
 
 
-    sigma0 = 5.e-5
-    lamb = 5.e-7
-    lamb_ = 0
 
+    def __init__(self, params,):
 
+        defaults = dict(sigma0=5.e-5, lamda_1 = 5.e-7, lamda_1_I = 0, k = 0, success = True)
 
-
-    def __init__(self, params, lr = 0.1, momentum=0, dampening=0,
-                 weight_decay=0, nesterov=False):
-
-
-
-
-
-
-
-        defaults = dict(lr=lr, momentum=momentum, dampening=dampening,
-                        weight_decay=weight_decay, nesterov=nesterov)
-        if nesterov and (momentum <= 0 or dampening != 0):
-            raise ValueError("Nesterov momentum requires a momentum and zero dampening")
         super(SCG, self).__init__(params, defaults)
 
     def __setstate__(self, state):
@@ -151,96 +136,136 @@ class SCG(Optimizer):
         #loss = None
         #if closure is not None:
         #    loss = closure()
+        '''if k == 0:
+            w_k = p.data
+            p_k_new = - p.grad.data
+            r_k_new = p_k_new.clone
+
+
+            loss = closure()'''
 
         for group in self.param_groups:
-            weight_decay = group['weight_decay']
-            momentum = group['momentum']
-            dampening = group['dampening']
-            nesterov = group['nesterov']
+
+            sigma = group['sigma0']
+
+            success = group['success']
+            lamda_1 = group['lamda_1']
+            lamda_1_I = group['lamda_1_I']
+            k = group['k']
+            k = k+1
+            if k == 1:
+                E_k = closure
+
+                iterator_w=[]
+                iterator_grad = []
+
+                for p in group['params']:
+
+                    iterator_w.append(torch.autograd.Variable(p.data))
+                    iterator_grad.append(-p.grad.data)
+
+
+                r_k = utils.parameters_to_vector(iterator_grad)
+                w_k = utils.parameters_to_vector(iterator_w)
+
+                p_k = r_k.clone()
+
+
+            p_k_norm_2 = torch.norm(p_k)**2
+            p_k_norm = p_k_norm_2 ** 0.5
+
+
+
+            if success:
+                success = False
+
+                # Calculate second order information
+
+                sigma_k = sigma / p_k_norm
+
+
+                utils.vector_to_parameters((w_k + sigma_k*p_k),iterator_w)
+                iterator_w[0][0, 0] = 5
+                i = 0
+                for p in group['params']:
+
+                    p.data = iterator_w[i]
+                    i=i+1
+
+                uio=iterator_w[0][0,0]=5
+                #s_k = (grad_wk_sigma + r_k) / sigma_k
+
+            '''for p in group['params']:
+
+                grad_wk = p.grad.data
+                p.data.add_(sigma_k, p_k)
+
+            closure()
+
+                grad_wk_sigma = p.grad.data
+
+                s_k = (grad_wk_sigma - grad_wk) / sigma_k
+                tau_k = p_k * s_k
 
             for p in group['params']:
+
                 if p.grad is None:
                     continue
 
-                w_k = p.data
-                p_k_new = - p.grad.data
-                r_k_new = p_k_new.clone
-                success = True
-                k = 0
-                lamda_k = self.lamb
-                I_lamda_k = self.lamb_
-
-                while k<3:
-                    p_k = p_k_new.clone
-                    r_k = r_k_new.clone
-
-                    if success:
-                        success = False
-
-                        #Calculate second order information
-
-                        p_k_norm = torch.norm( p_k, p = 1)
-
-                        sigma_k = self.sigma / p_k_norm
-
-                        p.data = w_k
-                        loss_wk = closure()
-                        grad_wk = p.grad.data
-                        p.data.add_(sigma_k,p_k)
-                        closure()
-                        grad_wk_sigma = p.grad.data
+                self.k = self.k +1
 
 
-                        s_k = (grad_wk_sigma - grad_wk) / sigma_k
-                        tau_k = p_k * s_k
+                p_k = p_k_new.clone
+                r_k = r_k_new.clone
 
-                    #scale
-                    tau_k = tau_k +(lamda_k-I_lamda_k)*(p_k_norm**2)
+
+                #scale
+                tau_k = tau_k +(lamda_k-I_lamda_k)*(p_k_norm_2)
 
 
 
 
-                    #Hessian matrix positive definite
+                #Hessian matrix positive definite
 
-                    if tau_k <= 0:
-                        I_lamda_k = 2*(lamda_k-tau_k/(p_k_norm**2))
+                if tau_k <= 0:
+                    I_lamda_k = 2*(lamda_k-tau_k/(p_k_norm_2))
 
-                        tau_k = -tau_k + lamda_k*(p_k_norm**2)
+                    tau_k = -tau_k + lamda_k*(p_k_norm_2)
 
-                        lamda_k = I_lamda_k
+                    lamda_k = I_lamda_k
 
-                    #Calculate step size
-                    phi_k = p_k*r_k
-                    alpha_k = phi_k/tau_k
+                #Calculate step size
+                phi_k = p_k*r_k
+                alpha_k = phi_k/tau_k
 
 
 
-                    #Comparison parameter
-                    p.data = w_k+alpha_k*p_k
-                    loss_wk_alpha = closure()
+                #Comparison parameter
+                p.data = w_k+alpha_k*p_k
+                loss_wk_alpha = closure()
 
-                    delta_k = 2*tau_k*(loss_wk-loss_wk_alpha)/phi_k**2
+                delta_k = 2*tau_k*(loss_wk-loss_wk_alpha)/phi_k**2
 
-                    if delta_k >= 0:
-                        # Reduction in error
-                        p.data.add_(alpha_k, p_k)
-                        r_k_new = -p.grad.data
-                        I_lamda_k = 0
-                        success = True
+                if delta_k >= 0:
+                    # Reduction in error
+                    p.data.add_(alpha_k, p_k)
+                    r_k_new = -p.grad.data
+                    I_lamda_k = 0
+                    success = True
 
-                        #restart every lenght of parameter iterations
-                        if k % 200== 0:
-                            p_k_new = r_k_new
+                    #restart every lenght of parameter iterations
+                    if k % 200== 0:
+                        p_k_new = r_k_new
 
-                        else:
-                            beta_k = (torch.norm(r_k_new)**2-r_k_new*r_k)/phi_k
-                            p_k_new = r_k_new + beta_k*p_k
-
-                        if delta_k>=0.75:
-                            lamda_k = lamda_k/4
                     else:
-                        I_lamda_k = lamda_k
-                        success=False
+                        beta_k = (torch.norm(r_k_new)**2-r_k_new*r_k)/phi_k
+                        p_k_new = r_k_new + beta_k*p_k
+
+                    if delta_k>=0.75:
+                        lamda_k = lamda_k/4
+                else:
+                    I_lamda_k = lamda_k
+                    success=False
 
 
 
@@ -249,4 +274,4 @@ class SCG(Optimizer):
 
 
 
-        return loss
+        return loss'''
