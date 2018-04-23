@@ -173,6 +173,7 @@ class SCG(Optimizer):
 
                 p_k = r_k.clone()
             else:
+
                 iterator_w = []
                 iterator_grad = []
 
@@ -185,10 +186,9 @@ class SCG(Optimizer):
                 p_k = group['p_k']
                 loss_wk = group['loss_wk']
 
+            p_k_norm = torch.norm(p_k)
+            p_k_norm_2 = p_k_norm**2
 
-
-            p_k_norm_2 = torch.norm(p_k)**2
-            p_k_norm = p_k_norm_2 ** 0.5
 
             if success:
                 success = False
@@ -197,7 +197,7 @@ class SCG(Optimizer):
 
                 sigma_k = sigma / p_k_norm
 
-                utils.vector_to_parameters(w_k + sigma_k*p_k,iterator_w)
+                utils.vector_to_parameters(w_k + sigma_k*p_k, iterator_w)
                 i = 0
                 for p in group['params']:
                     p.data = iterator_w[i].data
@@ -237,7 +237,6 @@ class SCG(Optimizer):
             alpha_k = phi_k / tau_k
 
 
-
             # Comparison parameter
 
             utils.vector_to_parameters(w_k + alpha_k * p_k, iterator_w)
@@ -248,7 +247,7 @@ class SCG(Optimizer):
 
             loss_wk_alpha = closure()
 
-            delta_k = 2 * tau_k * (loss_wk - loss_wk_alpha) / phi_k ** 2
+            delta_k = 2 * tau_k * (loss_wk - loss_wk_alpha) / (phi_k ** 2)
 
             if delta_k.data[0] >= 0:
                 # Reduction in error
@@ -256,6 +255,8 @@ class SCG(Optimizer):
 
                 w_k = w_k + alpha_k * p_k
                 loss_wk = loss_wk_alpha
+
+
                 iterator_grad = []
                 for p in group['params']:
 
@@ -269,6 +270,7 @@ class SCG(Optimizer):
                 success = True
 
                 # restart every lenght of parameter iterations
+
                 if k % r_k.shape[0] == 0:
                     p_k = r_k
 
@@ -294,8 +296,10 @@ class SCG(Optimizer):
 
                 loss_wk = closure()
 
+
+
             if delta_k.data[0] < 0.25:
-                lamda_k = lamda_k +(tau_k*(1-delta_k)/p_k_norm_2)
+                lamda_k = lamda_k*4# +(tau_k*(1-delta_k)/p_k_norm_2)
 
             group['success'] = success
             group['lamda_1'] = lamda_k
