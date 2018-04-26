@@ -7,7 +7,7 @@ from trainer import Trainer
 
 #Load model and parameters
 directory_path = '/home/rpahic/Documents/Neural_networks/'
-directory_name = 'NN ' + '2018-04-16 10:03:11.290010'
+directory_name = 'NN ' + '2018-04-25 13:36:32.095726'
 
 model = torch.load(directory_path+directory_name+'/model.pt')
 
@@ -26,18 +26,9 @@ nn_output = model(test_input)
 
 criterion = torch.nn.MSELoss(size_average=True)
 
-loss = criterion(nn_output, test_output[:,5:])
+loss = criterion(nn_output, test_output[:,1:])
 
-for grup in state:
-    mean = torch.mean(state[grup])
-    max = torch.max(state[grup])
-    min = torch.min(state[grup])
-    var = torch.var(state[grup])
-    print(grup)
-    print('mean = ' + str(mean))
-    print('max = ' + str(max))
-    print('min = ' + str(min))
-    print('var = ' + str(var))
+
 
 
 print(loss.data[0])
@@ -50,7 +41,7 @@ for number in range(0,10):
 
 
 
-    output_dmp = torch.cat((real_output[0:5], nn_output), 0)
+    output_dmp = torch.cat((real_output[0:1], nn_output), 0)
 
     trainer = Trainer()
 

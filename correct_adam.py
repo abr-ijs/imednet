@@ -1,8 +1,14 @@
 import math
 import torch
+
+import numpy as np
 from torch.optim import Optimizer
 from torch.nn import utils
+
+
 class Adam(Optimizer):
+
+
     """Implements Adam algorithm.
 
     It has been proposed in `Adam: A Method for Stochastic Optimization`_.
@@ -112,10 +118,12 @@ class Adam(Optimizer):
 class SCG(Optimizer):
 
 
-
+    reset = False
     def __init__(self, params,):
 
-        defaults = dict(sigma0=5.e-5, lamda_1 = 5.e-7, lamda_1_I = 0, k = 0, success = True)
+        #defaults = dict(sigma0 = torch.autograd.Variable(torch.from_numpy(np.array([5.e-5]))).double().cuda(), lamda_1 = torch.autograd.Variable(torch.from_numpy(np.array([5.e-7]))).double().cuda(), lamda_1_I = torch.autograd.Variable(torch.from_numpy(np.array([0]))).double().cuda(), k = 0, success = True)
+        defaults = dict(sigma0 = 5.e-5, lamda_1 = 5.e-7, lamda_1_I= 0.0, k = 0, success = True)
+        #defaults = dict(sigma0=5.e-5, lamda_1=0.0, lamda_1_I=0.0, k=0, success=True)
 
         super(SCG, self).__init__(params, defaults)
 
@@ -148,15 +156,25 @@ class SCG(Optimizer):
 
             sigma = group['sigma0']
 
+            if self.reset:
+
+                group['lamda_1']=5.e-5
+                group['lamda_1_I'] = 0
+                group['success']=True
+                group['k']=0
             success = group['success']
+            #lamda_k = 0
+            #lamda_k_I = 0
             lamda_k = group['lamda_1']
             lamda_k_I = group['lamda_1_I']
             k = group['k']
             k = k+1
 
+            loss_wk = closure()
 
             if k == 1:
-                loss_wk = closure()
+
+
 
                 iterator_w = []
                 iterator_grad = []
@@ -172,6 +190,9 @@ class SCG(Optimizer):
                 w_k = utils.parameters_to_vector(iterator_w)
 
                 p_k = r_k.clone()
+
+
+
             else:
 
                 iterator_w = []
@@ -183,8 +204,9 @@ class SCG(Optimizer):
 
                 r_k = utils.parameters_to_vector(iterator_grad)
                 w_k = utils.parameters_to_vector(iterator_w)
+
                 p_k = group['p_k']
-                loss_wk = group['loss_wk']
+
 
             p_k_norm = torch.norm(p_k)
             p_k_norm_2 = p_k_norm**2
@@ -208,11 +230,12 @@ class SCG(Optimizer):
                 iterator_grad = []
 
                 for p in group['params']:
-                    iterator_grad.append(torch.autograd.Variable(p.grad.data))
+                    iterator_grad.append(torch.autograd.Variable(-p.grad.data))
 
                 grad_sigma = utils.parameters_to_vector(iterator_grad)
 
-                s_k = (grad_sigma + r_k) / sigma_k
+
+                s_k = (-grad_sigma + r_k) / sigma_k
 
                 tau_k = torch.dot(p_k , s_k)
 
@@ -227,8 +250,7 @@ class SCG(Optimizer):
 
             if tau_k.data[0] <= 0:
                 lamda_k_I = 2 * (lamda_k - tau_k / (p_k_norm_2))
-
-                tau_k = -tau_k + lamda_k * (p_k_norm_2)
+                tau_k = lamda_k * (p_k_norm_2)- tau_k
 
                 lamda_k = lamda_k_I
 
@@ -240,9 +262,13 @@ class SCG(Optimizer):
             # Comparison parameter
 
             utils.vector_to_parameters(w_k + alpha_k * p_k, iterator_w)
+
+            #utils.vector_to_parameters(w_k*0 + 1000, iterator_w)
             i = 0
             for p in group['params']:
+
                 p.data = iterator_w[i].data
+
                 i = i + 1
 
             loss_wk_alpha = closure()
@@ -251,7 +277,8 @@ class SCG(Optimizer):
 
             if delta_k.data[0] >= 0:
                 # Reduction in error
-
+                success = True
+                lamda_k_I = 0.0
 
                 w_k = w_k + alpha_k * p_k
                 loss_wk = loss_wk_alpha
@@ -261,25 +288,29 @@ class SCG(Optimizer):
                 for p in group['params']:
 
                     iterator_grad.append(torch.autograd.Variable(-p.grad.data))
+
+
                 r_k_old = r_k.clone()
                 r_k = utils.parameters_to_vector(iterator_grad)
 
 
 
-                lamda_k_I = 0
-                success = True
+
+
 
                 # restart every lenght of parameter iterations
 
-                if k % r_k.shape[0] == 0:
-                    p_k = r_k
+                if (k -1)% r_k.shape[0] == 0:
+                    p_k = r_k.clone()
 
                 else:
-                    beta_k = (torch.norm(r_k) ** 2 -torch.dot(r_k, r_k_old)) / phi_k
+                    beta_k = (torch.dot(r_k,r_k) - torch.dot(r_k, r_k_old)) / phi_k
                     p_k = r_k + beta_k * p_k
+                p_k_norm = torch.norm(p_k)
+                p_k_norm_2 = p_k_norm ** 2
 
                 if delta_k.data[0] >= 0.75:
-                    lamda_k = lamda_k / 4
+                    lamda_k = lamda_k*0.25
 
 
             else:
@@ -289,6 +320,7 @@ class SCG(Optimizer):
                 #vrni stari wk
 
                 utils.vector_to_parameters(w_k, iterator_w)
+
                 i = 0
                 for p in group['params']:
                     p.data = iterator_w[i].data
@@ -298,8 +330,8 @@ class SCG(Optimizer):
 
 
 
-            if delta_k.data[0] < 0.25:
-                lamda_k = lamda_k*4# +(tau_k*(1-delta_k)/p_k_norm_2)
+            if delta_k.data[0] < 0.25 and p_k_norm_2.data[0]!=0:
+                lamda_k = lamda_k + (tau_k*(1-delta_k)/p_k_norm_2)#*4
 
             group['success'] = success
             group['lamda_1'] = lamda_k

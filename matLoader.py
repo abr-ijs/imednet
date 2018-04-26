@@ -3,7 +3,16 @@ import torch
 from torch.autograd import Variable
 import numpy as np
 
+
+class maping:
+    y_max = 1
+    y_min = -1
+    x_max = []
+    x_min = []
+
 class matLoader:
+
+
 
     def loadData(file, load_original_trajectories=False):
         y_max = 1
@@ -29,10 +38,12 @@ class matLoader:
             outputs.append(learn)
         outputs = np.array(outputs)
 
-        scale = np.array([np.abs(outputs[:, i]).max() for i in range(0, 5)])
+        '''scale = np.array([np.abs(outputs[:, i]).max() for i in range(0, 5)])
 
         scale = np.concatenate((scale, np.array([np.abs(outputs[:, 5:outputs.shape[1]]).max() for i in range(5, outputs.shape[1])])))
-        '''x_max = np.array([outputs[:, i].max() for i in range(0, 5)])
+        '''
+
+        x_max = np.array([outputs[:, i].max() for i in range(0, 5)])
         x_max = np.concatenate(
             (x_max, np.array([outputs[:, 5:outputs.shape[1]].max() for i in range(5, outputs.shape[1])])))
 
@@ -40,19 +51,24 @@ class matLoader:
         x_min = np.concatenate(
             (x_min, np.array([outputs[:, 5:outputs.shape[1]].min() for i in range(5, outputs.shape[1])])))
 
-        scale = x_max-x_min'''
+        scale = x_max-x_min
         scale[np.where(scale == 0)] = 1
 
-        #outputs =(y_max-y_min) * (outputs-x_min) / scale + y_min
-        outputs = outputs /scale
+        outputs =(y_max-y_min) * (outputs-x_min) / scale + y_min
+
         original_trj = []
         if load_original_trajectories:
             trj_data = data['trj'][0, 0][0]
 
             original_trj = [(trj) for trj in trj_data[40:60]]
+        scaling = maping()
+        maping.x_max = x_max
+        maping.x_min = x_min
+        maping.y_max = y_max
+        maping.y_min = y_min
 
 
-        return images, outputs, scale , original_trj
+        return images, outputs, maping , original_trj
 
     def dataForNetwork(images, outputs):
         input_data = Variable(torch.from_numpy(images)).float()

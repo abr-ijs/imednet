@@ -17,7 +17,7 @@ from network import Network, training_parameters
 from trajectory_loader import trajectory_loader as loader
 from trainer import Trainer
 from matLoader import matLoader
-
+import math
 
 from datetime import datetime
 
@@ -62,9 +62,9 @@ numOfInputs = 1600
 HiddenLayer = [1500, 1300, 1000, 600, 200, 20, 35]
 conv = None
 
-#HiddenLayer = [100]
-#out = 2*N + 4
-out = 2*N
+
+out = 2*N + 4
+#out = 2*N
 
 layerSizes = [numOfInputs] + HiddenLayer + [out]
 
@@ -77,8 +77,8 @@ model = Network(layerSizes, conv, scale)
 
 #inicalizacija
 if load:
-    net_id = '2018-04-16 10:03:11.290010'
-    #2018 - 04 - 16 10: 03:11.290010 0.0024
+    net_id = '2018-04-24 16:37:23.769899'
+    #2018-04-24 16:37:23.769899 0.00031
     load_parameters_file = directory_path + 'NN ' + net_id
     print(' + Loaded parameters from file: ', load_parameters_file)
     model.load_state_dict(torch.load(load_parameters_file+'/net_parameters'))  # loading parameters
@@ -90,9 +90,19 @@ if load:
 else:
     print(' + Initialized parameters randomly')
 
+
+
     for p in list(model.parameters()):
-        torch.nn.init.uniform(p,-2, 2)
-#torch.nn.init.xavier_normal(p)
+        if p.data.ndimension() ==1:
+            torch.nn.init.constant(p, 0)
+        else:
+
+
+            torch.nn.init.xavier_uniform(p, gain=1)
+
+
+
+
 
 
 

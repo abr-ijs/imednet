@@ -200,7 +200,7 @@ class Trainer:
           output = output.cpu()
 
 
-        output = output.double().data.numpy()*scale
+        output = (scale.x_max-scale.x_min) * (output.double().data.numpy() -scale.y_min) / (scale.y_max-scale.y_min) + scale.x_min
 
         tau = output[0]
         y0 = output[1:3]
@@ -430,6 +430,13 @@ class Trainer:
 
 
         if train_param.cuda:
+            '''model = model.double().cuda()
+            input_data_train_b = input_data_train_b.double().cuda()
+            output_data_train_b = output_data_train_b.double().cuda()
+            input_data_test_b = input_data_test_b.double().cuda()
+            output_data_test_b = output_data_test_b.double().cuda()
+            input_data_validate_b = input_data_validate_b.double().cuda()
+            output_data_validate_b = output_data_validate_b.double().cuda()'''
             model = model.cuda()
             input_data_train_b = input_data_train_b.cuda()
             output_data_train_b = output_data_train_b.cuda()
@@ -437,7 +444,6 @@ class Trainer:
             output_data_test_b = output_data_test_b.cuda()
             input_data_validate_b = input_data_validate_b.cuda()
             output_data_validate_b = output_data_validate_b.cuda()
-
 
 
         print('finish dividing')
@@ -454,7 +460,7 @@ class Trainer:
         #scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 200)
 
         y_val = model(input_data_validate_b)
-        oldValLoss = criterion(y_val, output_data_validate_b[:, 5:]).data[0]
+        oldValLoss = criterion(y_val, output_data_validate_b[:, 1:]).data[0]
         bestValLoss = oldValLoss
         best_nn_parameters = copy.deepcopy(model.state_dict())
         #Infiniti epochs
@@ -501,13 +507,22 @@ class Trainer:
                 self.loss = self.loss.cuda()
             input_data_train = input_data_train[permutations]
             output_data_train = output_data_train[permutations]
-
+            ena = []
             while j <= len(input_data_train):
-                self.learn_one_step(model,input_data_train[i:j], output_data_train[i:j, 5:], learning_rate,criterion,optimizer)
+                self.learn_one_step(model,input_data_train[i:j], output_data_train[i:j, 1:], learning_rate,criterion,optimizer)
                 i = j
                 j += train_param.bunch
+
+                '''for group in optimizer.param_groups:
+                    i = 0
+                    for p in group['params']:
+                        i = i+1
+                        if i ==15:
+
+                            r1 = p.data[0][0]'''
+
             if i < len(input_data_train):
-                self.learn_one_step(model,input_data_train[i:], output_data_train[i:, 5:], learning_rate,criterion,optimizer)
+                self.learn_one_step(model,input_data_train[i:], output_data_train[i:, 1:], learning_rate,criterion,optimizer)
 
 
             if (t-1)%train_param.log_interval ==0:
@@ -522,28 +537,28 @@ class Trainer:
                 writer.add_scalar('data/time', t, time_d.total_seconds())
                 writer.add_scalar('data/training_loss', math.log( self.loss), t)
                 writer.add_scalar('data/epochs_speed', 60*train_param.log_interval/(time_d.total_seconds()-old_time_d), t)
-                writer.add_scalar('data/gradient', (self.loss-oldLoss)/train_param.log_interval, t)
+                writer.add_scalar('data/gradient_of_performance', (self.loss-oldLoss)/train_param.log_interval, t)
                 old_time_d = time_d.total_seconds()
                 oldLoss = self.loss
 
 
             if (t-1)%train_param.validation_interval == 0:
                 y_val = model(input_data_validate)
-                val_loss = criterion(y_val, output_data_validate[:, 5:])
+                val_loss = criterion(y_val, output_data_validate[:, 1:])
                 writer.add_scalar('data/val_loss', math.log(val_loss), t)
+                if val_loss.data[0] < bestValLoss:
+                    bestValLoss = val_loss.data[0]
+                    best_nn_parameters = copy.deepcopy(model.state_dict())
+                    saving_epochs = t
 
-                if val_loss.data[0] > oldValLoss:
+                if val_loss.data[0] > bestValLoss:#oldValLoss:
                     val_count = val_count+1
 
                 else:
 
                     val_count = 0
 
-                if val_loss.data[0] < bestValLoss:
 
-                    bestValLoss = val_loss.data[0]
-                    best_nn_parameters = copy.deepcopy(model.state_dict())
-                    saving_epochs = t
 
                 oldValLoss = val_loss.data[0]
                 writer.add_scalar('data/val_count', val_count, t)
@@ -573,7 +588,7 @@ class Trainer:
                
                 if self.plot_im:
 
-                    plot_vector = torch.cat((output_data_validate[0,0:5], y_val[0, :]), 0)
+                    plot_vector = torch.cat((output_data_validate[0,0:1], y_val[0, :]), 0)
                     dmp_v = self.createDMP(plot_vector, model.scale, 0.01, 25, True)
                     dmp = self.createDMP(output_data_validate[0,:], model.scale, 0.01, 25, True)
                     dmp.joint()
@@ -591,16 +606,19 @@ class Trainer:
 
             if (t - 1) % train_param.test_interval == 0:
                 y_test = model(input_data_test)
-                test_loss = criterion(y_test, output_data_test[:, 5:])
+                test_loss = criterion(y_test, output_data_test[:, 1:])
                 writer.add_scalar('data/test_loss', math.log(test_loss), t)
 
             '''if (t-1) % 1500 == 0:
                 optimizer.reset = True
                 print('reset optimizer')
-
+            '''
             if self.reseting_optimizer:
-                optimizer.reset = True'''
+                optimizer.reset = True
+            if val_count > 7:
 
+                train_param.stop_criterion = "reset optimizer"
+                optimizer.reset = True
 
             #End condition
             if inf_k*t > inf_k*train_param.epochs:
@@ -668,7 +686,7 @@ class Trainer:
         optimizer.step()#updating weights'''
         loss = optimizer.step(wrap)
 
-        self.loss = self.loss + loss
+        self.loss = self.loss + loss.data[0]
 
     def cancel_training(self):
 
