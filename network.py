@@ -44,6 +44,8 @@ class Network(torch.nn.Module):
         self.scale = scale
         self.loss = 0
 
+
+
     def forward(self, x):
         """
         Defines the layers connections

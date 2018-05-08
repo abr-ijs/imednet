@@ -7,11 +7,12 @@ class DMP_integrator(Function):
 
 
 
-    def __init__(self,N, tau, dt,Dof):
+    def __init__(self,N, tau, dt, Dof, scale):
         self.a_z = 48
         self.a_x = 2
         self.N = N
         self.c = np.exp(-self.a_x * np.linspace(0, 1, self.N))
+
         sigma2 = np.power((np.diff(self.c) / 2), 2)
         self.sigma2 = np.append(sigma2, sigma2[-1])
         self.tau = tau
@@ -20,38 +21,33 @@ class DMP_integrator(Function):
         self.y0 = [0]
         self.dy0 = np.zeros(Dof)
         self.Dof = Dof
+        self.scale = scale
 
     def forward(self, inputs):
 
-        w = np.zeros((self.N, self.Dof))
-        y0 = np.zeros((self.Dof))
 
-        goal = np.zeros((self.Dof))
 
         Y = np.zeros((self.time_steps, self.Dof))
 
-        for i in range(0,self.Dof):
+        inputs_np = (self.scale.x_max - self.scale.x_min) * (inputs.numpy() - self.scale.y_min) / (
+                self.scale.y_max - self.scale.y_min) + self.scale.x_min
 
-            Y[:,i] = self.integrate(inputs[0, (i * self.N):((i + 1) * self.N)].numpy(), inputs[0,(i+1)*(self.N)],self.dy0[i], inputs[0,(i+1) * (self.N + 1)], self.tau)
+        w = inputs_np[(1 + 2*self.Dof):(1+2*self.Dof+ self.N*self.Dof)].reshape(self.N,self.Dof)
 
+        for i in range(0, self.Dof):
 
-        #N = dmp_composition.N
-        #dt = dmp_composition.dt
-
-
-        #result = inputs *3
-
-
+            Y[:, i] = self.integrate(w[:,i], inputs_np[1+i], self.dy0[i], inputs_np[1+self.Dof+i], self.tau)
 
         return inputs.new(Y)
 
 
 
 
-    def backward(self, grad_outputs):
-        point_grads = np.zeros((self.N+2)*self.Dof)
 
-        for j in range(0,self.Dof):
+    def backward(self, grad_outputs):
+        point_grads = np.zeros(55)
+
+        '''for j in range(0,self.Dof):
             #weights
             for i in range(0,self.N):
                 weights = np.zeros((self.N))
@@ -67,14 +63,18 @@ class DMP_integrator(Function):
 
             #goal
 
+            weights = np.zeros((self.N))
+            point_grads[j * (self.Dof + 1) + self.Dof] = self.integrate(weights, 0, 0, 0, self.tau)
 
 
-        grad=grad_outputs*2
 
-        return grad_outputs.new(grad)
+        grad=grad_outputs*2'''
+
+        return grad_outputs.new(point_grads)
 
 
     def integrate(self,w,y0,dy0,goal,tau):
+
         Y = np.zeros((self.time_steps))
         y = y0
 
@@ -82,7 +82,7 @@ class DMP_integrator(Function):
 
         x = 1
 
-        for i in range(1, self.time_steps):
+        for i in range(0, self.time_steps):
             # state = self.DMP_integrate(state, dt )
 
             psi = np.exp(-0.5 * np.power((x - self.c), 2) / self.sigma2)
