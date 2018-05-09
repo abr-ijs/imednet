@@ -23,6 +23,9 @@ class DMP_integrator(Function):
         self.Dof = Dof
         self.scale = scale
 
+        #precomputation
+
+
     def forward(self, inputs):
 
 
@@ -47,29 +50,30 @@ class DMP_integrator(Function):
     def backward(self, grad_outputs):
         point_grads = np.zeros(55)
 
-        '''for j in range(0,self.Dof):
+        for j in range(0,self.Dof):
             #weights
-            for i in range(0,self.N):
+            for i in range(0, self.N):
                 weights = np.zeros((self.N))
                 weights[i] = 1
 
                 grad = self.integrate(weights, 0 ,0, 0, self.tau)
 
-                point_grads[j*(self.Dof+1)+i] = sum(grad*grad_outputs)
+                point_grads[i*self.Dof + 5+j] = sum(grad*grad_outputs[:, j])
 
-            #start_point
+           #start_point
             weights = np.zeros((self.N))
-            point_grads[j*(self.Dof+1) +self.Dof] = self.integrate(weights, 1, 0, 0, self.tau)
+            grad= self.integrate(weights, 1, 0, 0, self.tau)
+            point_grads[1 + j] = sum(grad * grad_outputs[:, j])
 
             #goal
 
             weights = np.zeros((self.N))
-            point_grads[j * (self.Dof + 1) + self.Dof] = self.integrate(weights, 0, 0, 0, self.tau)
+            grad=self.integrate(weights, 0, 0, 1, self.tau)
+            point_grads[1 + j + self.Dof] = sum(grad * grad_outputs[:, j])
 
-
-
-        grad=grad_outputs*2'''
-
+        '''     
+        '''
+        point_grads=point_grads*(self.scale.x_max - self.scale.x_min) / (self.scale.y_max - self.scale.y_min)
         return grad_outputs.new(point_grads)
 
 
