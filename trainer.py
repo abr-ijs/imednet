@@ -664,8 +664,284 @@ class Trainer:
 
         return best_nn_parameters
 
+    def learn_DMP(self, model, images, outputs, path, train_param, file, learning_rate=1e-4, momentum=0, decay=[0, 0]):
+        """
+        teaches the network using provided data
+
+        x -> input for the Network
+        y -> desired output of the network for given x
+        epochs -> how many times to repeat learning_rate
+        learning_rate -> how much the weight will be changed each epoch
+        log_interval -> on each epoch divided by log_interval log will be printed
+        """
+        root = tk.Tk()
+
+        button = tk.Button(root,
+                           text="QUIT",
+                           fg="red",
+                           command=self.cancel_training)
+        button1 = tk.Button(root,
+                            text="plot",
+                            fg="blue",
+                            command=self.plot_image)
+
+        buttonResetAdam = tk.Button(root,
+                                    text="reset ADAM",
+                                    fg="blue",
+                                    command=self.reset_ADAM)
+
+        button.pack(side=tk.LEFT)
+        button1.pack(side=tk.RIGHT)
+        buttonResetAdam.pack(side=tk.RIGHT)
+
+        # prepare parameters
+        starting_time = datetime.now()
+        train_param.data_samples = len(images)
+        val_count = 0
+        old_time_d = 0
+        oldLoss = 0
+        saving_epochs = 0
+
+        file.write(train_param.write_out())
+        print('Starting learning')
+        print(train_param.write_out())
+
+        # learn
+
+        writer = SummaryWriter(path + '/log')
+
+        command = ["tensorboard", "--logdir=" + path + "/log"]
+        proces = subprocess.Popen(command)
+        print(proces.pid)
+        print('init')
+
+        # Divide data
+        print("Dividing data")
+        input_data_train_b, output_data_train_b, input_data_test_b, output_data_test_b, input_data_validate_b, output_data_validate_b = self.databaseSplit(
+            images, outputs)
+
+        # dummy = model(torch.autograd.Variable(torch.rand(1,1600)))
+        # writer.add_graph(model, dummy)
+        window = webbrowser.open_new('http://fangorn:6006')
+
+        if train_param.cuda:
+            '''model = model.double().cuda()
+            input_data_train_b = input_data_train_b.double().cuda()
+            output_data_train_b = output_data_train_b.double().cuda()
+            input_data_test_b = input_data_test_b.double().cuda()
+            output_data_test_b = output_data_test_b.double().cuda()
+            input_data_validate_b = input_data_validate_b.double().cuda()
+            output_data_validate_b = output_data_validate_b.double().cuda()'''
+            model = model.cuda()
+            input_data_train_b = input_data_train_b.cuda()
+            output_data_train_b = output_data_train_b.cuda()
+            input_data_test_b = input_data_test_b.cuda()
+            output_data_test_b = output_data_test_b.cuda()
+            input_data_validate_b = input_data_validate_b.cuda()
+            output_data_validate_b = output_data_validate_b.cuda()
+
+        print('finish dividing')
+
+        criterion = torch.nn.MSELoss(size_average=True)  # For calculating loss (mean squared error)
+        # optimizer = torch.optim.SGD(self.parameters(), lr=learning_rate, mometum=momentum) # for updating weights
+        # optimizer = torch.optim.Adagrad(model.parameters(), lr=learning_rate, lr_decay = decay[0], weight_decay = decay[1]) #, momentum=momentum) # for updating weights
+        # optimizer = torch.optim.Adam(model.parameters(), eps = 0.001 )
+        # optimizer = torch.optim.SGD(model.parameters(), lr = 0.4) # for updating weights
+        # optimizer = torch.optim.RMSprop(model.parameters())
+
+        optimizer = correct_adam.SCG(model.parameters())
+        # optimizer = correct_adam.Adam(model.parameters(), lr = 0.0001, amsgrad=True)
+        # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 200)
+
+        y_val = model(input_data_validate_b)
+        oldValLoss = criterion(y_val, output_data_validate_b[:, :]).data[0]
+        bestValLoss = oldValLoss
+        best_nn_parameters = copy.deepcopy(model.state_dict())
+        # Infiniti epochs
+        if train_param.epochs == -1:
+            inf_k = 0
+        else:
+            inf_k = 1
+
+        self.train = True
+
+        t = 0
+
+        t_init = 200
+        lr = 0
+
+        while self.train:
+
+            input_data_train = input_data_train_b.clone()
+            output_data_train = output_data_train_b.clone()
+            input_data_test = input_data_test_b.clone()
+            output_data_test = output_data_test_b.clone()
+            input_data_validate = input_data_validate_b.clone()
+            output_data_validate = output_data_validate_b.clone()
+
+            root.update()
+            t = t + 1
+            i = 0
+            j = train_param.bunch
+
+            # scheduler.step()
+            # if t%t_init == 0:
+            #    scheduler.last_epoch = -1
+
+            # writer.add_scalar('data/learning_rate', scheduler.get_lr()[0], t)
+
+            self.loss = Variable(torch.Tensor([0]))
+            permutations = torch.randperm(len(input_data_train))
+            if model.isCuda():
+                permutations = permutations.cuda()
+                self.loss = self.loss.cuda()
+            input_data_train = input_data_train[permutations]
+            output_data_train = output_data_train[permutations]
+            ena = []
+            while j <= len(input_data_train):
+                self.learn_one_step(model, input_data_train[i:j], output_data_train[i:j, :], learning_rate, criterion,
+                                    optimizer)
+                i = j
+                j += train_param.bunch
+
+                '''for group in optimizer.param_groups:
+                    i = 0
+                    for p in group['params']:
+                        i = i+1
+                        if i ==15:
+
+                            r1 = p.data[0][0]'''
+
+            if i < len(input_data_train):
+                self.learn_one_step(model, input_data_train[i:], output_data_train[i:, :], learning_rate, criterion,
+                                    optimizer)
+
+            if (t - 1) % train_param.log_interval == 0:
+
+                self.loss = self.loss * train_param.bunch / len(input_data_train)
+                if t == 1:
+                    oldLoss = self.loss
+
+                print('Epoch: ', t, ' loss: ', self.loss.data[0])
+                time_d = datetime.now() - starting_time
+                writer.add_scalar('data/time', t, time_d.total_seconds())
+                writer.add_scalar('data/training_loss', math.log(self.loss), t)
+                writer.add_scalar('data/epochs_speed',
+                                  60 * train_param.log_interval / (time_d.total_seconds() - old_time_d), t)
+                writer.add_scalar('data/gradient_of_performance', (self.loss - oldLoss) / train_param.log_interval, t)
+                old_time_d = time_d.total_seconds()
+                oldLoss = self.loss
+
+            if (t - 1) % train_param.validation_interval == 0:
+                y_val = model(input_data_validate)
+                val_loss = criterion(y_val, output_data_validate[:, 1:])
+                writer.add_scalar('data/val_loss', math.log(val_loss), t)
+                if val_loss.data[0] < bestValLoss:
+                    bestValLoss = val_loss.data[0]
+                    best_nn_parameters = copy.deepcopy(model.state_dict())
+                    saving_epochs = t
+
+                if val_loss.data[0] > bestValLoss:  # oldValLoss:
+                    val_count = val_count + 1
+
+                else:
+
+                    val_count = 0
+
+                oldValLoss = val_loss.data[0]
+                writer.add_scalar('data/val_count', val_count, t)
+                print('Validatin: ', t, ' loss: ', val_loss.data[0], ' best loss:', bestValLoss)
+
+                if (t - 1) % 10 == 0:
+                    state = model.state_dict()
+                    mean_dict = dict()
+                    max_dict = dict()
+                    min_dict = dict()
+                    var_dict = dict()
+                    for grup in state:
+                        mean = torch.mean(state[grup])
+                        max = torch.max(state[grup])
+                        min = torch.min(state[grup])
+                        var = torch.var(state[grup])
+                        mean_dict[grup] = mean
+                        max_dict[grup] = max
+                        min_dict[grup] = min
+                        var_dict[grup] = var
+
+                    writer.add_scalars('data/mean', mean_dict, t)
+                    writer.add_scalars('data/max', max_dict, t)
+                    writer.add_scalars('data/min', min_dict, t)
+                    writer.add_scalars('data/var', var_dict, t)
+
+                if self.plot_im:
+                    plot_vector = torch.cat((output_data_validate[0, 0:1], y_val[0, :]), 0)
+                    dmp_v = self.createDMP(plot_vector, model.scale, 0.01, 25, True)
+                    dmp = self.createDMP(output_data_validate[0, :], model.scale, 0.01, 25, True)
+                    dmp.joint()
+                    dmp_v.joint()
+                    mat = self.show_dmp((input_data_validate.data[0]).cpu().numpy(), dmp.Y, dmp_v, plot=False)
+                    a = output_data_validate[0, :]
+                    writer.add_image('image' + str(t), mat)
+                    self.plot_im = False
+
+                    torch.save(model.state_dict(), path + '/net_parameters' + str(t))
+
+            if (t - 1) % train_param.test_interval == 0:
+                y_test = model(input_data_test)
+                test_loss = criterion(y_test, output_data_test[:, 1:])
+                writer.add_scalar('data/test_loss', math.log(test_loss), t)
+
+            '''if (t-1) % 1500 == 0:
+                optimizer.reset = True
+                print('reset optimizer')
+            '''
+            if self.reseting_optimizer:
+                optimizer.reset = True
+            if val_count > 7:
+                train_param.stop_criterion = "reset optimizer"
+                optimizer.reset = True
+
+            # End condition
+            if inf_k * t > inf_k * train_param.epochs:
+                self.train = False
+                train_param.stop_criterion = "max epochs reached"
+
+            if val_count > train_param.val_fail:
+                self.train = False
+                train_param.stop_criterion = "max validation fail reached"
+
+            '''
+            writer.add_scalar('data/test_lr', lr, t)
 
 
+            writer.add_scalar('data/loss_lr', self.loss.data[0], lr)
+
+            lr = 1.1**(t/40)-1
+            print(lr)
+            for param_group in optimizer.param_groups:
+                param_group['lr'] = lr
+            '''
+
+        train_param.real_epochs = t
+        train_param.min_train_loss = self.loss.data[0]
+        train_param.min_val_loss = bestValLoss
+        train_param.min_test_loss = test_loss.data[0]
+        train_param.elapsed_time = time_d.total_seconds()
+        train_param.val_count = val_count
+        k = (self.loss - oldLoss) / train_param.log_interval
+        train_param.min_grad = k.data[0]
+        train_param.stop_criterion = train_param.stop_criterion + self.user_stop
+
+        file.write('\n' + str(optimizer))
+        file.write('\n' + str(criterion))
+        file.write('\n saving_epochs = ' + str(saving_epochs))
+        file.write(train_param.write_out_after())
+        writer.close()
+        proces.terminate()
+
+        print('Learning finished\n')
+
+        return best_nn_parameters
 
     def learn_one_step(self, model, x, y, learning_rate, criterion, optimizer):
 

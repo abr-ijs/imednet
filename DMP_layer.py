@@ -2,8 +2,9 @@ import torch
 from torch.autograd import Function
 from torch.autograd import Variable
 import numpy as np
-
+from copy import  deepcopy
 class DMP_integrator(Function):
+
 
 
 
@@ -21,8 +22,14 @@ class DMP_integrator(Function):
         self.y0 = [0]
         self.dy0 = np.zeros(Dof)
         self.Dof = Dof
-        self.scale = scale
 
+        self.x_max = torch.from_numpy(scale.x_max).float().cuda()
+        self.x_min = torch.from_numpy(scale.x_min).float().cuda()
+        self.y_max = scale.y_max
+        self.y_min = scale.y_min
+
+
+        self.K = (self.x_max[1:55] - self.x_min[1:55]) / (self.y_max - self.y_min)
         #precomputation
 
 
@@ -32,14 +39,13 @@ class DMP_integrator(Function):
 
         Y = np.zeros((self.time_steps, self.Dof))
 
-        inputs_np = (self.scale.x_max - self.scale.x_min) * (inputs.numpy() - self.scale.y_min) / (
-                self.scale.y_max - self.scale.y_min) + self.scale.x_min
+        inputs_np = self.K* (inputs - self.y_min)+ self.x_min[1:55]
 
-        w = inputs_np[(1 + 2*self.Dof):(1+2*self.Dof+ self.N*self.Dof)].reshape(self.N,self.Dof)
+        w = inputs_np[(2*self.Dof):(2*self.Dof+ self.N*self.Dof)].view(self.N,self.Dof)
 
         for i in range(0, self.Dof):
 
-            Y[:, i] = self.integrate(w[:,i], inputs_np[1+i], self.dy0[i], inputs_np[1+self.Dof+i], self.tau)
+            Y[:, i] = self.integrate(w[:,i], inputs_np[i], self.dy0[i], inputs_np[self.Dof+i], self.tau)
 
         return inputs.new(Y)
 
@@ -48,7 +54,7 @@ class DMP_integrator(Function):
 
 
     def backward(self, grad_outputs):
-        point_grads = np.zeros(55)
+        point_grads = np.zeros(54)
 
         for j in range(0,self.Dof):
             #weights
@@ -58,22 +64,22 @@ class DMP_integrator(Function):
 
                 grad = self.integrate(weights, 0 ,0, 0, self.tau)
 
-                point_grads[i*self.Dof + 5+j] = sum(grad*grad_outputs[:, j])
+                point_grads[i*self.Dof + 4+j] = sum(grad*grad_outputs[:, j])
 
            #start_point
             weights = np.zeros((self.N))
             grad= self.integrate(weights, 1, 0, 0, self.tau)
-            point_grads[1 + j] = sum(grad * grad_outputs[:, j])
+            point_grads[j] = sum(grad * grad_outputs[:, j])
 
             #goal
 
             weights = np.zeros((self.N))
             grad=self.integrate(weights, 0, 0, 1, self.tau)
-            point_grads[1 + j + self.Dof] = sum(grad * grad_outputs[:, j])
+            point_grads[ j + self.Dof] = sum(grad * grad_outputs[:, j])
 
         '''     
         '''
-        point_grads=point_grads*(self.scale.x_max - self.scale.x_min) / (self.scale.y_max - self.scale.y_min)
+        point_grads=point_grads*self.K
         return grad_outputs.new(point_grads)
 
 
@@ -87,7 +93,7 @@ class DMP_integrator(Function):
         x = 1
 
         for i in range(0, self.time_steps):
-            # state = self.DMP_integrate(state, dt )
+
 
             psi = np.exp(-0.5 * np.power((x - self.c), 2) / self.sigma2)
 

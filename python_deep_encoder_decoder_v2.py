@@ -13,7 +13,7 @@ from torch.autograd import Variable
 import numpy as np
 import matplotlib.pyplot as plt
 
-from network import Network, training_parameters
+from network import Network,Network_DMP, training_parameters
 from trajectory_loader import trajectory_loader as loader
 from trainer import Trainer
 from matLoader import matLoader
@@ -25,7 +25,7 @@ from os import makedirs
 
 dateset_name = 'slike_780.4251'
 
-load = False
+load = True
 
 cuda = True
 plot = False
@@ -47,7 +47,7 @@ file.write('Network created: ' + date)
 
 #Load data and scale it.....................................................
 
-images, outputs, scale, or_tr= matLoader.loadData(dateset_name)
+images, outputs, scale, or_tr= matLoader.loadData(dateset_name,load_original_trajectories=True)
 
 
 #Create network and save model.................................................
@@ -71,17 +71,17 @@ layerSizes = [numOfInputs] + HiddenLayer + [out]
 
 file.write('\nNeurons: ' + str(layerSizes))
 
+model_new = Network_DMP(layerSizes, conv, scale)
 
-model = Network(layerSizes, conv, scale)
 
 
 #inicalizacija
 if load:
-    net_id = '2018-04-24 16:37:23.769899'
-    #2018-04-25 13:36:32.095726 0.00030
+    net_id = '2018-04-25 13:36:32.095726'
+
     load_parameters_file = directory_path + 'NN ' + net_id
     print(' + Loaded parameters from file: ', load_parameters_file)
-    model.load_state_dict(torch.load(load_parameters_file+'/net_parameters'))  # loading parameters
+    model_new.load_state_dict(torch.load(load_parameters_file+'/net_parameters'))  # loading parameters
     '''if load_from_cuda:
         model.load_state_dict(torch.load(parameters_file, map_location=lambda storage, loc: storage)) # loading parameters
     else:
@@ -92,7 +92,7 @@ else:
 
 
 
-    for p in list(model.parameters()):
+    for p in list(model_new.parameters()):
         if p.data.ndimension() ==1:
             torch.nn.init.constant(p, 0)
         else:
@@ -109,7 +109,8 @@ else:
 
 
 
-torch.save(model, (directory_path+directory_name+'/model.pt'))
+
+torch.save(model_new, (directory_path+directory_name+'/model.pt'))
 
 #Set learning.....................................................................
 
@@ -131,7 +132,7 @@ if load==True:
     #pass
     trener.indeks = np.load(directory_path + 'NN ' + net_id +'/net_indeks.npy')
 
-best_nn_parameters = trener.learn(model, images, outputs, directory_path + directory_name, train_param, file, learning_rate, momentum)
+best_nn_parameters = trener.learn_DMP(model_new, images, or_tr, directory_path + directory_name, train_param, file, learning_rate, momentum)
 
 
 

@@ -9,7 +9,7 @@ Created on Dec 14 2017
 VERSION 1.1
 """
 import torch
-
+import DMP_layer
 import numpy as np
 
 
@@ -139,3 +139,59 @@ class training_parameters():
 
         return learn_info
 
+
+
+class Network_DMP(torch.nn.Module):
+    def __init__(self, layerSizes = [784,200,50], conv = None , scale = None):
+        """
+        Creates a custom Network
+
+        layerSizes -> list containing layer inputs/ouptuts (minimum length = 3)
+            example:
+                layerSizes = [784,500,200,50]
+                inputLayer -> torch.nn.Linear(784,500)
+                middleLayers -> [torch.nn.Linear(500,200)]
+                outputLayer -> torch.nn.Linear(200,50)
+        """
+        super(Network_DMP, self).__init__()
+        self.conv = conv
+        if self.conv:
+            self.imageSize = int(np.sqrt(layerSizes[0]))
+            self.convSize = (self.imageSize - conv[1] + 1)**2 * conv[0]
+            self.firstLayer = torch.nn.Conv2d(1, conv[0], conv[1])
+            self.inputLayer = torch.nn.Linear(self.convSize, layerSizes[1])
+
+        else:
+            self.inputLayer = torch.nn.Linear(layerSizes[0], layerSizes[1])
+        self.middleLayers = []
+        for i in range(1, len(layerSizes) - 2):
+            layer = torch.nn.Linear(layerSizes[i], layerSizes[i+1])
+            self.middleLayers.append(layer)
+            self.add_module("middleLayer_" + str(i), layer)
+        self.outputLayer = torch.nn.Linear(layerSizes[-2], layerSizes[-1])
+        self.scale = scale
+        self.loss = 0
+        self.func = DMP_layer.DMP_integrator(25, 3, 0.01, 2, scale)
+
+
+    def forward(self, x):
+        """
+        Defines the layers connections
+
+        forward(x) -> result of forward propagation through network
+        x -> input to the Network
+        """
+        #activation_fn = torch.nn.ReLU6()
+        activation_fn = torch.nn.Tanh()
+
+        if self.conv:
+            x = x.view(-1, 1, self.imageSize, self.imageSize)
+            x = self.firstLayer(x)
+            x = x.view(-1, self.convSize)
+
+        x = activation_fn(self.inputLayer(x))
+        for layer in self.middleLayers:
+            x = activation_fn(layer(x))
+        output = self.outputLayer(x)
+        output = self.func(output)
+        return output

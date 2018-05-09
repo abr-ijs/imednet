@@ -60,7 +60,9 @@ class matLoader:
         if load_original_trajectories:
             trj_data = data['trj'][0, 0][0]
 
-            original_trj = [(trj) for trj in trj_data[40:60]]
+            original_trj = [(trj) for trj in trj_data[:]]
+
+
         scaling = maping()
         maping.x_max = x_max
         maping.x_min = x_min
