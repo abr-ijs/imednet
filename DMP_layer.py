@@ -12,10 +12,12 @@ class DMP_integrator(Function):
         self.a_z = 48
         self.a_x = 2
         self.N = N
-        self.c = np.exp(-self.a_x * np.linspace(0, 1, self.N))
+        c = np.exp(-self.a_x * np.linspace(0, 1, self.N))
 
-        sigma2 = np.power((np.diff(self.c) / 2), 2)
-        self.sigma2 = np.append(sigma2, sigma2[-1])
+        sigma2 = np.power((np.diff(c) / 2), 2)
+        sigma2 = np.append(sigma2, sigma2[-1])
+        self.c = torch.from_numpy(c).float().cuda()
+        self.sigma2 = torch.from_numpy(sigma2).float().cuda()
         self.tau = tau
         self.dt = dt
         self.time_steps = int(np.round(self.tau / self.dt))
@@ -54,12 +56,12 @@ class DMP_integrator(Function):
 
 
     def backward(self, grad_outputs):
-        point_grads = np.zeros(54)
+        point_grads = torch.zeros(54)
 
         for j in range(0,self.Dof):
             #weights
             for i in range(0, self.N):
-                weights = np.zeros((self.N))
+                weights = torch.zeros((self.N))
                 weights[i] = 1
 
                 grad = self.integrate(weights, 0 ,0, 0, self.tau)
@@ -67,13 +69,13 @@ class DMP_integrator(Function):
                 point_grads[i*self.Dof + 4+j] = sum(grad*grad_outputs[:, j])
 
            #start_point
-            weights = np.zeros((self.N))
+            weights = torch.zeros((self.N))
             grad= self.integrate(weights, 1, 0, 0, self.tau)
             point_grads[j] = sum(grad * grad_outputs[:, j])
 
             #goal
 
-            weights = np.zeros((self.N))
+            weights = torch.zeros((self.N))
             grad=self.integrate(weights, 0, 0, 1, self.tau)
             point_grads[ j + self.Dof] = sum(grad * grad_outputs[:, j])
 
@@ -85,7 +87,7 @@ class DMP_integrator(Function):
 
     def integrate(self,w,y0,dy0,goal,tau):
 
-        Y = np.zeros((self.time_steps))
+        Y = torch.zeros((self.time_steps))
         y = y0
 
         z = dy0 * tau
@@ -95,9 +97,9 @@ class DMP_integrator(Function):
         for i in range(0, self.time_steps):
 
 
-            psi = np.exp(-0.5 * np.power((x - self.c), 2) / self.sigma2)
+            psi = torch.exp(-0.5 * torch.pow((x - self.c), 2) / self.sigma2)
 
-            fx = np.sum((w * x) * psi) / np.sum(psi)
+            fx = torch.sum((w * x) * psi) / torch.sum(psi)
 
             dx = (-self.a_x * x) / tau
             dz = self.a_z * (self.a_z / 4 * (goal - y) - z) + fx

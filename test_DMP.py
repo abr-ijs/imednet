@@ -91,7 +91,7 @@ for j in range(0,100):
 
 
 
-    to = Variable(torch.from_numpy(dmp.Y)).float()
+    to = Variable(torch.from_numpy(dmp.Y)).float().cuda()
     loss = criterion(trajektorija, to)
     loss_vector = criterion2(trajektorija, to)
     loss_vector.backward()
