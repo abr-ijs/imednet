@@ -81,7 +81,7 @@ loss_vector.backward()'''
 
 
 loss_graph = np.zeros((100, 3))
-n_w = 0
+n_w = 10
 start_w = test_output.data[n_w+1]
 for j in range(0,100):
     optimizer.zero_grad()
@@ -100,7 +100,7 @@ for j in range(0,100):
 
     loss_graph[j, 2] = net.inputLayer.weight.grad.data[n_w, n_w]/test_output.data[n_w+1]
     test= net.inputLayer.weight.grad.data/ test_output.data[1:55]
-    test1 = test.numpy()
+
 
 
 gradient= np.gradient(loss_graph[:,1])/np.gradient(loss_graph[:,0])
