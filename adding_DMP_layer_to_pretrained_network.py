@@ -6,36 +6,42 @@ from torch.autograd import Variable
 from trainer import Trainer
 from network import Network_DMP, training_parameters
 
-
+from datetime import datetime
 N = 25
 
 numOfInputs = 1600
 HiddenLayer = [1500, 1300, 1000, 600, 200, 20, 35]
 conv = None
 
-
+date = str(datetime.now())
 out = 2*N + 4
 #out = 2*N
 
 layerSizes = [numOfInputs] + HiddenLayer + [out]
 
-
+net_id = '2018-04-25 13:36:32.095726'
 
 directory_path = '/home/rpahic/Documents/Neural_networks/'
-directory_name = 'NN ' + '2018-04-25 13:36:32.095726'
+directory_name = 'NN ' + net_id
 
 model_old = torch.load(directory_path+directory_name+'/model.pt')
-
+parameters_file = directory_path + directory_name + '/net_parameters'
 state = torch.load(directory_path+directory_name+'/net_parameters')
 
 dateset_name = 'slike_780.4251'
 images, outputs, scale, original_trj = matLoader.loadData(dateset_name, load_original_trajectories=True)
 
+file = open(directory_path+directory_name+'/Network_description.txt','w')
 
+file.write('Network created: ' + date)
 
 model = Network_DMP(layerSizes, conv, scale)
 
 model.load_state_dict(state)
+model.register_buffer('DMPp', model.DMPparam.data_tensor)
+model.register_buffer('scale_t', model.DMPparam.scale_tensor)
+model.register_buffer('param_grad', model.DMPparam.grad_tensor)
+
 input_image = Variable(torch.from_numpy(np.array(images[2]))).float()
 trajektorija=model(input_image)
 trainer = Trainer()
@@ -43,4 +49,43 @@ test_output = Variable(torch.from_numpy(np.array(outputs[2])), requires_grad=Tru
 dmp = trainer.createDMP(test_output, scale, 0.01, 25, cuda=False)
 dmp.joint()
 mat = trainer.show_dmp(input_image.data.numpy(), trajektorija.data.numpy(), dmp, plot=True)
+
+
+
+
+
+torch.save(model, (directory_path+directory_name+'/model.pt'))
+
+#Set learning.....................................................................
+
+#learning params
+
+train_param = training_parameters()
+train_param.epochs = -1
+learning_rate = 0.0005
+momentum = 0.5
+train_param.bunch = 128
+train_param.training_ratio = 0.7
+train_param.validation_ratio = 0.15
+train_param.test_ratio = 0.15
+train_param.val_fail = 60
+
+
+trener = Trainer()
+
+
+trener.indeks = np.load(directory_path + 'NN ' + net_id +'/net_indeks.npy')
+
+best_nn_parameters = trener.learn_DMP(model, images, original_trj, directory_path + directory_name, train_param, file, learning_rate, momentum)
+
+
+
+
+#parameters = list(model.parameters())
+
+#torch.save(model.state_dict(), parameters_file) # saving parameters
+
+np.save(directory_path+directory_name+'/net_indeks', trener.indeks)
+torch.save(best_nn_parameters, parameters_file)
+file.close()
 

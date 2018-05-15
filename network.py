@@ -171,7 +171,11 @@ class Network_DMP(torch.nn.Module):
         self.outputLayer = torch.nn.Linear(layerSizes[-2], layerSizes[-1])
         self.scale = scale
         self.loss = 0
-        self.func = DMP_layer.DMP_integrator(25, 3, 0.01, 2, scale)
+        self.DMPparam = DMP_layer.createDMPparam(25, 3, 0.01, 2, scale)
+        self.func = DMP_layer.DMP_integrator()
+        '''self.register_buffer('DMPp', self.DMPparam.data_tensor)
+        self.register_buffer('scale_t', self.DMPparam.scale_tensor)
+        self.register_buffer('param_grad', self.DMPparam.grad_tensor)'''
 
 
     def forward(self, x):
@@ -192,6 +196,6 @@ class Network_DMP(torch.nn.Module):
         x = activation_fn(self.inputLayer(x))
         for layer in self.middleLayers:
             x = activation_fn(layer(x))
-        output = self.outputLayer(x)
-        output = self.func(output)
+        x = self.outputLayer(x)
+        output = self.func.apply(x, self.DMPp,self.param_grad,self.scale_t)
         return output

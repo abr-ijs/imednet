@@ -14,8 +14,12 @@ class Net(nn.Module):
     def __init__(self,scale):
         super(Net, self).__init__()
         self.inputLayer = torch.nn.Linear(54, 54)
-        self.func =DMP_layer.DMP_integrator()
+        self.func = DMP_layer.DMP_integrator()
         self.DMPparam = DMP_layer.createDMPparam(25, 3, 0.01, 2, scale)
+
+        self.register_buffer('DMPp', self.DMPparam.data_tensor)
+        self.register_buffer('scale', self.DMPparam.scale_tensor)
+        self.register_buffer('param_grad', self.DMPparam.grad_tensor)
 
 
 
@@ -24,8 +28,8 @@ class Net(nn.Module):
         ctx=2
         #x =  nn.functional.relu(x)
         x = self.inputLayer(x)
-        r = 8
-        x = self.func(ctx,x, r )
+
+        x = self.func.apply(x, self.DMPp,self.param_grad,self.scale)
         return x
 
 '''self.DMPparam.data'''
@@ -46,15 +50,15 @@ print(net)
 n=0
 for p in list(net.parameters()):
     if p.data.ndimension() == 1:
-        torch.nn.init.constant(p, 0)
+        torch.nn.init.constant_(p, 0)
     else:
 
         p.data=torch.eye(54)
 
 
-test_output = Variable(torch.from_numpy(np.array(outputs[40+n])), requires_grad=True).float()
+test_output = Variable(torch.from_numpy(np.array(outputs[40+n:42+n])), requires_grad=True).float()
 
-input_image = Variable(torch.from_numpy(np.array(images[40+n]))).float()
+input_image = Variable(torch.from_numpy(np.array(images[40+n:42+n]))).float()
 
 optimizer = torch.optim.Adam(net.parameters(), eps=0.001)
 optimizer.zero_grad()
@@ -62,7 +66,7 @@ optimizer.zero_grad()
 
 trainer = Trainer()
 
-dmp = trainer.createDMP(test_output, scale, 0.01, 25, cuda=True)
+dmp = trainer.createDMP(test_output[0], scale, 0.01, 25, cuda=True)
 dmp.joint()
 
 
@@ -84,19 +88,20 @@ loss_vector = criterion2(trajektorija, to)
 loss_vector.backward()'''
 
 
-
-loss_graph = np.zeros((100, 3))
+points=100
+loss_graph = np.zeros((points, 3))
 n_w = 10
-start_w = test_output.data[n_w+1]
-for j in range(0,100):
+start_w = test_output[0,n_w+1].item()
+for j in range(10,points):
     optimizer.zero_grad()
-    test_output.data[n_w+1] = start_w+(j-50)/50
-    trajektorija = net(test_output[1:55])
+    test_output.data[0,n_w+1] = start_w+(j-(points/2))/(points/2)
+
+    trajektorija = net(test_output[:,1:55])
 
 
 
 
-    to = Variable(torch.from_numpy(dmp.Y)).float().cuda()
+    to = torch.from_numpy(dmp.Y).float().cuda()
     loss = criterion(trajektorija, to)
     loss_vector = criterion2(trajektorija, to)
     loss_vector.backward()
