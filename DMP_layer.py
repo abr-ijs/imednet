@@ -79,6 +79,8 @@ class DMP_integrator(Function):
 
         w = inputs_np[:,(2*int(parameters[0].item())):(2*int(parameters[0].item()) + int(parameters[1].item())*int(parameters[0].item()))]\
             .contiguous().view(int(parameters[0].item()*inputs.shape[0]),int(parameters[1].item()))
+
+
         if inputs.is_cuda == True:
 
             X = torch.zeros(int(parameters[0].item()*inputs.shape[0]),int(parameters[2].item())).cuda()
@@ -87,8 +89,8 @@ class DMP_integrator(Function):
 
 
 
-        X = integrate(parameters,w, inputs_np[:,range(0,int(parameters[0].item()))], torch.zeros(int(parameters[0].item())).cuda(),
-                      inputs_np[:,range(int(parameters[0].item()),int(parameters[0].item())*2)], 3)
+        X = integrate(parameters,w, inputs_np[:,range(0,int(parameters[0].item()))].view(int(parameters[0].item())*2,), torch.zeros(2*int(parameters[0].item())).cuda(),
+                      inputs_np[:,range(int(parameters[0].item()),int(parameters[0].item())*2)].view(int(parameters[0].item())*2,), 3)
 
 
         return inputs.new(X)
@@ -133,9 +135,9 @@ def integrate(data,w,y0,dy0,goal,tau):
 
     x = 1
     if w.is_cuda==True:
-        Y = torch.zeros((int(data[2].item()))).cuda()
+        Y = torch.zeros((w.shape[0],int(data[2].item()))).cuda()
     else:
-        Y = torch.zeros((int(data[2].item())))
+        Y = torch.zeros((w.shape[0],int(data[2].item())))
 
 
     for i in range(0, int(data[2].item())):
@@ -143,7 +145,8 @@ def integrate(data,w,y0,dy0,goal,tau):
 
         psi = torch.exp(-0.5 * torch.pow((x - data[6:(6+int(data[1].item()))]),2) / data[(6+int(data[1].item())):(6+int(data[1].item())*2)])
 
-        fx = torch.sum((w * x) * psi) / torch.sum(psi)
+        #fx = torch.sum((w[3,:] * x) * psi) / torch.sum(psi)
+        fx = torch.mv(w*x,psi) / torch.sum(psi)
 
         dx = (-data[4].item() * x) / tau
         dz = data[5].item() * (data[5].item() / 4 * (goal - y) - z) + fx
@@ -156,7 +159,7 @@ def integrate(data,w,y0,dy0,goal,tau):
         y = y + dy * data[3].item()
         z = z + dz * data[3].item()
 
-        Y[i]=y
+        Y[:,i]=y
 
     return Y
 
@@ -208,18 +211,18 @@ class createDMPparam():
         for j in range(0, self.Dof):
             # weights
             for i in range(0, self.N):
-                weights = torch.zeros((self.N))
-                weights[i] = 1
+                weights = torch.zeros((1,self.N))
+                weights[0,i] = 1
 
                 grad[:, i * self.Dof + 4 + j] = integrate(data_tensor, weights, 0, 0, 0, self.tau)
 
             # start_point
-            weights = torch.zeros((self.N))
+            weights = torch.zeros((1,self.N))
             grad[:, j] = integrate(data_tensor, weights, 1, 0, 0, self.tau)
 
             # goal
 
-            weights = torch.zeros((self.N))
+            weights = torch.zeros((1,self.N))
             grad[:, j + self.Dof] = integrate(data_tensor, weights, 0, 0, 1, self.tau)
 
         '''

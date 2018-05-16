@@ -67,7 +67,9 @@ optimizer.zero_grad()
 trainer = Trainer()
 
 dmp = trainer.createDMP(test_output[0], scale, 0.01, 25, cuda=True)
+dmp2=trainer.createDMP(test_output[1], scale, 0.01, 25, cuda=True)
 dmp.joint()
+dmp2.joint()
 
 
 DMP = DMP_layer.DMP_integrator(25, 3, 0.01, 2, scale)
@@ -101,12 +103,13 @@ for j in range(10,points):
 
 
 
-    to = torch.from_numpy(dmp.Y).float().cuda()
-    loss = criterion(trajektorija, to)
-    loss_vector = criterion2(trajektorija, to)
+    to = torch.from_numpy(dmp.Y).float().transpose(1,0).cuda()
+    loss = criterion(trajektorija[0:2, :], to)
+    to = torch.cat((to,torch.from_numpy(dmp2.Y).float().transpose(1,0).cuda()))
+    loss_vector = criterion2(trajektorija[:,:], to)
     loss_vector.backward()
     loss_graph[j, 0] = test_output.data[n_w+1]
-    loss_graph[j, 1] = loss_vector
+    loss_graph[j, 1] = loss
 
     loss_graph[j, 2] = net.inputLayer.weight.grad.data[n_w, n_w]/test_output.data[n_w+1]
     test= net.inputLayer.weight.grad.data/ test_output.data[1:55]

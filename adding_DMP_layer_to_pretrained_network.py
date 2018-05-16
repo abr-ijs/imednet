@@ -54,7 +54,7 @@ mat = trainer.show_dmp(input_image.data.numpy(), trajektorija.data.numpy(), dmp,
 
 
 
-torch.save(model, (directory_path+directory_name+'/model.pt'))
+#torch.save(model, (directory_path+directory_name+'/model.pt'))
 
 #Set learning.....................................................................
 
