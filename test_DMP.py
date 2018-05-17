@@ -79,6 +79,11 @@ criterion2 = torch.nn.MSELoss()
 
 
 net = net.cuda()
+
+
+#test_output1=torch.cat((test_output[:,0:5].transpose(1,0),test_output[:,5:].contiguous().view(50,-1)))
+#test_output1=test_output1.transpose(1,0)
+
 test_output = test_output.cuda()
 
 input_image = input_image.cuda()
@@ -90,11 +95,13 @@ loss_vector = criterion2(trajektorija, to)
 loss_vector.backward()'''
 
 
-points=100
+points=10
 loss_graph = np.zeros((points, 3))
 n_w = 10
 start_w = test_output[0,n_w+1].item()
-for j in range(10,points):
+print(start_w)
+
+for j in range(0,points):
     optimizer.zero_grad()
     test_output.data[0,n_w+1] = start_w+(j-(points/2))/(points/2)
 
@@ -107,14 +114,21 @@ for j in range(10,points):
     loss = criterion(trajektorija[0:2, :], to)
     to = torch.cat((to,torch.from_numpy(dmp2.Y).float().transpose(1,0).cuda()))
     loss_vector = criterion2(trajektorija[:,:], to)
+    '''f=torch.ones(2, 54).cuda()
+    f.requires_grad=True
+    r=DMP.apply(f, net.DMPp,net.param_grad,net.scale)
+    r.backward(torch.ones((300, 4)))
+    DMP.backward(DMP.ctx,torch.ones((300, 4)))
+    DMP.backward(torch.ones((300, 4)))'''
     loss_vector.backward()
-    loss_graph[j, 0] = test_output.data[n_w+1]
-    loss_graph[j, 1] = loss
+    loss_graph[j, 0] = test_output[0,n_w+1].item()
+    loss_graph[j, 1] = loss_vector.item()
+    print(loss.item())
 
-    loss_graph[j, 2] = net.inputLayer.weight.grad.data[n_w, n_w]/test_output.data[n_w+1]
-    test= net.inputLayer.weight.grad.data/ test_output.data[1:55]
+    #loss_graph[j, 2] = net.param_grad[n_w, n_w].item()/test_output[0,n_w+1].item()
+    loss_graph[j, 2] = net.inputLayer.weight.grad.data[n_w, n_w] / test_output.data[0,n_w + 1]
 
-
+print(loss_vector.grad_fn.next_functions[0][0])
 
 gradient= np.gradient(loss_graph[:,1])/np.gradient(loss_graph[:,0])
 plt.plot(loss_graph[:,0],loss_graph[:,1],label="test1")

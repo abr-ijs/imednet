@@ -77,15 +77,16 @@ class DMP_integrator(Function):
         inputs_np = scaling[0:division]* (inputs - scaling[-1]) + scaling[division:division*2]
         ctx.scale = scaling[0:division]
 
-        w = inputs_np[:,(2*int(parameters[0].item())):(2*int(parameters[0].item()) + int(parameters[1].item())*int(parameters[0].item()))]\
-            .contiguous().view(int(parameters[0].item()*inputs.shape[0]),int(parameters[1].item()))
+        '''w = inputs_np[:,(2*int(parameters[0].item())):(2*int(parameters[0].item()) + int(parameters[1].item())*int(parameters[0].item()))] \
+            .transpose(1,0).contiguous().view(int(parameters[0].item()*inputs.shape[0]),int(parameters[1].item()))'''
 
-
-        if inputs.is_cuda == True:
+        w = torch.cat((inputs_np[:,range(2*int(parameters[0].item()),(2*int(parameters[0].item()) + int(parameters[1].item())*int(parameters[0].item()))-1,2)],
+                       inputs_np[:,range(1+2*int(parameters[0].item()),(2*int(parameters[0].item()) + int(parameters[1].item())*int(parameters[0].item())),2)]),1).view(-1,25)
+        '''if inputs.is_cuda == True:
 
             X = torch.zeros(int(parameters[0].item()*inputs.shape[0]),int(parameters[2].item())).cuda()
         else:
-            X = torch.zeros(( int(parameters[0].item()*inputs.shape[0])),int(parameters[2].item()))
+            X = torch.zeros(( int(parameters[0].item()*inputs.shape[0])),int(parameters[2].item()))'''
 
 
 
@@ -97,16 +98,18 @@ class DMP_integrator(Function):
 
     @staticmethod
     def backward(ctx, grad_outputs):
+
         parameters=ctx.param
 
         grad=ctx.grad
         scale=ctx.scale
-        if grad_outputs.is_cuda == True:
 
-            point_grads = torch.zeros(54).cuda()
+        '''if grad_outputs.is_cuda == True:
+
+            point_grads = torch.zeros(int(grad_outputs.shape[0]/2), 54).cuda()
         else:
-            point_grads = torch.zeros(54)
-
+            point_grads = torch.zeros(int(grad_outputs.shape[0]/2), 54)'''
+        '''
         for j in range(0,int(parameters[0].item())):
             #weights
             for i in range(0, int(parameters[1].item())):
@@ -118,11 +121,18 @@ class DMP_integrator(Function):
 
             #goal
 
-            point_grads[ j + int(parameters[0].item())] = sum(grad[:, j + int(parameters[0].item())] * grad_outputs[:, j])
+            point_grads[ j + int(parameters[0].item())] = sum(grad[:, j + int(parameters[0].item())] * grad_outputs[:, j])'''
 
-        '''     
-        '''
+
+
+        k = torch.mm(grad_outputs,grad).transpose(1,0).contiguous()
+
+
+        point_grads = k.view(-1,54)
         point_grads = point_grads*scale
+        #import pdb;
+        #pdb.set_trace()
+
         return grad_outputs.new(point_grads),None,None,None
 
 
@@ -161,6 +171,18 @@ def integrate(data,w,y0,dy0,goal,tau):
 
         Y[:,i]=y
 
+
+
+
+
+
+
+
+
+
+
+
+
     return Y
 
 
@@ -195,35 +217,38 @@ class createDMPparam():
 
         self.K = (self.x_max[1:55] - self.x_min[1:55]) / (self.y_max - self.y_min)
 
-        scale_tensor=torch.cat((self.K,self.x_min[1:55],self.x_max[1:55],torch.tensor([self.y_max,self.y_min]).float()),0)
+        scale_tensor = torch.cat((self.K,self.x_min[1:55],self.x_max[1:55],torch.tensor([self.y_max,self.y_min]).float()),0)
 
         self.scale_tensor = scale_tensor
         # precomputation
-        grad = torch.zeros((300, 54))
+        grad = torch.zeros((300, 27))
 
-        self.data={'time_steps':self.time_steps,'c':self.c,'sigma2':self.sigma2,'a_z':self.a_z,'a_x':self.a_x,'dt':self.dt,'Y':self.Y}
+        self.data = {'time_steps':self.time_steps,'c':self.c,'sigma2':self.sigma2,'a_z':self.a_z,'a_x':self.a_x,'dt':self.dt,'Y':self.Y}
         dmp_data = torch.tensor([self.Dof,self.N,self.time_steps,self.dt,self.a_x,self.a_z])
-        data_tensor= torch.cat((dmp_data,self.c,self.sigma2),0)
+        data_tensor = torch.cat((dmp_data,self.c,self.sigma2),0)
 
         data_tensor.dy0 = self.dy0
         data_tensor.tau = self.tau
 
-        for j in range(0, self.Dof):
+        #for j in range(0, self.Dof):
             # weights
-            for i in range(0, self.N):
-                weights = torch.zeros((1,self.N))
-                weights[0,i] = 1
 
-                grad[:, i * self.Dof + 4 + j] = integrate(data_tensor, weights, 0, 0, 0, self.tau)
-
-            # start_point
+        for i in range(0, self.N):
             weights = torch.zeros((1,self.N))
-            grad[:, j] = integrate(data_tensor, weights, 1, 0, 0, self.tau)
+            weights[0,i] = 1
+            grad[:, i  + 2 ] = integrate(data_tensor, weights, 0, 0, 0, self.tau)
+            #grad[:, i * self.Dof + 4 + j] = integrate(data_tensor, weights, 0, 0, 0, self.tau)
 
-            # goal
+        # start_point
+        weights = torch.zeros((1,self.N))
+        #grad[:, j] = integrate(data_tensor, weights, 1, 0, 0, self.tau)
+        grad[:, 0] = integrate(data_tensor, weights, 1, 0, 0, self.tau)
 
-            weights = torch.zeros((1,self.N))
-            grad[:, j + self.Dof] = integrate(data_tensor, weights, 0, 0, 1, self.tau)
+        # goal
+
+        weights = torch.zeros((1,self.N))
+        #grad[:, j + self.Dof] = integrate(data_tensor, weights, 0, 0, 1, self.tau)
+        grad[:, 1] = integrate(data_tensor, weights, 0, 0, 1, self.tau)
 
         '''
         self.c = self.c.cuda()
@@ -231,14 +256,12 @@ class createDMPparam():
         self.grad = grad.cuda()
         self.point_grads = torch.zeros(54).cuda()
         '''
-        self.data_tensor=data_tensor
+        self.data_tensor = data_tensor
         self.grad_tensor = grad
 
 
         self.point_grads = torch.zeros(54)
         self.X = np.zeros((self.time_steps, self.Dof))
-
-
 
 
 
