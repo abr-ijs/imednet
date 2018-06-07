@@ -25,7 +25,7 @@ class Net(nn.Module):
 
 
     def forward(self, x):
-        ctx=2
+
         #x =  nn.functional.relu(x)
         x = self.inputLayer(x)
 
@@ -36,9 +36,19 @@ class Net(nn.Module):
 
 
 
+grads={}
+
+def printgradnorm(grad):
+    grads['t']=grad
 
 
+class ct:
 
+    def __init__(self,net,division):
+        self.param = net.DMPp
+
+        self.grad = net.param_grad
+        self.scale = net.scale[0:division]
 
 
 dateset_name = 'slike_780.4251'
@@ -48,6 +58,7 @@ net = Net(scale)
 
 print(net)
 n=0
+
 for p in list(net.parameters()):
     if p.data.ndimension() == 1:
         torch.nn.init.constant_(p, 0)
@@ -60,6 +71,7 @@ test_output = Variable(torch.from_numpy(np.array(outputs[40+n:42+n])), requires_
 
 input_image = Variable(torch.from_numpy(np.array(images[40+n:42+n]))).float()
 
+
 optimizer = torch.optim.Adam(net.parameters(), eps=0.001)
 optimizer.zero_grad()
 
@@ -67,7 +79,7 @@ optimizer.zero_grad()
 trainer = Trainer()
 
 dmp = trainer.createDMP(test_output[0], scale, 0.01, 25, cuda=True)
-dmp2=trainer.createDMP(test_output[1], scale, 0.01, 25, cuda=True)
+dmp2 = trainer.createDMP(test_output[1], scale, 0.01, 25, cuda=True)
 dmp.joint()
 dmp2.joint()
 
@@ -95,48 +107,69 @@ loss_vector = criterion2(trajektorija, to)
 loss_vector.backward()'''
 
 
-points=10
+points = 10
 loss_graph = np.zeros((points, 3))
-n_w = 10
-start_w = test_output[0,n_w+1].item()
+n_w = 2
+start_w = test_output[0, n_w+1].item()
 print(start_w)
+
+
+
+
+
 
 for j in range(0,points):
     optimizer.zero_grad()
-    test_output.data[0,n_w+1] = start_w+(j-(points/2))/(points/2)
+    test_output.data[0, n_w+1] = start_w+(j-(points/2))/(points/2)
 
-    trajektorija = net(test_output[:,1:55])
+    trajektorija = net(test_output[:, 1:55])
+
 
 
 
 
     to = torch.from_numpy(dmp.Y).float().transpose(1,0).cuda()
+
     loss = criterion(trajektorija[0:2, :], to)
+
     to = torch.cat((to,torch.from_numpy(dmp2.Y).float().transpose(1,0).cuda()))
-    loss_vector = criterion2(trajektorija[:,:], to)
+
+    loss_vector = criterion2(trajektorija[:, :], to)
     '''f=torch.ones(2, 54).cuda()
     f.requires_grad=True
     r=DMP.apply(f, net.DMPp,net.param_grad,net.scale)
     r.backward(torch.ones((300, 4)))
     DMP.backward(DMP.ctx,torch.ones((300, 4)))
     DMP.backward(torch.ones((300, 4)))'''
+    trajektorija.register_hook(printgradnorm)
+    #trajektorija.register_hook(print)
+
     loss_vector.backward()
-    loss_graph[j, 0] = test_output[0,n_w+1].item()
+    division = 2 * (int(net.DMPp[1].item()) + 2)
+    CT = ct(net, division)
+    #print(grads['t'].data)
+
+    gradi = DMP_layer.DMP_integrator.backward(CT, grads['t'].data)
+
+    loss_graph[j, 0] = test_output[0, n_w+1].item()
     loss_graph[j, 1] = loss_vector.item()
     print(loss.item())
 
     #loss_graph[j, 2] = net.param_grad[n_w, n_w].item()/test_output[0,n_w+1].item()
+    #print(gradi[0][0,n_w+1])
+    #print(gradi[0])
     loss_graph[j, 2] = net.inputLayer.weight.grad.data[n_w, n_w] / test_output.data[0,n_w + 1]
 
-print(loss_vector.grad_fn.next_functions[0][0])
 
-gradient= np.gradient(loss_graph[:,1])/np.gradient(loss_graph[:,0])
-plt.plot(loss_graph[:,0],loss_graph[:,1],label="test1")
-plt.plot(loss_graph[:,0],gradient,label="test2")
+#print(loss_vector.grad_fn.next_functions[0][0])
 
-plt.plot(loss_graph[:,0],loss_graph[:,2],label="test3")
+gradient = np.gradient(loss_graph[:, 1])/np.gradient(loss_graph[:, 0])
+plt.plot(loss_graph[:, 0], loss_graph[:, 1], label="test1")
+plt.plot(loss_graph[:, 0], gradient, label="test2")
+
+plt.plot(loss_graph[:, 0], loss_graph[:, 2], label="test3")
 plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 plt.show()
-
+#gradient/loss_graph[:,2]
 back_gradienti = net.inputLayer.weight.grad.data[:, 0] / (-1)#test_output.data
 #mat = trainer.show_dmp(input_image.data.numpy(), trajektorija.data.numpy(), dmp, plot=True)

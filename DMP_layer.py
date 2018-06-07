@@ -99,37 +99,45 @@ class DMP_integrator(Function):
     @staticmethod
     def backward(ctx, grad_outputs):
 
-        parameters=ctx.param
+        parameters = ctx.param
 
-        grad=ctx.grad
-        scale=ctx.scale
+        grad = ctx.grad
+        scale = ctx.scale
+
+        #ui = grad_outputs.cpu().numpy()
+
 
         '''if grad_outputs.is_cuda == True:
 
             point_grads = torch.zeros(int(grad_outputs.shape[0]/2), 54).cuda()
         else:
-            point_grads = torch.zeros(int(grad_outputs.shape[0]/2), 54)'''
-        '''
-        for j in range(0,int(parameters[0].item())):
-            #weights
-            for i in range(0, int(parameters[1].item())):
-                point_grads[i*int(parameters[0].item()) + 4+j] = sum(grad[:,i*int(parameters[0].item()) + 4+j]*grad_outputs[:, j])
+            point_grads = torch.zeros(int(grad_outputs.shape[0]/2), 54)
+        
 
-           #start_point
+        
+        for t in range(0,int(grad_outputs.shape[0]/2)):
 
-            point_grads[j] = sum(grad[:,j] * grad_outputs[:, j])
+            for j in range(0,int(parameters[0].item())): #po 2D trajektorija
+                #weights
+                for i in range(0, int(parameters[1].item())):
+                    point_grads[t, i*int(parameters[0].item()) + 4 + j] =sum(grad[:,i + 2]*grad_outputs[t*int(parameters[0].item())+j, :])
 
-            #goal
+               #start_point
 
-            point_grads[ j + int(parameters[0].item())] = sum(grad[:, j + int(parameters[0].item())] * grad_outputs[:, j])'''
+                point_grads[t,j] = sum(grad[:,0] * grad_outputs[t*int(parameters[0].item())+j, :])
+
+                #goal
+
+                point_grads[t,j + 2] = sum(grad[:,  1] * grad_outputs[t*int(parameters[0].item())+j, :])'''
 
 
 
-        k = torch.mm(grad_outputs,grad).transpose(1,0).contiguous()
 
 
-        point_grads = k.view(-1,54)
-        point_grads = point_grads*scale
+        k = torch.mm(grad_outputs,grad).view(2,-1,27).transpose(2,1).contiguous().view(2,-1,54).squeeze()
+
+
+        point_grads = k*scale
         #import pdb;
         #pdb.set_trace()
 
