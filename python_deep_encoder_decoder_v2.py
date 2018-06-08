@@ -25,7 +25,7 @@ from os import makedirs
 
 dateset_name = 'slike_780.4251'
 
-load = True
+load = False
 
 cuda = True
 plot = False
@@ -72,7 +72,9 @@ layerSizes = [numOfInputs] + HiddenLayer + [out]
 file.write('\nNeurons: ' + str(layerSizes))
 
 model_new = Network_DMP(layerSizes, conv, scale)
-
+model_new.register_buffer('DMPp', model_new.DMPparam.data_tensor)
+model_new.register_buffer('scale_t', model_new.DMPparam.scale_tensor)
+model_new.register_buffer('param_grad', model_new.DMPparam.grad_tensor)
 
 
 #inicalizacija
@@ -132,7 +134,13 @@ if load==True:
     #pass
     trener.indeks = np.load(directory_path + 'NN ' + net_id +'/net_indeks.npy')
 
-best_nn_parameters = trener.learn_DMP(model_new, images, or_tr, directory_path + directory_name, train_param, file, learning_rate, momentum)
+original_trj_e = []
+for i in range(0,images.shape[0]):
+    c,c1,c2 = zip(*or_tr[i])
+    original_trj_e.append(c)
+    original_trj_e.append(c1)
+
+best_nn_parameters = trener.learn_DMP(model_new, images, original_trj_e, directory_path + directory_name, train_param, file, learning_rate, momentum)
 
 
 
