@@ -90,8 +90,8 @@ class DMP_integrator(Function):
 
 
 
-        X = integrate(parameters,w, inputs_np[:,range(0,int(parameters[0].item()))].view(int(parameters[0].item())*2,), torch.zeros(2*int(parameters[0].item())).cuda(),
-                      inputs_np[:,range(int(parameters[0].item()),int(parameters[0].item())*2)].view(int(parameters[0].item())*2,), 3)
+        X = integrate(parameters,w, inputs_np[:,range(0,int(parameters[0].item()))].view(int(parameters[0].item())*inputs.shape[0],), torch.zeros(inputs.shape[0]*int(parameters[0].item())).cuda(),
+                      inputs_np[:,range(int(parameters[0].item()),int(parameters[0].item())*2)].view(int(parameters[0].item())*inputs.shape[0],), 3)
 
 
         return inputs.new(X)
@@ -131,13 +131,10 @@ class DMP_integrator(Function):
                 point_grads[t,j + 2] = sum(grad[:,  1] * grad_outputs[t*int(parameters[0].item())+j, :])'''
 
 
+        point_grads = torch.mm(grad_outputs,grad).view(-1,2,27).transpose(2,1).contiguous().view(1,-1,54).squeeze()
 
 
-
-        k = torch.mm(grad_outputs,grad).view(2,-1,27).transpose(2,1).contiguous().view(2,-1,54).squeeze()
-
-
-        point_grads = k*scale
+        point_grads = -2*point_grads*scale*parameters[3].item()
         #import pdb;
         #pdb.set_trace()
 
@@ -211,7 +208,7 @@ class createDMPparam():
         self.sigma2 = torch.from_numpy(sigma2).float()
         self.tau = tau
         self.dt = dt
-        self.time_steps = int(np.round(self.tau / self.dt))
+        self.time_steps = int(np.round(self.tau / self.dt))+1
         self.y0 = [0]
         self.dy0 = np.zeros(Dof)
         self.Dof = Dof
@@ -229,7 +226,7 @@ class createDMPparam():
 
         self.scale_tensor = scale_tensor
         # precomputation
-        grad = torch.zeros((300, 27))
+        grad = torch.zeros((301, 27))
 
         self.data = {'time_steps':self.time_steps,'c':self.c,'sigma2':self.sigma2,'a_z':self.a_z,'a_x':self.a_x,'dt':self.dt,'Y':self.Y}
         dmp_data = torch.tensor([self.Dof,self.N,self.time_steps,self.dt,self.a_x,self.a_z])

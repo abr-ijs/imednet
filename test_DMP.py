@@ -55,6 +55,13 @@ dateset_name = 'slike_780.4251'
 
 images, outputs, scale, original_trj = matLoader.loadData(dateset_name, load_original_trajectories=True)
 net = Net(scale)
+original_trj_e = []
+for i in range(0,images.shape[0]):
+    c,c1,c2 = zip(*original_trj[i])
+    original_trj_e.append(c)
+    original_trj_e.append(c1)
+
+
 
 print(net)
 n=0
@@ -70,7 +77,7 @@ for p in list(net.parameters()):
 test_output = Variable(torch.from_numpy(np.array(outputs[40+n:42+n])), requires_grad=True).float()
 
 input_image = Variable(torch.from_numpy(np.array(images[40+n:42+n]))).float()
-
+traj=Variable(torch.from_numpy(np.array(original_trj_e[40+n:44+n]))).float()
 
 optimizer = torch.optim.Adam(net.parameters(), eps=0.001)
 optimizer.zero_grad()
@@ -97,7 +104,7 @@ net = net.cuda()
 #test_output1=test_output1.transpose(1,0)
 
 test_output = test_output.cuda()
-
+traj=traj.cuda()
 input_image = input_image.cuda()
 #trajektorija = DMP.forward(test_output)
 '''trajektorija = net(test_output)
@@ -109,7 +116,7 @@ loss_vector.backward()'''
 
 points = 10
 loss_graph = np.zeros((points, 3))
-n_w = 2
+n_w = 1
 start_w = test_output[0, n_w+1].item()
 print(start_w)
 
@@ -130,11 +137,11 @@ for j in range(0,points):
 
     to = torch.from_numpy(dmp.Y).float().transpose(1,0).cuda()
 
-    loss = criterion(trajektorija[0:2, :], to)
+    loss = criterion(trajektorija[:, :], traj)
 
     to = torch.cat((to,torch.from_numpy(dmp2.Y).float().transpose(1,0).cuda()))
 
-    loss_vector = criterion2(trajektorija[:, :], to)
+    loss_vector = criterion2(trajektorija[:, :], traj)
     '''f=torch.ones(2, 54).cuda()
     f.requires_grad=True
     r=DMP.apply(f, net.DMPp,net.param_grad,net.scale)
@@ -153,7 +160,7 @@ for j in range(0,points):
 
     loss_graph[j, 0] = test_output[0, n_w+1].item()
     loss_graph[j, 1] = loss_vector.item()
-    print(loss.item())
+    print(loss_vector.item())
 
     #loss_graph[j, 2] = net.param_grad[n_w, n_w].item()/test_output[0,n_w+1].item()
     #print(gradi[0][0,n_w+1])

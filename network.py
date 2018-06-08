@@ -199,3 +199,6 @@ class Network_DMP(torch.nn.Module):
         x = self.outputLayer(x)
         output = self.func.apply(x, self.DMPp,self.param_grad,self.scale_t)
         return output
+
+    def isCuda(self):
+        return self.inputLayer.weight.is_cuda

@@ -5,6 +5,7 @@ from matLoader import matLoader
 from torch.autograd import Variable
 from trainer import Trainer
 from network import Network_DMP, training_parameters
+from os import makedirs
 
 from datetime import datetime
 N = 25
@@ -19,10 +20,20 @@ out = 2*N + 4
 
 layerSizes = [numOfInputs] + HiddenLayer + [out]
 
-net_id = '2018-04-25 13:36:32.095726'
+net_id = '2018-06-07 15:31:10.101849'
 
 directory_path = '/home/rpahic/Documents/Neural_networks/'
 directory_name = 'NN ' + net_id
+
+
+date = str(datetime.now())
+directory_name_new = 'NN ' + date
+parameters_file = directory_path + directory_name + '/net_parameters'
+makedirs(directory_path+directory_name_new)
+
+file = open(directory_path+directory_name+'/Network_description.txt','w')
+
+file.write('Network created: ' + date)
 
 model_old = torch.load(directory_path+directory_name+'/model.pt')
 parameters_file = directory_path + directory_name + '/net_parameters'
@@ -42,13 +53,13 @@ model.register_buffer('DMPp', model.DMPparam.data_tensor)
 model.register_buffer('scale_t', model.DMPparam.scale_tensor)
 model.register_buffer('param_grad', model.DMPparam.grad_tensor)
 
-input_image = Variable(torch.from_numpy(np.array(images[2]))).float()
-trajektorija=model(input_image)
+input_image = Variable(torch.from_numpy(np.array(images[2]))).float().view(1,-1)
+#trajektorija=model(input_image)
 trainer = Trainer()
 test_output = Variable(torch.from_numpy(np.array(outputs[2])), requires_grad=True).float()
 dmp = trainer.createDMP(test_output, scale, 0.01, 25, cuda=False)
 dmp.joint()
-mat = trainer.show_dmp(input_image.data.numpy(), trajektorija.data.numpy(), dmp, plot=True)
+#mat = trainer.show_dmp(input_image.data.numpy(), trajektorija.data.numpy(), dmp, plot=True)
 
 
 
@@ -74,18 +85,24 @@ train_param.val_fail = 60
 trener = Trainer()
 
 
-trener.indeks = np.load(directory_path + 'NN ' + net_id +'/net_indeks.npy')
+trener.indeks = np.load(directory_path + 'NN ' + net_id +'/net_indeks.npy')[0:1000]
 
-best_nn_parameters = trener.learn_DMP(model, images, original_trj, directory_path + directory_name, train_param, file, learning_rate, momentum)
+original_trj_e = []
+for i in range(0,images.shape[0]):
+    c,c1,c2 = zip(*original_trj[i])
+    original_trj_e.append(c)
+    original_trj_e.append(c1)
 
+best_nn_parameters = trener.learn_DMP(model, images[0:1000], original_trj_e[0:2000], directory_path + directory_name_new, train_param, file, learning_rate, momentum)
 
+original_trj[0].reshape(1,-1)
 
 
 #parameters = list(model.parameters())
 
 #torch.save(model.state_dict(), parameters_file) # saving parameters
 
-np.save(directory_path+directory_name+'/net_indeks', trener.indeks)
+np.save(directory_path+directory_name_new+'/net_indeks', trener.indeks)
 torch.save(best_nn_parameters, parameters_file)
 file.close()
 

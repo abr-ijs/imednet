@@ -313,7 +313,7 @@ class Trainer:
     def databaseSplit(self, images, outputs, train_set = 0.7, validation_set = 0.15, test_set = 0.15):
 
         r=len(images)
-
+        de =int(len(outputs)/r)
         trl=round(r*train_set)
         tel=round(r*test_set)
         val=r-trl-tel
@@ -338,14 +338,22 @@ class Trainer:
 
             if indeks[i] == 0:
                 x_t.append(images[i])
-                y_t.append(outputs[i])
+                y_t.append(outputs[i * de])
+
+                if de >1:
+                    y_t.append(outputs[i * de+1])
 
             if indeks[i] == 2:
                 x_v.append(images[i])
-                y_v.append(outputs[i])
+                y_v.append(outputs[i*de])
+                if de >1:
+                    y_v.append(outputs[i * de+1])
+
             if indeks[i] == 1:
                 x_te.append(images[i])
-                y_te.append(outputs[i])
+                y_te.append(outputs[i*de])
+                if de >1:
+                    y_te.append(outputs[i * de+1])
 
         x_train = np.array(x_t)
         y_train = np.array(y_t)
@@ -646,7 +654,7 @@ class Trainer:
         train_param.real_epochs = t
         train_param.min_train_loss = self.loss.data[0]
         train_param.min_val_loss = bestValLoss
-        train_param.min_test_loss = test_loss.data[0]
+        train_param.min_test_loss = test_loss
         train_param.elapsed_time = time_d.total_seconds()
         train_param.val_count = val_count
         k = (self.loss-oldLoss)/train_param.log_interval
@@ -754,7 +762,7 @@ class Trainer:
         # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 200)
 
         y_val = model(input_data_validate_b)
-        oldValLoss = criterion(y_val, output_data_validate_b[:, :]).data[0]
+        oldValLoss = criterion(y_val, output_data_validate_b[:, :])
         bestValLoss = oldValLoss
         best_nn_parameters = copy.deepcopy(model.state_dict())
         # Infiniti epochs
@@ -791,15 +799,21 @@ class Trainer:
             # writer.add_scalar('data/learning_rate', scheduler.get_lr()[0], t)
 
             self.loss = Variable(torch.Tensor([0]))
-            permutations = torch.randperm(len(input_data_train))
+            if t==1:
+                permutations = torch.randperm(len(input_data_train))
+                if model.isCuda():
+                    permutations = permutations.cuda()
+                    self.loss = self.loss.cuda()
             if model.isCuda():
-                permutations = permutations.cuda()
+
                 self.loss = self.loss.cuda()
             input_data_train = input_data_train[permutations]
-            output_data_train = output_data_train[permutations]
+            per = torch.stack([permutations,permutations+1]).transpose(1,0).contiguous().view(1,-1).squeeze()
+
+            output_data_train = output_data_train[per]
             ena = []
             while j <= len(input_data_train):
-                self.learn_one_step(model, input_data_train[i:j], output_data_train[i:j, :], learning_rate, criterion,
+                self.learn_one_step(model, input_data_train[i:j], output_data_train[i*2:j*2, :], learning_rate, criterion,
                                     optimizer)
                 i = j
                 j += train_param.bunch
@@ -813,7 +827,7 @@ class Trainer:
                             r1 = p.data[0][0]'''
 
             if i < len(input_data_train):
-                self.learn_one_step(model, input_data_train[i:], output_data_train[i:, :], learning_rate, criterion,
+                self.learn_one_step(model, input_data_train[i:], output_data_train[i*2:, :], learning_rate, criterion,
                                     optimizer)
 
             if (t - 1) % train_param.log_interval == 0:
@@ -834,23 +848,25 @@ class Trainer:
 
             if (t - 1) % train_param.validation_interval == 0:
                 y_val = model(input_data_validate)
-                val_loss = criterion(y_val, output_data_validate[:, 1:])
+
+                val_loss = criterion(y_val, output_data_validate[:, :])
+
                 writer.add_scalar('data/val_loss', math.log(val_loss), t)
-                if val_loss.data[0] < bestValLoss:
+                if val_loss < bestValLoss:
                     bestValLoss = val_loss.data[0]
                     best_nn_parameters = copy.deepcopy(model.state_dict())
                     saving_epochs = t
 
-                if val_loss.data[0] > bestValLoss:  # oldValLoss:
+                if val_loss > bestValLoss:  # oldValLoss:
                     val_count = val_count + 1
 
                 else:
 
                     val_count = 0
 
-                oldValLoss = val_loss.data[0]
+                oldValLoss = val_loss
                 writer.add_scalar('data/val_count', val_count, t)
-                print('Validatin: ', t, ' loss: ', val_loss.data[0], ' best loss:', bestValLoss)
+                print('Validatin: ', t, ' loss: ', val_loss, ' best loss:', bestValLoss)
 
                 if (t - 1) % 10 == 0:
                     state = model.state_dict()
@@ -874,13 +890,35 @@ class Trainer:
                     writer.add_scalars('data/var', var_dict, t)
 
                 if self.plot_im:
-                    plot_vector = torch.cat((output_data_validate[0, 0:1], y_val[0, :]), 0)
-                    dmp_v = self.createDMP(plot_vector, model.scale, 0.01, 25, True)
-                    dmp = self.createDMP(output_data_validate[0, :], model.scale, 0.01, 25, True)
-                    dmp.joint()
-                    dmp_v.joint()
-                    mat = self.show_dmp((input_data_validate.data[0]).cpu().numpy(), dmp.Y, dmp_v, plot=False)
-                    a = output_data_validate[0, :]
+
+                    fig = plt.figure()
+
+                    plt.imshow((np.reshape(input_data_validate.data[0].cpu().numpy(), (40, 40))), cmap='gray', extent=[0, 40, 40, 0])
+
+
+                    plt.plot(output_data_validate.data[0].cpu().numpy(), output_data_validate.data[1].cpu().numpy(), '--r', label='dmp')
+
+                    plt.plot(y_val.data[0].cpu().numpy(),y_val.data[1].cpu().numpy(), '-g', label='trajectory')
+                    plt.legend()
+                    plt.xlim([0, 40])
+                    plt.ylim([40, 0])
+
+                    fig.canvas.draw()
+                    matrix = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
+
+
+
+                    mat= matrix.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+
+
+
+
+
+
+
+
+
+
                     writer.add_image('image' + str(t), mat)
                     self.plot_im = False
 
@@ -888,7 +926,7 @@ class Trainer:
 
             if (t - 1) % train_param.test_interval == 0:
                 y_test = model(input_data_test)
-                test_loss = criterion(y_test, output_data_test[:, 1:])
+                test_loss = criterion(y_test, output_data_test[:, :])
                 writer.add_scalar('data/test_loss', math.log(test_loss), t)
 
             '''if (t-1) % 1500 == 0:

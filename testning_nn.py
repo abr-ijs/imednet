@@ -8,7 +8,7 @@ import csv
 
 #Load model and parameters
 directory_path = '/home/rpahic/Documents/Neural_networks/'
-directory_name = 'NN ' + '2018-04-25 13:36:32.095726'
+directory_name = 'NN ' + '2018-06-07 15:31:10.101849'
 
 model = torch.load(directory_path+directory_name+'/model.pt')
 

@@ -140,7 +140,7 @@ for i in range(0,images.shape[0]):
     original_trj_e.append(c)
     original_trj_e.append(c1)
 
-best_nn_parameters = trener.learn_DMP(model_new, images, original_trj_e, directory_path + directory_name, train_param, file, learning_rate, momentum)
+best_nn_parameters = trener.learn_DMP(model_new, images[0:1000], original_trj_e[0:2000], directory_path + directory_name, train_param, file, learning_rate, momentum)
 
 
 

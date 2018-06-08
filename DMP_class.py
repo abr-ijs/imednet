@@ -183,7 +183,7 @@ class DMP(object):
         """
 
 
-        time_steps = int(np.round(np.max(self.tau)/self.dt))
+        time_steps = int(np.round(np.max(self.tau)/self.dt))+1
 
         dt = self.tau/time_steps
 
