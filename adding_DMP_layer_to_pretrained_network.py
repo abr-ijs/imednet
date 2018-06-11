@@ -85,7 +85,7 @@ train_param.val_fail = 60
 trener = Trainer()
 
 
-trener.indeks = np.load(directory_path + 'NN ' + net_id +'/net_indeks.npy')[0:1000]
+trener.indeks = np.load(directory_path + 'NN ' + net_id +'/net_indeks.npy')#[0:1000]
 
 original_trj_e = []
 for i in range(0,images.shape[0]):
@@ -93,7 +93,11 @@ for i in range(0,images.shape[0]):
     original_trj_e.append(c)
     original_trj_e.append(c1)
 
-best_nn_parameters = trener.learn_DMP(model, images[0:1000], original_trj_e[0:2000], directory_path + directory_name_new, train_param, file, learning_rate, momentum)
+#testiranje
+
+
+
+best_nn_parameters = trener.learn_DMP(model, images, original_trj_e, directory_path + directory_name_new, train_param, file, learning_rate, momentum)
 
 original_trj[0].reshape(1,-1)
 

@@ -248,7 +248,7 @@ class SCG(Optimizer):
 
             # Hessian matrix positive definite
 
-            if tau_k.data[0] <= 0:
+            if tau_k <= 0:
                 lamda_k_I = 2 * (lamda_k - tau_k / (p_k_norm_2))
                 tau_k = lamda_k * (p_k_norm_2)- tau_k
 
@@ -275,7 +275,7 @@ class SCG(Optimizer):
 
             delta_k = 2 * tau_k * (loss_wk - loss_wk_alpha) / (phi_k ** 2)
 
-            if delta_k.data[0] >= 0:
+            if delta_k >= 0:
                 # Reduction in error
                 success = True
                 lamda_k_I = 0.0
@@ -309,7 +309,7 @@ class SCG(Optimizer):
                 p_k_norm = torch.norm(p_k)
                 p_k_norm_2 = p_k_norm ** 2
 
-                if delta_k.data[0] >= 0.75:
+                if delta_k >= 0.75:
                     lamda_k = lamda_k*0.25
 
 
@@ -330,7 +330,7 @@ class SCG(Optimizer):
 
 
 
-            if delta_k.data[0] < 0.25 and p_k_norm_2.data[0]!=0:
+            if delta_k < 0.25 and p_k_norm_2.data[0]!=0:
                 lamda_k = lamda_k + (tau_k*(1-delta_k)/p_k_norm_2)#*4
 
             group['success'] = success

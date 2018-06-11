@@ -753,7 +753,7 @@ class Trainer:
         criterion = torch.nn.MSELoss(size_average=True)  # For calculating loss (mean squared error)
         # optimizer = torch.optim.SGD(self.parameters(), lr=learning_rate, mometum=momentum) # for updating weights
         # optimizer = torch.optim.Adagrad(model.parameters(), lr=learning_rate, lr_decay = decay[0], weight_decay = decay[1]) #, momentum=momentum) # for updating weights
-        # optimizer = torch.optim.Adam(model.parameters(), eps = 0.001 )
+        #optimizer = torch.optim.Adam(model.parameters(), eps = 0.001 )
         # optimizer = torch.optim.SGD(model.parameters(), lr = 0.4) # for updating weights
         # optimizer = torch.optim.RMSprop(model.parameters())
 
@@ -762,9 +762,43 @@ class Trainer:
         # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 200)
 
         y_val = model(input_data_validate_b)
+
         oldValLoss = criterion(y_val, output_data_validate_b[:, :])
         bestValLoss = oldValLoss
         best_nn_parameters = copy.deepcopy(model.state_dict())
+
+        fig = plt.figure()
+
+        plt.imshow((np.reshape(input_data_validate_b.data[0].cpu().numpy(), (40, 40))), cmap='gray',
+                   extent=[0, 40, 40, 0])
+
+        plt.plot(output_data_validate_b.data[0].cpu().numpy(), output_data_validate_b.data[1].cpu().numpy(), '--r',
+                 label='dmp')
+
+        plt.plot(y_val.data[0].cpu().numpy(), y_val.data[1].cpu().numpy(), '-g', label='trajectory')
+        plt.legend()
+        plt.xlim([0, 40])
+        plt.ylim([40, 0])
+
+        fig.canvas.draw()
+        matrix = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
+
+        mat = matrix.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+
+        writer.add_image('image' + str(0), mat)
+        self.plot_im = False
+
+        torch.save(model.state_dict(), path + '/net_parameters' + str(0))
+
+
+
+
+
+
+
+
+
+
         # Infiniti epochs
         if train_param.epochs == -1:
             inf_k = 0
@@ -808,10 +842,11 @@ class Trainer:
 
                 self.loss = self.loss.cuda()
             input_data_train = input_data_train[permutations]
-            per = torch.stack([permutations,permutations+1]).transpose(1,0).contiguous().view(1,-1).squeeze()
+            per = torch.stack([permutations*2,permutations*2+1]).transpose(1,0).contiguous().view(1,-1).squeeze()
 
             output_data_train = output_data_train[per]
             ena = []
+
             while j <= len(input_data_train):
                 self.learn_one_step(model, input_data_train[i:j], output_data_train[i*2:j*2, :], learning_rate, criterion,
                                     optimizer)
@@ -912,13 +947,6 @@ class Trainer:
 
 
 
-
-
-
-
-
-
-
                     writer.add_image('image' + str(t), mat)
                     self.plot_im = False
 
@@ -1000,7 +1028,7 @@ class Trainer:
         optimizer.step()#updating weights'''
         loss = optimizer.step(wrap)
 
-        self.loss = self.loss + loss.data[0]
+        self.loss = self.loss + loss.item()
 
     def cancel_training(self):
 
