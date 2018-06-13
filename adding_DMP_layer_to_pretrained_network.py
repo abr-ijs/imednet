@@ -36,13 +36,13 @@ file = open(directory_path+directory_name+'/Network_description.txt','w')
 file.write('Network created: ' + date)
 
 model_old = torch.load(directory_path+directory_name+'/model.pt')
-parameters_file = directory_path + directory_name + '/net_parameters'
+parameters_file_new = directory_path + directory_name_new + '/net_parameters'
 state = torch.load(directory_path+directory_name+'/net_parameters')
 
 dateset_name = 'slike_780.4251'
 images, outputs, scale, original_trj = matLoader.loadData(dateset_name, load_original_trajectories=True)
 
-file = open(directory_path+directory_name+'/Network_description.txt','w')
+file = open(directory_path+directory_name_new+'/Network_description.txt','w')
 
 file.write('Network created: ' + date)
 
@@ -65,7 +65,7 @@ dmp.joint()
 
 
 
-#torch.save(model, (directory_path+directory_name+'/model.pt'))
+torch.save(model, (directory_path+directory_name_new+'/model.pt'))
 
 #Set learning.....................................................................
 
@@ -107,6 +107,6 @@ original_trj[0].reshape(1,-1)
 #torch.save(model.state_dict(), parameters_file) # saving parameters
 
 np.save(directory_path+directory_name_new+'/net_indeks', trener.indeks)
-torch.save(best_nn_parameters, parameters_file)
+torch.save(best_nn_parameters, parameters_file_new)
 file.close()
 

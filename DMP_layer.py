@@ -134,7 +134,7 @@ class DMP_integrator(Function):
         point_grads = torch.mm(grad_outputs,grad).view(-1,2,27).transpose(2,1).contiguous().view(1,-1,54).squeeze()
 
 
-        point_grads = 2*point_grads*scale*parameters[3].item()
+        point_grads = 10*point_grads*scale*parameters[3].item()
         #import pdb;
         #pdb.set_trace()
 
@@ -150,7 +150,8 @@ def integrate(data,w,y0,dy0,goal,tau):
 
     x = 1
     if w.is_cuda==True:
-        Y = torch.zeros((w.shape[0],int(data[2].item()))).cuda()
+        #Y = torch.zeros((w.shape[0],int(data[2].item()))).cuda()
+        Y = torch.cuda.FloatTensor(w.shape[0], int(data[2].item())).fill_(0)
     else:
         Y = torch.zeros((w.shape[0],int(data[2].item())))
 
@@ -279,7 +280,7 @@ class createDMPparam():
 
 
 
-
+from torch.utils.ffi import create_extension
 
 
 
