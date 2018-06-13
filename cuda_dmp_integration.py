@@ -12,11 +12,14 @@ mod = SourceModule("""
 
 __global__ void multiply_them(float *traj, float *dmp_parameters, float *b)
 {
-  const int idx = threadIdx.x;
+  const int idx_out = threadIdx.x*301;
+  const int idx_in = threadIdx.x*54;
+  
   const int qe = threadIdx.y;
   
   float x = 1.0, dx=0.0;
-  float fx,sum_psi, psi;
+  float fx,sum_psi, psi,a,y=dmp_parameters[idx_in],z=0;
+  
   
   for(int i=0;i<301;i++)
   {
@@ -25,23 +28,27 @@ __global__ void multiply_them(float *traj, float *dmp_parameters, float *b)
     {
         psi = exp(-0.5*(x-1));
         fx = fx +(psi);
-        sum_psi =sum_psi+ psi;
+        sum_psi = sum_psi+ psi;
         
     }
     
     
+    //a = alpha_z*(beta_z*(goal-y)-z)+fx
     
-    //y[] = y +dy*dz
+    a = 48*(12*(dmp_parameters[idx_in]-y)-z)+fx;
+    z = z + 0.01*a/3.0;
+    y = y +0.01*z/3.0;
     
     
-    //dx = -alpha_x*x/tau    
+    //dx = -alpha_x*x/tau  
+      
     dx = -2.0*x/3.0;
     
     //x = x+dx*dt
     x = x+dx*0.01;
-    //x = 0.0;
+    
     //printf(" %d ",x);    
-    traj[i+idx*301] = x;
+    traj[i+idx_out] = x;
   }
   //traj[q] = pow(dmp_parameters[q],b[q]);
 }
@@ -60,18 +67,18 @@ class Holder(pycuda.driver.PointerHolderBase):
     def get_pointer(self):
         return self.t.data_ptr()
 
-a = np.ones((1,25)).astype(np.float32)
-b = np.ones((1,25)).astype(np.float32)
+a = np.ones((200,50)).astype(np.float32)
+b = np.ones((200,50)).astype(np.float32)
 
 a = torch.from_numpy(a).cuda()
 b = torch.from_numpy(b).cuda()
-dest = torch.Tensor(2,301).cuda()
+dest = torch.Tensor(400,301).cuda()
 
 multiply_them(
         Holder(dest),
         Holder(a),
-        Holder(b),
-        block=(2,1,1), grid=(1,1))
+
+        block=(400,1,1), grid=(1,1))
 
 torch.cuda.synchronize()
 
