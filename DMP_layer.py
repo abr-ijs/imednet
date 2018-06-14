@@ -5,66 +5,17 @@ import numpy as np
 from copy import  deepcopy
 
 
+
+
+
+
+
+
+
+
+
+
 class DMP_integrator(Function):
-    '''def __init__(self,N, tau, dt, Dof, scale):
-
-
-    self.a_z = 48
-        self.a_x = 2
-        self.N = N
-        c = np.exp(-self.a_x * np.linspace(0, 1, self.N))
-
-        sigma2 = np.power((np.diff(c) / 2), 2)
-        sigma2 = np.append(sigma2, sigma2[-1])
-        self.c = torch.from_numpy(c).float()
-        self.sigma2 = torch.from_numpy(sigma2).float()
-        self.tau = tau
-        self.dt = dt
-        self.time_steps = int(np.round(self.tau / self.dt))
-        self.y0 = [0]
-        self.dy0 = np.zeros(Dof)
-        self.Dof = Dof
-        self.Y = torch.zeros((self.time_steps))
-        #self.x_max = torch.from_numpy(scale.x_max).float().cuda()
-        #self.x_min = torch.from_numpy(scale.x_min).float().cuda()
-        self.y_max = scale.y_max
-        self.y_min = scale.y_min
-        self.x_max = torch.from_numpy(scale.x_max).float()
-        self.x_min = torch.from_numpy(scale.x_min).float()
-
-
-        self.K = (self.x_max[1:55] - self.x_min[1:55]) / (self.y_max - self.y_min)
-        #precomputation
-        grad = torch.zeros((300,54))
-
-        for j in range(0, self.Dof):
-            # weights
-            for i in range(0, self.N):
-                weights = torch.zeros((self.N))
-                weights[i] = 1
-
-                grad[:,i * self.Dof + 4 + j] = self.integrate(weights, 0, 0, 0, self.tau)
-
-
-
-            # start_point
-            weights = torch.zeros((self.N))
-            grad[:,j] = self.integrate(weights, 1, 0, 0, self.tau)
-
-
-            # goal
-
-            weights = torch.zeros((self.N))
-            grad[:, j + self.Dof] = self.integrate(weights, 0, 0, 1, self.tau)
-
-        ''''''self.c = self.c.cuda()
-        self.sigma2 = self.sigma2.cuda()
-        self.grad = grad.cuda()
-        self.point_grads = torch.zeros(54).cuda()''''''
-
-        self.grad = grad
-        self.point_grads = torch.zeros(54)
-        self.X = np.zeros((self.time_steps, self.Dof))'''
 
     @staticmethod
     def forward(ctx, inputs, parameters, param_gradients, scaling):
@@ -77,17 +28,10 @@ class DMP_integrator(Function):
         inputs_np = scaling[0:division]* (inputs - scaling[-1]) + scaling[division:division*2]
         ctx.scale = scaling[0:division]
 
-        '''w = inputs_np[:,(2*int(parameters[0].item())):(2*int(parameters[0].item()) + int(parameters[1].item())*int(parameters[0].item()))] \
-            .transpose(1,0).contiguous().view(int(parameters[0].item()*inputs.shape[0]),int(parameters[1].item()))'''
+
 
         w = torch.cat((inputs_np[:,range(2*int(parameters[0].item()),(2*int(parameters[0].item()) + int(parameters[1].item())*int(parameters[0].item()))-1,2)],
                        inputs_np[:,range(1+2*int(parameters[0].item()),(2*int(parameters[0].item()) + int(parameters[1].item())*int(parameters[0].item())),2)]),1).view(-1,25)
-        '''if inputs.is_cuda == True:
-
-            X = torch.zeros(int(parameters[0].item()*inputs.shape[0]),int(parameters[2].item())).cuda()
-        else:
-            X = torch.zeros(( int(parameters[0].item()*inputs.shape[0])),int(parameters[2].item()))'''
-
 
 
         X = integrate(parameters,w, inputs_np[:,range(0,int(parameters[0].item()))].view(int(parameters[0].item())*inputs.shape[0],), torch.zeros(inputs.shape[0]*int(parameters[0].item())).cuda(),
@@ -103,32 +47,6 @@ class DMP_integrator(Function):
 
         grad = ctx.grad
         scale = ctx.scale
-
-        #ui = grad_outputs.cpu().numpy()
-
-
-        '''if grad_outputs.is_cuda == True:
-
-            point_grads = torch.zeros(int(grad_outputs.shape[0]/2), 54).cuda()
-        else:
-            point_grads = torch.zeros(int(grad_outputs.shape[0]/2), 54)
-        
-
-        
-        for t in range(0,int(grad_outputs.shape[0]/2)):
-
-            for j in range(0,int(parameters[0].item())): #po 2D trajektorija
-                #weights
-                for i in range(0, int(parameters[1].item())):
-                    point_grads[t, i*int(parameters[0].item()) + 4 + j] =sum(grad[:,i + 2]*grad_outputs[t*int(parameters[0].item())+j, :])
-
-               #start_point
-
-                point_grads[t,j] = sum(grad[:,0] * grad_outputs[t*int(parameters[0].item())+j, :])
-
-                #goal
-
-                point_grads[t,j + 2] = sum(grad[:,  1] * grad_outputs[t*int(parameters[0].item())+j, :])'''
 
 
         point_grads = torch.mm(grad_outputs,grad).view(-1,2,27).transpose(2,1).contiguous().view(1,-1,54).squeeze()
@@ -176,18 +94,6 @@ def integrate(data,w,y0,dy0,goal,tau):
         z = z + dz * data[3].item()
 
         Y[:,i]=y
-
-
-
-
-
-
-
-
-
-
-
-
 
     return Y
 
@@ -280,7 +186,7 @@ class createDMPparam():
 
 
 
-from torch.utils.ffi import create_extension
+
 
 
 
