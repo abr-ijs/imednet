@@ -8,8 +8,83 @@ from copy import  deepcopy
 
 
 
+import pycuda.autoinit
+
+x = torch.cuda.FloatTensor(8)
+from pycuda.compiler import SourceModule
+
+mod = SourceModule("""
+#include <math.h>
 
 
+__global__ void multiply_them(float *traj, float *dmp_parameters, float *c, float *sigma2, int n)
+{
+
+  const int idx_in = ((blockIdx.x * blockDim.x)+threadIdx.x)*54;
+  const int idx_out =((blockIdx.x * blockDim.x)+threadIdx.x)*301*2;
+
+
+  if(idx_in<n)
+  {
+ 
+    
+      float x , dx;
+      float fx,sum_psi, psi,a,y,z=0;
+    
+      for(int dof=0;dof<2;dof++)
+      {
+    
+        x = 1.0;
+        y=dmp_parameters[idx_in+dof];
+        traj[idx_out+dof*301]=y;
+        for(int i=0;i<300;i++)
+          {
+            fx = sum_psi = 0.0;
+            for(int j=0;j<25;j++)
+            {
+                psi =exp(-0.5*((x-c[j])*(x-c[j])/sigma2[j]));
+                fx = fx +(dmp_parameters[idx_in+4+j*2+dof]*psi);
+                sum_psi = sum_psi + psi;
+    
+            }
+            fx=(fx*x)/sum_psi;
+    
+            //a = alpha_z*(beta_z*(goal-y)-z)+fx
+    
+            a = 48*(12*(dmp_parameters[idx_in+2+dof]-y)-z)+fx;
+            z = z + 0.01*a/3.0;
+            y = y +0.01*z/3.0;
+    
+    
+    
+    
+            //dx = -alpha_x*x/tau  
+    
+            dx = -2.0*x/3.0;
+    
+            //x = x+dx*dt
+            x = x+dx*0.01;
+    
+            //printf(" %d ",x);    
+            traj[1+i+idx_out+dof*301] = y;
+        }
+      }
+  }
+
+}
+""")
+
+multiply_them = mod.get_function("multiply_them")
+
+
+class Holder(pycuda.driver.PointerHolderBase):
+    def __init__(self, t):
+        super(Holder, self).__init__()
+        self.t = t
+        self.gpudata = t.data_ptr()
+
+    def get_pointer(self):
+        return self.t.data_ptr()
 
 
 
@@ -30,15 +105,31 @@ class DMP_integrator(Function):
 
 
 
-        w = torch.cat((inputs_np[:,range(2*int(parameters[0].item()),(2*int(parameters[0].item()) + int(parameters[1].item())*int(parameters[0].item()))-1,2)],
-                       inputs_np[:,range(1+2*int(parameters[0].item()),(2*int(parameters[0].item()) + int(parameters[1].item())*int(parameters[0].item())),2)]),1).view(-1,25)
+        #w = torch.cat((inputs_np[:,range(2*int(parameters[0].item()),(2*int(parameters[0].item()) + int(parameters[1].item())*int(parameters[0].item()))-1,2)],
+          #             inputs_np[:,range(1+2*int(parameters[0].item()),(2*int(parameters[0].item()) + int(parameters[1].item())*int(parameters[0].item())),2)]),1).view(-1,25)
 
 
-        X = integrate(parameters,w, inputs_np[:,range(0,int(parameters[0].item()))].view(int(parameters[0].item())*inputs.shape[0],), torch.zeros(inputs.shape[0]*int(parameters[0].item())).cuda(),
-                      inputs_np[:,range(int(parameters[0].item()),int(parameters[0].item())*2)].view(int(parameters[0].item())*inputs.shape[0],), 3)
+        #X = integrate(parameters,w, inputs_np[:,range(0,int(parameters[0].item()))].view(int(parameters[0].item())*inputs.shape[0],), torch.zeros(inputs.shape[0]*int(parameters[0].item())).cuda(),
+               #       inputs_np[:,range(int(parameters[0].item()),int(parameters[0].item())*2)].view(int(parameters[0].item())*inputs.shape[0],), 3)
+
+        Y = torch.cuda.FloatTensor(2*inputs_np.shape[0], int(parameters[2].item())).fill_(0)
 
 
-        return inputs.new(X)
+        n=inputs_np.shape[0]*inputs_np.shape[1]
+        n=np.int32(n)
+
+        k = int(1+inputs_np.shape[0]/1024)
+
+        multiply_them(
+            Holder(Y),
+            Holder(inputs_np),
+            Holder(parameters[6:(6+int(parameters[1].item()))]),                #c
+            Holder(parameters[(6+int(parameters[1].item())):(6+int(parameters[1].item())*2)]),     #sigma_2
+            n,
+            block=(1024, 1, 1), grid=(k, 1))
+
+
+        return inputs.new(Y)
 
     @staticmethod
     def backward(ctx, grad_outputs):
@@ -52,7 +143,8 @@ class DMP_integrator(Function):
         point_grads = torch.mm(grad_outputs,grad).view(-1,2,27).transpose(2,1).contiguous().view(1,-1,54).squeeze()
 
 
-        point_grads = 10*point_grads*scale*parameters[3].item()
+        #point_grads = 10*point_grads*scale*parameters[3].item()
+        point_grads =  point_grads * scale
         #import pdb;
         #pdb.set_trace()
 
@@ -73,8 +165,8 @@ def integrate(data,w,y0,dy0,goal,tau):
     else:
         Y = torch.zeros((w.shape[0],int(data[2].item())))
 
-
-    for i in range(0, int(data[2].item())):
+    Y[:, 0]=y
+    for i in range(0, int(data[2].item())-1):
 
 
         psi = torch.exp(-0.5 * torch.pow((x - data[6:(6+int(data[1].item()))]),2) / data[(6+int(data[1].item())):(6+int(data[1].item())*2)])
@@ -93,7 +185,7 @@ def integrate(data,w,y0,dy0,goal,tau):
         y = y + dy * data[3].item()
         z = z + dz * data[3].item()
 
-        Y[:,i]=y
+        Y[:,i+1]=y
 
     return Y
 

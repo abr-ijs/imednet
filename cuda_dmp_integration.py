@@ -40,7 +40,7 @@ __global__ void multiply_them(float *traj, float *dmp_parameters, float *c, floa
             
         }
         
-        
+        fx=(fx*x)/sum_psi;
         //a = alpha_z*(beta_z*(goal-y)-z)+fx
         
         a = 48*(12*(dmp_parameters[idx_in+2+dof]-y)-z)+fx;

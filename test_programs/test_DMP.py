@@ -51,7 +51,7 @@ class ct:
         self.scale = net.scale[0:division]
 
 
-dateset_name = 'slike_780.4251'
+dateset_name = '/home/rpahic/deep_encoder_decoder_network/slike_780.4251'
 
 images, outputs, scale, original_trj = matLoader.loadData(dateset_name, load_original_trajectories=True)
 net = Net(scale)
@@ -73,11 +73,11 @@ for p in list(net.parameters()):
 
         p.data=torch.eye(54)
 
+d= 9000
+test_output = Variable(torch.from_numpy(np.array(outputs[40+n:40+d+n])), requires_grad=True).float()
 
-test_output = Variable(torch.from_numpy(np.array(outputs[40+n:42+n])), requires_grad=True).float()
-
-input_image = Variable(torch.from_numpy(np.array(images[40+n:42+n]))).float()
-traj=Variable(torch.from_numpy(np.array(original_trj_e[40+n:44+n]))).float()
+input_image = Variable(torch.from_numpy(np.array(images[40+n:40+d+n]))).float()
+traj=Variable(torch.from_numpy(np.array(original_trj_e[40*2+n:40*2+2*d+n]))).float()
 
 optimizer = torch.optim.Adam(net.parameters(), eps=0.001)
 optimizer.zero_grad()
@@ -116,7 +116,7 @@ loss_vector.backward()'''
 
 points = 10
 loss_graph = np.zeros((points, 3))
-n_w = 1
+n_w = 6
 start_w = test_output[0, n_w+1].item()
 print(start_w)
 
@@ -127,7 +127,7 @@ print(start_w)
 
 for j in range(0,points):
     optimizer.zero_grad()
-    test_output.data[0, n_w+1] = start_w+(j-(points/2))/(points/2)
+    test_output.data[100, n_w+1] = start_w+(j-(points/2))/(points/2)
 
     trajektorija = net(test_output[:, 1:55])
 
@@ -158,7 +158,7 @@ for j in range(0,points):
 
     gradi = DMP_layer.DMP_integrator.backward(CT, grads['t'].data)
 
-    loss_graph[j, 0] = test_output[0, n_w+1].item()
+    loss_graph[j, 0] = test_output[100, n_w+1].item()
     loss_graph[j, 1] = loss_vector.item()
     print(loss_vector.item())
 
@@ -169,6 +169,10 @@ for j in range(0,points):
 
 
 #print(loss_vector.grad_fn.next_functions[0][0])
+
+#plt.plot(trajektorija[1, :].cpu().detach().numpy())
+#plt.plot(to[1, :].cpu().detach().numpy())
+#plt.show
 
 gradient = np.gradient(loss_graph[:, 1])/np.gradient(loss_graph[:, 0])
 plt.plot(loss_graph[:, 0], loss_graph[:, 1], label="test1")
