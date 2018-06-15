@@ -888,7 +888,7 @@ class Trainer:
 
                 writer.add_scalar('data/val_loss', math.log(val_loss), t)
                 if val_loss < bestValLoss:
-                    bestValLoss = val_loss.data[0]
+                    bestValLoss = val_loss
                     best_nn_parameters = copy.deepcopy(model.state_dict())
                     saving_epochs = t
 
