@@ -34,7 +34,7 @@ load_from_cuda = False
 
 
 #Prepare directory and description file...................................
-directory_path = '/home/rpahic/Documents/Neural_networks/'
+directory_path = '/home0/barry.ridge/Documents/Neural_networks/'
 date = str(datetime.now())
 directory_name = 'NN ' + date
 parameters_file = directory_path + directory_name + '/net_parameters'

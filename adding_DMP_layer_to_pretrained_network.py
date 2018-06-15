@@ -22,7 +22,7 @@ layerSizes = [numOfInputs] + HiddenLayer + [out]
 
 net_id = '2018-06-07 15:31:10.101849'
 
-directory_path = '/home/rpahic/Documents/Neural_networks/'
+directory_path = '/home0/barry.ridge/Documents/Neural_networks/'
 directory_name = 'NN ' + net_id
 
 

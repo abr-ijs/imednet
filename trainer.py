@@ -434,7 +434,7 @@ class Trainer:
 
         #dummy = model(torch.autograd.Variable(torch.rand(1,1600)))
         #writer.add_graph(model, dummy)
-        window = webbrowser.open_new('http://fangorn:6006')
+        window = webbrowser.open_new('http://localhost:6006')
 
 
         if train_param.cuda:
@@ -468,7 +468,7 @@ class Trainer:
         #scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 200)
 
         y_val = model(input_data_validate_b)
-        oldValLoss = criterion(y_val, output_data_validate_b[:, 1:]).data[0]
+        oldValLoss = criterion(y_val, output_data_validate_b[:, 1:]).data.item()
         bestValLoss = oldValLoss
         best_nn_parameters = copy.deepcopy(model.state_dict())
         #Infiniti epochs
@@ -554,12 +554,12 @@ class Trainer:
                 y_val = model(input_data_validate)
                 val_loss = criterion(y_val, output_data_validate[:, 1:])
                 writer.add_scalar('data/val_loss', math.log(val_loss), t)
-                if val_loss.data[0] < bestValLoss:
-                    bestValLoss = val_loss.data[0]
+                if val_loss.data.item() < bestValLoss:
+                    bestValLoss = val_loss.data.item()
                     best_nn_parameters = copy.deepcopy(model.state_dict())
                     saving_epochs = t
 
-                if val_loss.data[0] > bestValLoss:#oldValLoss:
+                if val_loss.data.item() > bestValLoss:#oldValLoss:
                     val_count = val_count+1
 
                 else:
@@ -568,9 +568,9 @@ class Trainer:
 
 
 
-                oldValLoss = val_loss.data[0]
+                oldValLoss = val_loss.data.item()
                 writer.add_scalar('data/val_count', val_count, t)
-                print('Validatin: ', t, ' loss: ', val_loss.data[0], ' best loss:', bestValLoss)
+                print('Validatin: ', t, ' loss: ', val_loss.data.item(), ' best loss:', bestValLoss)
 
                 if (t - 1) % 10 == 0:
                     state = model.state_dict()
@@ -730,7 +730,7 @@ class Trainer:
 
         # dummy = model(torch.autograd.Variable(torch.rand(1,1600)))
         # writer.add_graph(model, dummy)
-        window = webbrowser.open_new('http://fangorn:6006')
+        window = webbrowser.open_new('http://localhost:6006')
 
         if train_param.cuda:
             '''model = model.double().cuda()
