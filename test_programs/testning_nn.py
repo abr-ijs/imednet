@@ -4,31 +4,11 @@ from matLoader import matLoader
 import numpy as np
 from torch.autograd import Variable
 from trainer import Trainer
+
 import csv
 
 import torch.nn as nn
 import DMP_layer
-class Net(nn.Module):
-
-    def __init__(self,scale):
-        super(Net, self).__init__()
-
-        self.func = DMP_layer.DMP_integrator()
-        self.DMPparam = DMP_layer.createDMPparam(25, 3, 0.01, 2, scale)
-
-        self.register_buffer('DMPp', self.DMPparam.data_tensor)
-        self.register_buffer('scale', self.DMPparam.scale_tensor)
-        self.register_buffer('param_grad', self.DMPparam.grad_tensor)
-
-
-
-
-    def forward(self, x):
-
-
-
-        x = self.func.apply(x, self.DMPp,self.param_grad,self.scale)
-        return x
 
 
 
@@ -71,7 +51,7 @@ decoder.add_module( str((i+1)*2),model_test[i+1])
 
 
 images, outputs, scale, original_trj = matLoader.loadData(dateset_name, load_original_trajectories=True)
-net = Net(scale)
+
 
 test_input = Variable(torch.from_numpy(np.array(images))).float()
 test_output = Variable(torch.from_numpy(np.array(outputs))).float()
@@ -86,7 +66,7 @@ letent_out=encoder(test_input)
 np.savetxt('output_data.csv',outputs)
 np.savetxt('latent_space.csv', letent_out.detach().numpy())
 
-net=net.cuda()
+
 
 print(loss.item())
 for number in range(0,10):
@@ -94,7 +74,7 @@ for number in range(0,10):
     input_image = Variable(torch.from_numpy(np.array(images[40+number]))).float()
     real_output = Variable(torch.from_numpy(np.array(outputs[40+number]))).float()
 
-    traj=net(real_output[1:].view(1,-1).cuda())
+
 
     nn_output1 = model(input_image)
     nn_output = decoder(encoder(input_image))
