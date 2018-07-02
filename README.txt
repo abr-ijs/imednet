@@ -1,1 +1,0 @@
-python_deep_encoder_decoder_v1.py main program for training with dmp parameters
