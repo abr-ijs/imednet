@@ -22,7 +22,7 @@ import numpy as np
 
 from deep_encoder_decoder_network.models.encoder_decoder import CNNEncoderDecoderNet, training_parameters
 from deep_encoder_decoder_network.data.matLoader import matLoader
-from deep_encoder_decoder_network.trainers.trainer import Trainer
+from deep_encoder_decoder_network.trainers.encoder_decoder_trainer import Trainer
 
 # Save datetime
 date = datetime.now()
@@ -32,6 +32,9 @@ default_data_path = os.path.join(dirname(dirname(realpath(__file__))), 'data/sli
 default_model_save_path = os.path.join(dirname(dirname(realpath(__file__))),
                                        'models/encoder_decoder_cnn',
                                        'Model ' + str(date))
+print('default_model_save_path: {}'.format(default_model_save_path))
+default_cnn_model_load_path = os.path.join(dirname(dirname(realpath(__file__))),
+                                           'models/mnist_cnn/mnist_cnn.model')
 default_model_load_path = None
 
 # Parse arguments
@@ -43,6 +46,8 @@ parser.add_argument('--model-save-path', type=str, default=default_model_save_pa
                     help='model save path (default: "{}")'.format(str(default_model_save_path)))
 parser.add_argument('--model-load-path', type=str, default=None,
                     help='model load path (default: "{}")'.format(str(default_model_load_path)))
+parser.add_argument('--cnn-model-load-path', type=str, default=default_cnn_model_load_path,
+                    help='cnn model load path (default: "{}")'.format(str(default_cnn_model_load_path)))
 args = parser.parse_args()
 
 # Set up model save files
@@ -60,13 +65,17 @@ sampling_time = 0.1
 
 # Define layer sizes
 input_size = 1600
-hidden_layer_sizes = [1500, 1300, 1000, 600, 200, 20, 35]
+hidden_layer_sizes = [1000, 600, 200, 20, 35]
 output_size = 2*N + 4
 layer_sizes = [input_size] + hidden_layer_sizes + [output_size]
 net_description_file.write('\nNeurons: ' + str(layer_sizes))
 
 # Load the model
-model = CNNEncoderDecoderNet(layer_sizes, scale)
+model = CNNEncoderDecoderNet(args.cnn_model_load_path, layer_sizes, scale)
+
+# Freeze pretrained CNN weights
+for param in model.cnn_model.parameters():
+    param.requires_grad = False
 
 # Initialize the model
 if args.model_load_path:

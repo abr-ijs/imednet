@@ -19,7 +19,7 @@ import torch
 import numpy as np
 
 from deep_encoder_decoder_network.models.encoder_decoder import Network, training_parameters
-from deep_encoder_decoder_network.trainers.trainer import Trainer
+from deep_encoder_decoder_network.trainers.encoder_decoder_trainer import Trainer
 from deep_encoder_decoder_network.data.matLoader import matLoader
 
 # Save datetime

@@ -157,7 +157,7 @@ class Trainer:
         outputs = outputs / scale
         return outputs, scale
 
-    def getDataForNetwork(self,images,DMPs, scale = None, useData = None):
+    def getDataForNetwork(images,DMPs, scale = None, useData = None):
         """
         Generates data that will be given to the Network
 
@@ -463,7 +463,7 @@ class Trainer:
         #optimizer = torch.optim.SGD(model.parameters(), lr = 0.4) # for updating weights
         #optimizer = torch.optim.RMSprop(model.parameters())
 
-        optimizer = correct_adam.SCG(model.parameters())
+        optimizer = correct_adam.SCG(filter(lambda p: p.requires_grad, model.parameters()))
         #optimizer = correct_adam.Adam(model.parameters(), lr = 0.0001, amsgrad=True)
         #scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 200)
 

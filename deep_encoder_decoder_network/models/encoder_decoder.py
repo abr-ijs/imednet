@@ -9,8 +9,81 @@ Created on Dec 14 2017
 VERSION 1.1
 """
 import torch
-from deep_encoder_decoder_network.utils import DMP_layer
 import numpy as np
+
+from deep_encoder_decoder_network.models.mnist_cnn import Net as MNISTNet
+from deep_encoder_decoder_network.utils import DMP_layer
+
+
+class CNNEncoderDecoderNet(torch.nn.Module):
+    def __init__(self, pretrained_model_path, layer_sizes = [784,200,50], scale = None):
+        """
+        Creates a pretrained CNN + Encoder-Decoder network.
+
+        layer_sizes -> list containing layer inputs/ouptuts (minimum length = 3)
+
+            example:
+                layer_sizes = [784,500,200,50]
+                middleLayers -> [torch.nn.Linear(500,200)]
+                outputLayer -> torch.nn.Linear(200,50)
+        """
+        super(CNNEncoderDecoderNet, self).__init__()
+
+        # Load the MNIST CNN model
+        self.cnn_model = MNISTNet()
+        # Load the pretrained weights
+        self.cnn_model.load_state_dict(torch.load(pretrained_model_path))
+        # Chop off the FC layers (2 of them) + dropout layer,
+        # leaving just the two conv layers.
+        self.cnn_model = torch.nn.Sequential(*list(self.cnn_model.modules())[1:-3])
+        # Get the output size of the last conv layer
+        self.image_size = int(np.sqrt(layer_sizes[0]))
+        self.conv1 = self.cnn_model[0].state_dict()['weight'].size()
+        self.conv1_W = self.image_size - self.conv1[2] + 1
+        self.conv1_size = (self.conv1_W)**2 * self.conv1[0]
+        self.conv2 = self.cnn_model[1].state_dict()['weight'].size()
+        self.conv2_W = self.conv1_W - self.conv2[2] + 1
+        self.conv2_size = (self.conv2_W)**2 * self.conv2[0]
+
+        # Set up the input layer for encoder-decoder part
+        self.inputLayer = torch.nn.Linear(self.conv2_size, layer_sizes[1])
+
+        self.middleLayers = []
+        for i in range(1, len(layer_sizes) - 2):
+            layer = torch.nn.Linear(layer_sizes[i], layer_sizes[i+1])
+            self.middleLayers.append(layer)
+            self.add_module("middleLayer_" + str(i), layer)
+        self.outputLayer = torch.nn.Linear(layer_sizes[-2], layer_sizes[-1])
+        self.scale = scale
+        self.loss = 0
+
+    def forward(self, x):
+        """
+        Defines the layers connections
+
+        forward(x) -> result of forward propagation through network
+        x -> input to the Network
+        """
+        #activation_fn = torch.nn.ReLU6()
+        activation_fn = torch.nn.Tanh()
+
+        x = x.view(-1, 1, self.image_size, self.image_size)
+
+        # x = self.firstLayer(x)
+        # x = x.view(-1, self.convSize)
+
+        # Run the input through the pretrained CNN
+        x = self.cnn_model(x)
+        x = x.view(-1, self.conv2_size)
+
+        x = activation_fn(self.inputLayer(x))
+        for layer in self.middleLayers:
+            x = activation_fn(layer(x))
+        output = self.outputLayer(x)
+        return output
+
+    def isCuda(self):
+        return self.inputLayer.weight.is_cuda
 
 
 class Network(torch.nn.Module):
