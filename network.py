@@ -178,6 +178,8 @@ class Network_DMP(torch.nn.Module):
         self.register_buffer('param_grad', self.DMPparam.grad_tensor)'''
 
 
+
+
     def forward(self, x):
         """
         Defines the layers connections

@@ -17,7 +17,7 @@ class matLoader:
     def loadData(file, load_original_trajectories=False):
         y_max = 1
         y_min = -1
-        data = sio.loadmat(file)
+        data = sio.loadmat(file+'.mat')
         data = data['slike']
         images = []
         for image in data['im'][0,0][0]:
