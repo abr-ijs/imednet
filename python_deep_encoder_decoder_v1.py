@@ -9,15 +9,11 @@ Created on Dec 14 2017
 VERSION 1.0
 """
 import torch
-from torch.autograd import Variable
 import numpy as np
-import matplotlib.pyplot as plt
 
 from network import Network, training_parameters
-from trajectory_loader import trajectory_loader as loader
 from trainer import Trainer
 from matLoader import matLoader
-import math
 
 from datetime import datetime
 

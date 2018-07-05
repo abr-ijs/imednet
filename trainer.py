@@ -15,15 +15,13 @@ import numpy as np
 import copy
 from scipy.interpolate import interpn
 
-from trajectory_loader import trajectory_loader as loader
+from help_programs.trajectory_loader import trajectory_loader as loader
 from DMP_class import DMP
 from tensorboardX import SummaryWriter
 
 
 import subprocess
 import webbrowser
-import sys
-import time
 
 import tkinter as tk
 from datetime import datetime
