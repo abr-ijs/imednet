@@ -1,13 +1,18 @@
+import sys
 import torch
-
 import numpy as np
-from matLoader import matLoader
 from torch.autograd import Variable
-from trainer import Trainer
-from network import Network_DMP, training_parameters
 from os import makedirs
-
 from datetime import datetime
+
+from os.path import dirname, realpath
+sys.path.append(dirname(dirname(dirname(realpath(__file__)))))
+
+from deep_encoder_decoder_network.models.encoder_decoder import DMPEncoderDecoderNet, TrainingParameters
+from deep_encoder_decoder_network.trainers.encoder_decoder_trainer import Trainer
+from deep_encoder_decoder_network.data.mat_loader import MatLoader
+
+
 N = 25
 
 numOfInputs = 1600
@@ -16,7 +21,7 @@ conv = None
 
 date = str(datetime.now())
 out = 2*N + 4
-#out = 2*N
+# out = 2*N
 
 layerSizes = [numOfInputs] + HiddenLayer + [out]
 
@@ -40,13 +45,13 @@ parameters_file_new = directory_path + directory_name_new + '/net_parameters'
 state = torch.load(directory_path+directory_name+'/net_parameters')
 
 dateset_name = 'slike_780.4251'
-images, outputs, scale, original_trj = matLoader.loadData(dateset_name, load_original_trajectories=True)
+images, outputs, scale, original_trj = MatLoader.load_data(dateset_name, load_original_trajectories=True)
 
 file = open(directory_path+directory_name_new+'/Network_description.txt','w')
 
 file.write('Network created: ' + date)
 
-model = Network_DMP(layerSizes, conv, scale)
+model = DMPEncoderDecoderNet(layerSizes, conv, scale)
 
 model.load_state_dict(state)
 model.register_buffer('DMPp', model.DMPparam.data_tensor)
@@ -71,11 +76,11 @@ torch.save(model, (directory_path+directory_name_new+'/model.pt'))
 
 #learning params
 
-train_param = training_parameters()
+train_param = TrainingParameters()
 train_param.epochs = -1
 learning_rate = 0.0005
 momentum = 0.5
-train_param.bunch = 128
+train_param.batch_size = 128
 train_param.training_ratio = 0.7
 train_param.validation_ratio = 0.15
 train_param.test_ratio = 0.15

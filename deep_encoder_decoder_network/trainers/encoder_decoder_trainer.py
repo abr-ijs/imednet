@@ -1,28 +1,14 @@
-# -*- coding: utf-8 -*-
 """
-Trainer class
-
-Created on Dec 14 2017
-
-@author: Marcel Salmic
-
-VERSION 1.0
+A class for training encoder-decoder networks.
 """
-from mnist import MNIST# pip3 install python-mnist
+from mnist import MNIST  # pip3 install python-mnist
 import torch
-
 import numpy as np
 import copy
 from scipy.interpolate import interpn
-
 from tensorboardX import SummaryWriter
-
-
 import subprocess
 import webbrowser
-import sys
-import time
-
 import tkinter as tk
 from datetime import datetime
 import math
@@ -30,8 +16,8 @@ import random
 from torch.autograd import Variable
 import matplotlib.pyplot as plt
 
-from deep_encoder_decoder_network.data.trajectory_loader import trajectory_loader as loader
-from deep_encoder_decoder_network.utils.DMP_class import DMP
+from deep_encoder_decoder_network.data.trajectory_loader import TrajectoryLoader
+from deep_encoder_decoder_network.utils.dmp_class import DMP
 from deep_encoder_decoder_network.utils import correct_adam
 
 
@@ -39,12 +25,13 @@ class Trainer:
     """
     Helper class containing methods for preparing data for learning
     """
-    train=False
-    user_stop =""
+    train = False
+    user_stop = ""
     plot_im = False
     indeks = []
     reseting_optimizer = False
-    def show_dmp(self, image, trajectory, dmp, plot = False, save = -1):
+
+    def show_dmp(self, image, trajectory, dmp, plot=False, save=-1):
         """
         Plots and shows mnist image, trajectory and dmp to one picture
 
@@ -55,8 +42,8 @@ class Trainer:
 
         fig = plt.figure()
         if image is not None:
-            plt.imshow((np.reshape(image, (40, 40))),cmap='gray', extent=[0, 40,40 ,0 ])
-
+            plt.imshow((np.reshape(image, (40, 40))),
+                       cmap='gray', extent=[0, 40, 40, 0])
 
         if dmp is not None:
             dmp.joint()
@@ -79,8 +66,6 @@ class Trainer:
 
         return matrix.reshape(fig.canvas.get_width_height()[::-1]+(3,))
 
-
-
     def loadMnistData(mnist_folder):
         """
         Loads data from the folder containing mnist files
@@ -97,7 +82,7 @@ class Trainer:
         """
         trajectories = []
         for i in avaliable:
-            t = loader.loadNTrajectory(trajectories_folder,i)
+            t = TrajectoryLoader.loadNTrajectory(trajectories_folder,i)
             trajectories.append(t)
         trajectories = np.array(trajectories)
         return trajectories
@@ -199,7 +184,6 @@ class Trainer:
         if cuda:
           output = output.cpu()
 
-
         output = (scale.x_max-scale.x_min) * (output.double().data.numpy() -scale.y_min) / (scale.y_max-scale.y_min) + scale.x_min
 
         tau = output[0]
@@ -211,8 +195,8 @@ class Trainer:
         #dy0 = 0*output[0:2]
         #goal = output[2:4]
         #weights = output[4:]
-        dmp = DMP(N,sampling_time)
-        dmp.values(N,sampling_time,tau,y0,[0,0],goal,w)
+        dmp = DMP(N, sampling_time)
+        dmp.values(N, sampling_time, tau, y0, [0, 0], goal, w)
         return dmp
 
     def showNetworkOutput(network, i, images, trajectories, DMPs, N, sampling_time, avaliable = None, cuda = False):
@@ -220,7 +204,7 @@ class Trainer:
         scale = network.scale
         if i != -1:
             input_data = input_data[i]
-        dmps = Trainer.getDMPFromImage(network, input_data,N,sampling_time, cuda)
+        dmps = Trainer.getDMPFromImage(network, input_data, N, sampling_time, cuda)
         for dmp in dmps:
             dmp.joint()
 
@@ -244,19 +228,19 @@ class Trainer:
             else:
                 Trainer.show_dmp(images[i], None, dmps[0])
 
-    def printDMPdata(self,dmp):
+    def printDMPdata(self, dmp):
         print('Tau: ', dmp.tau)
         print('y0: ', dmp.y0)
         print('dy0: ', dmp.dy0)
         print('goal: ', dmp.goal)
         print('w_sum: ', dmp.w.sum())
 
-    def rotationMatrix(theta, dimensions = 3):
+    def rotationMatrix(theta, dimensions=3):
         c, s = np.cos(theta), np.sin(theta)
         if dimensions == 3:
-            return np.array([[c,-s, 0],[s,c, 0], [0,0,1]])
+            return np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]])
         else:
-            return np.array([[c,-s],[s,c]])
+            return np.array([[c, -s], [s, c]])
 
     def translate(points, movement):
         pivotPoint = np.array(movement)
@@ -264,15 +248,15 @@ class Trainer:
         return new_points
 
     def rotateAround(trajectory, pivotPoint, theta):
-        pivotPoint = np.append(pivotPoint,0)
+        pivotPoint = np.append(pivotPoint, 0)
         transformed_trajectory = Trainer.translate(trajectory, -pivotPoint)
         transformed_trajectory = Trainer.rotationMatrix(theta).dot(transformed_trajectory.transpose()).transpose()
         transformed_trajectory = Trainer.translate(transformed_trajectory, pivotPoint)
         return transformed_trajectory
 
     def rotateImage(image, theta):
-        new_image = image.reshape(28,28)
-        points =  np.array([[j,i,0] for j in np.arange(28) for i in range(28)])
+        new_image = image.reshape(28, 28)
+        points =  np.array([[j, i, 0] for j in np.arange(28) for i in range(28)])
         transformed = Trainer.rotateAround(points, [12,12], theta)[:,:2]
         t = (points[:28,1], points[:28,1])
         return interpn(t, image.reshape(28,28), transformed, method = 'linear', bounds_error=False, fill_value=0)
@@ -295,39 +279,37 @@ class Trainer:
         transformed_images = np.array(transformed_images)
         return transformed_trajectories, transformed_images
 
-
     def testOnImage(file, model):
         image = plt.imread(file)
-        transformed = np.zeros([28,28])
+        transformed = np.zeros([28, 28])
         for i in range(28):
             for j in range(28):
-                transformed[i,j] = image[i,j].sum()/3
+                transformed[i, j] = image[i, j].sum()/3
         transformed /= transformed.max()
         plt.figure()
         plt.imshow(image)
         plt.figure()
-        plt.imshow(transformed,cmap='gray')
+        plt.imshow(transformed, cmap='gray')
         plt.show()
         Trainer.showNetworkOutput(model, 0, np.array([transformed.reshape(784)*255]), None, None, N, sampling_time, cuda = cuda)
 
     def databaseSplit(self, images, outputs, train_set = 0.7, validation_set = 0.15, test_set = 0.15):
-
-        r=len(images)
-        de =int(len(outputs)/r)
-        trl=round(r*train_set)
-        tel=round(r*test_set)
-        val=r-trl-tel
+        r = len(images)
+        de = int(len(outputs)/r)
+        trl = round(r*train_set)
+        tel = round(r*test_set)
+        val = r - trl - tel
 
         indeks = np.append(np.zeros(trl), np.ones(tel))
         indeks = np.append(indeks, 2*np.ones(val))
 
         random.shuffle(indeks)
-        x_t=[]
-        y_t =[]
-        x_v= []
+        x_t = []
+        y_t = []
+        x_v = []
         y_v = []
-        x_te= []
-        y_te= []
+        x_te = []
+        y_te = []
 
         if self.indeks != []:
             indeks = self.indeks
@@ -335,24 +317,23 @@ class Trainer:
             self.indeks = indeks
 
         for i in range(0, len(indeks)):
-
             if indeks[i] == 0:
                 x_t.append(images[i])
                 y_t.append(outputs[i * de])
 
-                if de >1:
+                if de > 1:
                     y_t.append(outputs[i * de+1])
 
             if indeks[i] == 2:
                 x_v.append(images[i])
                 y_v.append(outputs[i*de])
-                if de >1:
+                if de > 1:
                     y_v.append(outputs[i * de+1])
 
             if indeks[i] == 1:
                 x_te.append(images[i])
                 y_te.append(outputs[i*de])
-                if de >1:
+                if de > 1:
                     y_te.append(outputs[i * de+1])
 
         x_train = np.array(x_t)
@@ -369,9 +350,9 @@ class Trainer:
         input_data_validate = Variable(torch.from_numpy(x_validate)).float()
         output_data_validate = Variable(torch.from_numpy(y_validate), requires_grad=False).float()
 
-        return input_data_train, output_data_train, input_data_test, output_data_test,  input_data_validate, output_data_validate
+        return input_data_train, output_data_train, input_data_test, output_data_test, input_data_validate, output_data_validate
 
-    def learn(self, model, images, outputs, path, train_param, file, learning_rate = 1e-4, momentum = 0, decay = [0,0]):
+    def learn(self, model, images, outputs, path, train_param, file, learning_rate=1e-4, momentum=0, decay=[0,0]):
         """
         teaches the network using provided data
 
@@ -402,8 +383,7 @@ class Trainer:
         button1.pack(side=tk.RIGHT)
         buttonResetAdam.pack(side=tk.RIGHT)
 
-
-        #prepare parameters
+        # Prepare parameters
         starting_time = datetime.now()
         train_param.data_samples = len(images)
         val_count = 0
@@ -415,27 +395,21 @@ class Trainer:
         print('Starting learning')
         print(train_param.write_out())
 
-        # learn
-
+        # Learn
         writer = SummaryWriter(path+'/log')
-
-
 
         command = ["tensorboard", "--logdir=" + path+"/log"]
         proces = subprocess.Popen(command)
         print(proces.pid)
         print('init')
 
-
-
         # Divide data
         print("Dividing data")
         input_data_train_b, output_data_train_b, input_data_test_b, output_data_test_b, input_data_validate_b, output_data_validate_b = self.databaseSplit(images, outputs)
 
-        #dummy = model(torch.autograd.Variable(torch.rand(1,1600)))
-        #writer.add_graph(model, dummy)
+        # dummy = model(torch.autograd.Variable(torch.rand(1,1600)))
+        # writer.add_graph(model, dummy)
         window = webbrowser.open_new('http://localhost:6006')
-
 
         if train_param.cuda:
             '''model = model.double().cuda()
@@ -453,25 +427,24 @@ class Trainer:
             input_data_validate_b = input_data_validate_b.cuda()
             output_data_validate_b = output_data_validate_b.cuda()
 
-
         print('finish dividing')
 
         criterion = torch.nn.MSELoss(size_average=True) #For calculating loss (mean squared error)
-        #optimizer = torch.optim.SGD(self.parameters(), lr=learning_rate, mometum=momentum) # for updating weights
-        #optimizer = torch.optim.Adagrad(model.parameters(), lr=learning_rate, lr_decay = decay[0], weight_decay = decay[1]) #, momentum=momentum) # for updating weights
-        #optimizer = torch.optim.Adam(model.parameters(), eps = 0.001 )
-        #optimizer = torch.optim.SGD(model.parameters(), lr = 0.4) # for updating weights
-        #optimizer = torch.optim.RMSprop(model.parameters())
+        # optimizer = torch.optim.SGD(self.parameters(), lr=learning_rate, mometum=momentum) # for updating weights
+        # optimizer = torch.optim.Adagrad(model.parameters(), lr=learning_rate, lr_decay = decay[0], weight_decay = decay[1]) #, momentum=momentum) # for updating weights
+        # optimizer = torch.optim.Adam(model.parameters(), eps = 0.001 )
+        # optimizer = torch.optim.SGD(model.parameters(), lr = 0.4) # for updating weights
+        # optimizer = torch.optim.RMSprop(model.parameters())
 
         optimizer = correct_adam.SCG(filter(lambda p: p.requires_grad, model.parameters()))
-        #optimizer = correct_adam.Adam(model.parameters(), lr = 0.0001, amsgrad=True)
-        #scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 200)
+        # optimizer = correct_adam.Adam(model.parameters(), lr = 0.0001, amsgrad=True)
+        # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 200)
 
         y_val = model(input_data_validate_b)
         oldValLoss = criterion(y_val, output_data_validate_b[:, 1:]).data.item()
         bestValLoss = oldValLoss
         best_nn_parameters = copy.deepcopy(model.state_dict())
-        #Infiniti epochs
+        # Infinite epochs
         if train_param.epochs == -1:
             inf_k = 0
         else:
@@ -485,7 +458,6 @@ class Trainer:
         lr = 0
 
         while self.train:
-
             input_data_train = input_data_train_b.clone()
             output_data_train = output_data_train_b.clone()
             input_data_test = input_data_test_b.clone()
@@ -496,17 +468,13 @@ class Trainer:
             root.update()
             t = t+1
             i = 0
-            j = train_param.bunch
+            j = train_param.batch_size
 
+            # scheduler.step()
+            # if t%t_init == 0:
+            #     scheduler.last_epoch = -1
 
-            #scheduler.step()
-            #if t%t_init == 0:
-            #    scheduler.last_epoch = -1
-
-
-            #writer.add_scalar('data/learning_rate', scheduler.get_lr()[0], t)
-
-
+            # writer.add_scalar('data/learning_rate', scheduler.get_lr()[0], t)
 
             self.loss = Variable(torch.Tensor([0]))
             permutations = torch.randperm(len(input_data_train))
@@ -519,7 +487,7 @@ class Trainer:
             while j <= len(input_data_train):
                 self.learn_one_step(model,input_data_train[i:j], output_data_train[i:j, 1:], learning_rate,criterion,optimizer)
                 i = j
-                j += train_param.bunch
+                j += train_param.batch_size
 
                 '''for group in optimizer.param_groups:
                     i = 0
@@ -532,12 +500,10 @@ class Trainer:
             if i < len(input_data_train):
                 self.learn_one_step(model,input_data_train[i:], output_data_train[i:, 1:], learning_rate,criterion,optimizer)
 
-
             if (t-1)%train_param.log_interval ==0:
+                self.loss = self.loss * train_param.batch_size / len(input_data_train)
 
-                self.loss = self.loss * train_param.bunch / len(input_data_train)
                 if t == 1:
-
                     oldLoss = self.loss
 
                 print('Epoch: ', t, ' loss: ', self.loss.data[0])
@@ -554,19 +520,16 @@ class Trainer:
                 y_val = model(input_data_validate)
                 val_loss = criterion(y_val, output_data_validate[:, 1:])
                 writer.add_scalar('data/val_loss', math.log(val_loss), t)
+
                 if val_loss.data.item() < bestValLoss:
                     bestValLoss = val_loss.data.item()
                     best_nn_parameters = copy.deepcopy(model.state_dict())
                     saving_epochs = t
 
-                if val_loss.data.item() > bestValLoss:#oldValLoss:
+                if val_loss.data.item() > bestValLoss:  # oldValLoss:
                     val_count = val_count+1
-
                 else:
-
                     val_count = 0
-
-
 
                 oldValLoss = val_loss.data.item()
                 writer.add_scalar('data/val_count', val_count, t)
@@ -593,9 +556,7 @@ class Trainer:
                     writer.add_scalars('data/min', min_dict, t)
                     writer.add_scalars('data/var', var_dict, t)
 
-               
                 if self.plot_im:
-
                     plot_vector = torch.cat((output_data_validate[0,0:1], y_val[0, :]), 0)
                     dmp_v = self.createDMP(plot_vector, model.scale, 0.01, 25, True)
                     dmp = self.createDMP(output_data_validate[0,:], model.scale, 0.01, 25, True)
@@ -607,10 +568,6 @@ class Trainer:
                     self.plot_im = False
 
                     torch.save(model.state_dict(), path + '/net_parameters' +str(t))
-
-
-
-
 
             if (t - 1) % train_param.test_interval == 0:
                 y_test = model(input_data_test)
@@ -636,8 +593,6 @@ class Trainer:
             if val_count > train_param.val_fail:
                 self.train = False
                 train_param.stop_criterion = "max validation fail reached"
-
-
 
             '''
             writer.add_scalar('data/test_lr', lr, t)
@@ -672,7 +627,7 @@ class Trainer:
 
         return best_nn_parameters
 
-    def learn_DMP(self, model, images, outputs, path, train_param, file, learning_rate=1e-4, momentum=0, decay=[0, 0]):
+    def learn_dmp(self, model, images, outputs, path, train_param, file, learning_rate=1e-4, momentum=0, decay=[0, 0]):
         """
         teaches the network using provided data
 
@@ -753,7 +708,7 @@ class Trainer:
         criterion = torch.nn.MSELoss(size_average=True)  # For calculating loss (mean squared error)
         # optimizer = torch.optim.SGD(self.parameters(), lr=learning_rate, mometum=momentum) # for updating weights
         # optimizer = torch.optim.Adagrad(model.parameters(), lr=learning_rate, lr_decay = decay[0], weight_decay = decay[1]) #, momentum=momentum) # for updating weights
-        #optimizer = torch.optim.Adam(model.parameters(), eps = 0.001 )
+        # optimizer = torch.optim.Adam(model.parameters(), eps = 0.001 )
         # optimizer = torch.optim.SGD(model.parameters(), lr = 0.4) # for updating weights
         # optimizer = torch.optim.RMSprop(model.parameters())
 
@@ -790,16 +745,7 @@ class Trainer:
 
         torch.save(model.state_dict(), path + '/net_parameters' + str(0))
 
-
-
-
-
-
-
-
-
-
-        # Infiniti epochs
+        # Infinite epochs
         if train_param.epochs == -1:
             inf_k = 0
         else:
@@ -813,7 +759,6 @@ class Trainer:
         lr = 0
 
         while self.train:
-
             input_data_train = input_data_train_b.clone()
             output_data_train = output_data_train_b.clone()
             input_data_test = input_data_test_b.clone()
@@ -824,7 +769,7 @@ class Trainer:
             root.update()
             t = t + 1
             i = 0
-            j = train_param.bunch
+            j = train_param.batch_size
 
             # scheduler.step()
             # if t%t_init == 0:
@@ -851,7 +796,7 @@ class Trainer:
                 self.learn_one_step(model, input_data_train[i:j], output_data_train[i*2:j*2, :], learning_rate, criterion,
                                     optimizer)
                 i = j
-                j += train_param.bunch
+                j += train_param.batch_size
 
                 '''for group in optimizer.param_groups:
                     i = 0
@@ -867,7 +812,7 @@ class Trainer:
 
             if (t - 1) % train_param.log_interval == 0:
 
-                self.loss = self.loss * train_param.bunch / len(input_data_train)
+                self.loss = self.loss * train_param.batch_size / len(input_data_train)
                 if t == 1:
                     oldLoss = self.loss
 
@@ -925,11 +870,9 @@ class Trainer:
                     writer.add_scalars('data/var', var_dict, t)
 
                 if self.plot_im:
-
                     fig = plt.figure()
 
                     plt.imshow((np.reshape(input_data_validate.data[0].cpu().numpy(), (40, 40))), cmap='gray', extent=[0, 40, 40, 0])
-
 
                     plt.plot(output_data_validate.data[0].cpu().numpy(), output_data_validate.data[1].cpu().numpy(), '--r', label='dmp')
 
@@ -941,15 +884,10 @@ class Trainer:
                     fig.canvas.draw()
                     matrix = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
 
-
-
                     mat= matrix.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-
-
 
                     writer.add_image('image' + str(t), mat)
                     self.plot_im = False
-
                     torch.save(model.state_dict(), path + '/net_parameters' + str(t))
 
             if (t - 1) % train_param.test_interval == 0:
@@ -963,6 +901,7 @@ class Trainer:
             '''
             if self.reseting_optimizer:
                 optimizer.reset = True
+
             if val_count > 7:
                 train_param.stop_criterion = "reset optimizer"
                 optimizer.reset = True
@@ -978,7 +917,6 @@ class Trainer:
 
             '''
             writer.add_scalar('data/test_lr', lr, t)
-
 
             writer.add_scalar('data/loss_lr', self.loss.data[0], lr)
 
@@ -1010,7 +948,6 @@ class Trainer:
         return best_nn_parameters
 
     def learn_one_step(self, model, x, y, learning_rate, criterion, optimizer):
-
         def wrap():
             optimizer.zero_grad()
             y_pred = model(x)
@@ -1023,15 +960,13 @@ class Trainer:
         loss = criterion(y_pred,y) #loss
         optimizer.zero_grad()# setting gradients to zero
         loss.backward()# calculating gradients for every layer
-        
-        
+
         optimizer.step()#updating weights'''
         loss = optimizer.step(wrap)
 
         self.loss = self.loss + loss.item()
 
     def cancel_training(self):
-
         self.user_stop = "User stop"
         self.train = False
 

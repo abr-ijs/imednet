@@ -1,26 +1,14 @@
-# -*- coding: utf-8 -*-
-"""
-Loader for json trajectories
-
-Created on Dec 14 2017
-
-@author: Marcel Salmic
-
-VERSION 1.0
-"""
 import numpy as np
 import json
 import os
-from os import path
 
 prefix = 'image_'
 suffix = '.json'
 
-class trajectory_loader:
+class TrajectoryLoader:
     """
     Static helper class for loading trejectoires from json files
     """
-
     def load(file):
         """
         Loads trajectory from file

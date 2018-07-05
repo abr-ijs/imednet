@@ -20,8 +20,8 @@ from datetime import datetime
 import torch
 import numpy as np
 
-from deep_encoder_decoder_network.models.encoder_decoder import CNNEncoderDecoderNet, training_parameters
-from deep_encoder_decoder_network.data.matLoader import matLoader
+from deep_encoder_decoder_network.models.encoder_decoder import CNNEncoderDecoderNet, TrainingParameters
+from deep_encoder_decoder_network.data.mat_loader import MatLoader
 from deep_encoder_decoder_network.trainers.encoder_decoder_trainer import Trainer
 
 # Save datetime
@@ -57,7 +57,7 @@ net_description_file = open(net_description_save_path, 'w')
 net_description_file.write('Network created: ' + str(date))
 
 # Load data and scale it
-images, outputs, scale, or_tr = matLoader.loadData(args.data_path)
+images, outputs, scale, or_tr = MatLoader.load_data(args.data_path)
 
 # Set up DMP parameters
 N = 25
@@ -93,11 +93,11 @@ else:
 torch.save(model, (os.path.join(args.model_save_path, 'model.pt')))
 
 # Set up trainer
-train_param = training_parameters()
+train_param = TrainingParameters()
 train_param.epochs = -1
 learning_rate = 0.0005
 momentum = 0.5
-train_param.bunch = 128
+train_param.batch_size = 128
 train_param.training_ratio = 0.7
 train_param.validation_ratio = 0.15
 train_param.test_ratio = 0.15

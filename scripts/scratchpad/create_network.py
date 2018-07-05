@@ -1,23 +1,12 @@
-# -*- coding: utf-8 -*-
-"""
-Network creation
-
-Created on Dec 14 2017
-
-@author: Marcel Salmic
-
-VERSION 1.0
-"""
 import torch
-from torch.autograd import Variable
 import numpy as np
-import matplotlib.pyplot as plt
 
-from network import Network
-from trajectory_loader import trajectory_loader as loader
-from trainer import Trainer
+from os.path import dirname, realpath
+sys.path.append(dirname(dirname(dirname(realpath(__file__)))))
 
-
+from deep_encoder_decoder_network.models.encoder_decoder import EncoderDecoderNet
+from deep_encoder_decoder_network.trainers.encoder_decoder_trainer import Trainer
+from deep_encoder_decoder_network.data.trajectory_loader import TrajectoryLoader
 
 print()
 ## folders containing trajectories and mnist data
@@ -36,7 +25,7 @@ epochs = 20000
 learning_rate=0.01
 momentum = 0.2
 decay = [1e-9,1e-6]
-bunch = 1
+batch_size = 1
 oneDigidOnly = False
 #Good data: 0-100, 200-4500, 5000-5100
 #Bad data: 100-200
@@ -72,14 +61,14 @@ conv = None
 #HiddenLayer = [100]
 out = 2*N + 7
 #out = 2*N
-layerSizes = [numOfInputs] + HiddenLayer + [out]
+layer_sizes = [numOfInputs] + HiddenLayer + [out]
 
 print('Loading Mnist images')
 #get mnist data
 images, labels = Trainer.loadMnistData(mnist_folder)
 print(' Done loading Mnist images')
 #get trajectories
-avaliable = np.array(loader.getAvaliableTrajectoriesNumbers(trajectories_folder))
+avaliable = np.array(TrajectoryLoader.getAvaliableTrajectoriesNumbers(trajectories_folder))
 
 if oneDigidOnly:
     indexes = np.where(labels==digit)
@@ -134,10 +123,10 @@ print("   - Epochs: ", epochs)
 print("   - Learning rate: ", learning_rate)
 print("   - Momentum: ", momentum)
 print("   - Decay: ", decay)
-print("   - Bunch size: ", bunch)
+print("   - Batch size: ", batch_size)
 
 
-model = Network(layerSizes, conv)
+model = EncoderDecoderNet(layer_sizes, conv)
 model.scale = scale
 np.save(scale_file, scale)
 #inicalizacija
@@ -146,7 +135,7 @@ if load:
     if load_from_cuda:
         model.load_state_dict(torch.load(parameters_file, map_location=lambda storage, loc: storage)) # loading parameters
     else:
-        model.load_state_dict(torch.load(parameters_file)) # loading parameters
+
 
 else:
     print(' + Initialized paramters randomly')
@@ -158,7 +147,7 @@ if cuda:
     input_data = input_data.cuda()
     output_data = output_data.cuda()
 
-model.learn(input_data,output_data, bunch, epochs, learning_rate,momentum, 10, plot, decay)
+model.learn(input_data,output_data, batch_size, epochs, learning_rate,momentum, 10, plot, decay)
 print('Learning finished\n')
 
 parameters = list(model.parameters())

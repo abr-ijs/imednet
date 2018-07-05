@@ -4,24 +4,24 @@ from torch.autograd import Variable
 import numpy as np
 
 
-class maping:
+class Mapping:
     y_max = 1
     y_min = -1
     x_max = []
     x_min = []
 
-class matLoader:
 
-
-
-    def loadData(file, load_original_trajectories=False):
+class MatLoader:
+    def load_data(file, load_original_trajectories=False):
         y_max = 1
         y_min = -1
         data = sio.loadmat(file)
         data = data['slike']
         images = []
-        for image in data['im'][0,0][0]:
+
+        for image in data['im'][0, 0][0]:
             images.append(image.astype('float').reshape(40*40))
+
         images = np.array(images)
         DMP_data = data['DMP_object'][0, 0][0]
         outputs = []
@@ -30,9 +30,9 @@ class matLoader:
             w = dmp['w'][0, 0]
             goal = dmp['goal'][0, 0][0]
             y0 = dmp['y0'][0, 0][0]
-            #dy0 = np.array([0,0])
+            # dy0 = np.array([0,0])
             learn = np.append(tau,y0)
-            #learn = np.append(learn,dy0)
+            # learn = np.append(learn,dy0)
             learn = np.append(learn,goal)#korekcija
             learn = np.append(learn,w)
             outputs.append(learn)
@@ -62,17 +62,15 @@ class matLoader:
 
             original_trj = [(trj) for trj in trj_data[:]]
 
+        scaling = Mapping()
+        scaling.x_max = x_max
+        scaling.x_min = x_min
+        scaling.y_max = y_max
+        scaling.y_min = y_min
 
-        scaling = maping()
-        maping.x_max = x_max
-        maping.x_min = x_min
-        maping.y_max = y_max
-        maping.y_min = y_min
+        return images, outputs, scaling, original_trj
 
-
-        return images, outputs, maping , original_trj
-
-    def dataForNetwork(images, outputs):
+    def data_for_network(images, outputs):
         input_data = Variable(torch.from_numpy(images)).float()
         output_data = Variable(torch.from_numpy(outputs), requires_grad=False).float()
         return input_data, output_data

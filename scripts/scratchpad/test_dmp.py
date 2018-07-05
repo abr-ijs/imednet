@@ -1,42 +1,41 @@
-import DMP_layer
+import sys
 import torch
-from matLoader import matLoader
 import numpy as np
 from torch.autograd import Variable
-from trainer import Trainer
 import matplotlib.pyplot as plt
 import torch.nn as nn
 
+from os.path import dirname, realpath
+sys.path.append(dirname(dirname(dirname(realpath(__file__)))))
+
+from deep_encoder_decoder_network.utils.dmp_layer import DMPIntegrator, DMPParameters
+from deep_encoder_decoder_network.trainers.encoder_decoder_trainer import Trainer
+from deep_encoder_decoder_network.data.mat_loader import MatLoader
 
 
 class Net(nn.Module):
-
-    def __init__(self,scale):
+    def __init__(self, scale):
         super(Net, self).__init__()
-        self.inputLayer = torch.nn.Linear(54, 54)
-        self.func = DMP_layer.DMP_integrator()
-        self.DMPparam = DMP_layer.createDMPparam(25, 3, 0.01, 2, scale)
+        self.input_layer = torch.nn.Linear(54, 54)
+        self.func = DMPIntegrator()
+        self.DMPparam = DMPParameters(25, 3, 0.01, 2, scale)
 
         self.register_buffer('DMPp', self.DMPparam.data_tensor)
         self.register_buffer('scale', self.DMPparam.scale_tensor)
         self.register_buffer('param_grad', self.DMPparam.grad_tensor)
 
-
-
-
     def forward(self, x):
-
-        #x =  nn.functional.relu(x)
-        x = self.inputLayer(x)
+        # x =  nn.functional.relu(x)
+        x = self.input_layer(x)
 
         x = self.func.apply(x, self.DMPp,self.param_grad,self.scale)
         return x
 
+
 '''self.DMPparam.data'''
 
 
-
-grads={}
+grads = {}
 
 def printgradnorm(grad):
     grads['t']=grad
@@ -51,9 +50,9 @@ class ct:
         self.scale = net.scale[0:division]
 
 
-dateset_name = '/home/rpahic/deep_encoder_decoder_network/slike_780.4251'
+dataset_name = '/home/rpahic/deep_encoder_decoder_network/slike_780.4251'
 
-images, outputs, scale, original_trj = matLoader.loadData(dateset_name, load_original_trajectories=True)
+images, outputs, scale, original_trj = MatLoader.load_data(dataset_name, load_original_trajectories=True)
 net = Net(scale)
 original_trj_e = []
 for i in range(0,images.shape[0]):
@@ -91,7 +90,7 @@ dmp.joint()
 dmp2.joint()
 
 
-DMP = DMP_layer.DMP_integrator(25, 3, 0.01, 2, scale)
+DMP = DMPIntegrator(25, 3, 0.01, 2, scale)
 criterion = torch.nn.MSELoss(size_average=True)
 criterion2 = torch.nn.MSELoss()
 
@@ -156,7 +155,7 @@ for j in range(0,points):
     CT = ct(net, division)
     #print(grads['t'].data)
 
-    gradi = DMP_layer.DMP_integrator.backward(CT, grads['t'].data)
+    gradi = DMPIntegrator.backward(CT, grads['t'].data)
 
     loss_graph[j, 0] = test_output[100, n_w+1].item()
     loss_graph[j, 1] = loss_vector.item()
@@ -165,7 +164,7 @@ for j in range(0,points):
     #loss_graph[j, 2] = net.param_grad[n_w, n_w].item()/test_output[0,n_w+1].item()
     #print(gradi[0][0,n_w+1])
     #print(gradi[0])
-    loss_graph[j, 2] = net.inputLayer.weight.grad.data[n_w, n_w] / test_output.data[0,n_w + 1]
+    loss_graph[j, 2] = net.input_layer.weight.grad.data[n_w, n_w] / test_output.data[0,n_w + 1]
 
 
 #print(loss_vector.grad_fn.next_functions[0][0])
@@ -182,5 +181,5 @@ plt.plot(loss_graph[:, 0], loss_graph[:, 2], label="test3")
 plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 plt.show()
 #gradient/loss_graph[:,2]
-back_gradienti = net.inputLayer.weight.grad.data[:, 0] / (-1)#test_output.data
+back_gradienti = net.input_layer.weight.grad.data[:, 0] / (-1)#test_output.data
 #mat = trainer.show_dmp(input_image.data.numpy(), trajektorija.data.numpy(), dmp, plot=True)

@@ -18,7 +18,7 @@ import numpy as np
 from os.path import dirname, realpath
 sys.path.append(dirname(dirname(realpath(__file__))))
 
-from deep_encoder_decoder_network.models.encoder_decoder import EncoderDecoderNet, TrainingParameters
+from deep_encoder_decoder_network.models.encoder_decoder import DMPEncoderDecoderNet, TrainingParameters
 from deep_encoder_decoder_network.trainers.encoder_decoder_trainer import Trainer
 from deep_encoder_decoder_network.data.mat_loader import MatLoader
 
@@ -28,7 +28,7 @@ date = datetime.now()
 # Set defaults
 default_data_path = os.path.join(dirname(dirname(realpath(__file__))), 'data/slike_780.4251')
 default_model_save_path = os.path.join(dirname(dirname(realpath(__file__))),
-                                       'models/encoder_decoder',
+                                       'models/dmp_encoder_decoder',
                                        'Model ' + str(date))
 default_model_load_path = None
 
@@ -50,7 +50,8 @@ net_description_file = open(net_description_save_path, 'w')
 net_description_file.write('Network created: ' + str(date))
 
 # Load data and scale it
-images, outputs, scale, or_tr = MatLoader.load_data(args.data_path)
+images, outputs, scale, or_tr = MatLoader.load_data(args.data_path,
+                                                    load_original_trajectories=True)
 
 # Set up DMP parameters
 N = 25
@@ -65,7 +66,10 @@ layer_sizes = [input_size] + hidden_layer_sizes + [output_size]
 net_description_file.write('\nNeurons: ' + str(layer_sizes))
 
 # Load the model
-model = EncoderDecoderNet(layer_sizes, conv, scale)
+model = DMPEncoderDecoderNet(layer_sizes, conv, scale)
+model.register_buffer('DMPp', model.DMPparam.data_tensor)
+model.register_buffer('scale_t', model.DMPparam.scale_tensor)
+model.register_buffer('param_grad', model.DMPparam.grad_tensor)
 
 # Initialize the model
 if args.model_load_path:
@@ -80,7 +84,10 @@ else:
             torch.nn.init.xavier_uniform(p, gain=1)
     print(' + Initialized parameters randomly')
 
-torch.save(model, (os.path.join(args.model_save_path, 'model.pt')))
+# NOTE: torch.save(model, PATH) causes a pickling error due to DMPIntegrator
+# TODO: Check to ensure models saved this way can be properly loaded.
+# See: https://pytorch.org/docs/master/notes/serialization.html
+torch.save(model.state_dict(), (os.path.join(args.model_save_path, 'model.pt')))
 
 # Set up trainer
 train_param = TrainingParameters()
@@ -92,20 +99,27 @@ train_param.training_ratio = 0.7
 train_param.validation_ratio = 0.15
 train_param.test_ratio = 0.15
 train_param.val_fail = 60
+
 trainer = Trainer()
 
 if args.model_load_path:
     net_indeks_path = os.path.join(args.model_load_path, 'net_indeks.npy')
     trainer.indeks = np.load(net_indeks_path)
 
-# Train
-best_nn_parameters = trainer.learn(model,
-                                   images,
-                                   outputs,
-                                   args.model_save_path,
-                                   train_param,
-                                   net_description_file,
-                                   learning_rate, momentum)
+original_traj = []
+for i in range(0,images.shape[0]):
+    c,c1,c2 = zip(*or_tr[i])
+    original_traj.append(c)
+    original_traj.append(c1)
+
+best_nn_parameters = trainer.learn_dmp(model,
+                                       images,
+                                       original_traj,
+                                       args.model_save_path,
+                                       train_param,
+                                       net_description_file,
+                                       learning_rate,
+                                       momentum)
 
 # Save model
 np.save(os.path.join(args.model_save_path, 'net_indeks'), trainer.indeks)
