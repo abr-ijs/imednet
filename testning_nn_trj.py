@@ -27,7 +27,7 @@ model.load_state_dict(state)
 import os
 cwd = os.getcwd()
 data_path=os.path.dirname(cwd)
-
+data_path=os.path.dirname(data_path)
 dateset_name = data_path + '/' + 'slike_780.4251'
 
 model_test =torch.nn.Sequential(*list(model.children())[:])

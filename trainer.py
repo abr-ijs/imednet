@@ -32,7 +32,7 @@ import random
 from torch.autograd import Variable
 import matplotlib.pyplot as plt
 
-import correct_adam
+import custom_torch_optim
 
 
 class Trainer:
@@ -463,7 +463,7 @@ class Trainer:
         #optimizer = torch.optim.SGD(model.parameters(), lr = 0.4) # for updating weights
         #optimizer = torch.optim.RMSprop(model.parameters())
 
-        optimizer = correct_adam.SCG(model.parameters())
+        optimizer = custom_torch_optim.SCG(model.parameters())
         #optimizer = correct_adam.Adam(model.parameters(), lr = 0.0001, amsgrad=True)
         #scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 200)
 
@@ -757,7 +757,7 @@ class Trainer:
         # optimizer = torch.optim.SGD(model.parameters(), lr = 0.4) # for updating weights
         # optimizer = torch.optim.RMSprop(model.parameters())
 
-        optimizer = correct_adam.SCG(model.parameters())
+        optimizer = custom_torch_optim.SCG(model.parameters())
         # optimizer = correct_adam.Adam(model.parameters(), lr = 0.0001, amsgrad=True)
         # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 200)
 
