@@ -39,6 +39,7 @@ makedirs(directory_path+directory_name)
 file = open(directory_path+directory_name+'/Network_description.txt','w')
 
 file.write('Network created: ' + date)
+dateset_name = '/home/rpahic/deep_encoder_decoder_network/deep_encoder_decoder_data_and_networks/slike_780.4251'
 
 
 #Load data and scale it.....................................................

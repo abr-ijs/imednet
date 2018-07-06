@@ -9,7 +9,7 @@ import csv
 
 import torch.nn as nn
 import DMP_layer
-
+import network_cutter
 
 
 
@@ -28,26 +28,17 @@ model.load_state_dict(state)
 
 
 
-dateset_name = 'slike_780.4251'
-
-model_test =torch.nn.Sequential(*list(model.children())[:])
-
-
-encoder = torch.nn.Sequential()
-
-for i in range(0,6):
-    encoder.add_module( str(i*2),model_test[i])
-    encoder.add_module(str(i*2+1), *[torch.nn.Tanh()])
 
 
 
-decoder = torch.nn.Sequential()
+dateset_name = '/home/rpahic/deep_encoder_decoder_network/deep_encoder_decoder_data_and_networks/slike_780.4251'
 
-for i in range(6,7):
-    decoder.add_module( str(i*2),model_test[i])
-    decoder.add_module(str(i*2+1), *[torch.nn.Tanh()])
 
-decoder.add_module( str((i+1)*2),model_test[i+1])
+
+
+encoder,decoder = network_cutter.NN_cut(model,6)
+
+
 
 
 images, outputs, scale, original_trj = matLoader.loadData(dateset_name, load_original_trajectories=True)

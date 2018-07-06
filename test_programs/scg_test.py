@@ -1,13 +1,9 @@
 import torch
 from torch.autograd import Variable
 import numpy as np
-import matplotlib.pyplot as plt
 
-from network import Network, training_parameters
-from trajectory_loader import trajectory_loader as loader
-from trainer import Trainer
-from matLoader import matLoader
-import correct_adam
+from network import Network
+import custom_torch_optim
 
 
 layerSizes = [1] + [3] + [1]
@@ -35,7 +31,7 @@ y_pred = model(input_data_train[0,0])
 criterion = torch.nn.MSELoss(size_average=True) #For calculating loss (mean squared error)
 
 
-optimizer = correct_adam.SCG(model.parameters())
+optimizer = custom_torch_optim.SCG(model.parameters())
 
 
 
