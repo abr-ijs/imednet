@@ -294,7 +294,7 @@ class Trainer:
         plt.show()
         Trainer.show_network_output(model, 0, np.array([transformed.reshape(784)*255]), None, None, N, sampling_time, cuda = cuda)
 
-    def databaseSplit(self, images, outputs, train_set = 0.7, validation_set = 0.15, test_set = 0.15):
+    def split_dataset(self, images, outputs, train_set = 0.7, validation_set = 0.15, test_set = 0.15):
         r = len(images)
         de = int(len(outputs)/r)
         trl = round(r*train_set)
@@ -406,7 +406,7 @@ class Trainer:
 
         # Divide data
         print("Dividing data")
-        input_data_train_b, output_data_train_b, input_data_test_b, output_data_test_b, input_data_validate_b, output_data_validate_b = self.databaseSplit(images, outputs)
+        input_data_train_b, output_data_train_b, input_data_test_b, output_data_test_b, input_data_validate_b, output_data_validate_b = self.split_dataset(images, outputs)
 
         # dummy = model(torch.autograd.Variable(torch.rand(1,1600)))
         # writer.add_graph(model, dummy)
@@ -681,7 +681,7 @@ class Trainer:
 
         # Divide data
         print("Dividing data")
-        input_data_train_b, output_data_train_b, input_data_test_b, output_data_test_b, input_data_validate_b, output_data_validate_b = self.databaseSplit(
+        input_data_train_b, output_data_train_b, input_data_test_b, output_data_test_b, input_data_validate_b, output_data_validate_b = self.split_dataset(
             images, outputs)
 
         # dummy = model(torch.autograd.Variable(torch.rand(1,1600)))
