@@ -88,7 +88,7 @@ class Trainer:
         trajectories = np.array(trajectories)
         return trajectories
 
-    def createDMPs(trajectories,N, sampling_time):
+    def create_dmps(trajectories,N, sampling_time):
         """
         Creates DMPs from the trajectorires
 

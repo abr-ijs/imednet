@@ -92,7 +92,7 @@ images = images[indexes]
 
 # get DMPs
 print('Creating DMPs')
-DMPs = Trainer.createDMPs(trajectories, N, sampling_time)
+DMPs = Trainer.create_dmps(trajectories, N, sampling_time)
 print(' Done creating DMPs')
 # get data to learn
 
