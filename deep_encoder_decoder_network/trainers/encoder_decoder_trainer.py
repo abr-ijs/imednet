@@ -122,11 +122,11 @@ class Trainer:
         DMPs = np.array(DMPs)
         return DMPs
 
-    def createOutputParameters(DMPs, scale = None):
+    def create_output_parameters(DMPs, scale = None):
         """
         Returns desired output parameters for the network from the given DMPs
 
-        createOutputParameters(DMPs) -> parameters for each DMP in form [tau, y0, dy0, goal, w]
+        create_output_parameters(DMPs) -> parameters for each DMP in form [tau, y0, dy0, goal, w]
         DMPs -> list of DMPs that pair with the images input to the network
         """
         outputs = []
@@ -159,9 +159,9 @@ class Trainer:
         input_data = input_data/128 - 1
         if DMPs is not None:
             if scale is None:
-                outputs, scale = Trainer.createOutputParameters(DMPs)
+                outputs, scale = Trainer.create_output_parameters(DMPs)
             else:
-                outputs, scale = Trainer.createOutputParameters(DMPs, scale)
+                outputs, scale = Trainer.create_output_parameters(DMPs, scale)
             output_data = Variable(torch.from_numpy(outputs),requires_grad= False).float()
         else:
             output_data = None
