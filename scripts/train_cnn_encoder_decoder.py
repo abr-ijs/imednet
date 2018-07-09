@@ -30,7 +30,7 @@ date = datetime.now()
 # Set defaults
 default_data_path = os.path.join(dirname(dirname(realpath(__file__))), 'data/slike_780.4251')
 default_model_save_path = os.path.join(dirname(dirname(realpath(__file__))),
-                                       'models/encoder_decoder_cnn',
+                                       'models/cnn_encoder_decoder',
                                        'Model ' + str(date))
 print('default_model_save_path: {}'.format(default_model_save_path))
 default_cnn_model_load_path = os.path.join(dirname(dirname(realpath(__file__))),
