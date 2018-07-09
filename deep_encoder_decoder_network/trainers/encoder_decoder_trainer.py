@@ -262,7 +262,7 @@ class Trainer:
         t = (points[:28,1], points[:28,1])
         return interpn(t, image.reshape(28,28), transformed, method = 'linear', bounds_error=False, fill_value=0)
 
-    def randomlyRotateData(trajectories, images, n):
+    def randomly_rotate_data(trajectories, images, n):
         transformed_trajectories = []
         transformed_images =[]
         for i in range(len(trajectories)):

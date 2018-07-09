@@ -85,7 +85,7 @@ print(' Done loading trajectories')
 test = images[-100:]
 print('Multiplying data')
 images = images[indexes]
-#trajectories, images = Trainer.randomlyRotateData(trajectories, images, artificial_samples)
+#trajectories, images = Trainer.randomly_rotate_data(trajectories, images, artificial_samples)
 #print('Done multiplying data. Now having ',  len(trajectories), ' data')
 
 # get DMPs
