@@ -542,15 +542,15 @@ class Trainer:
                     max_dict = dict()
                     min_dict = dict()
                     var_dict = dict()
-                    for grup in state:
-                        mean = torch.mean(state[grup])
-                        max = torch.max(state[grup])
-                        min = torch.min(state[grup])
-                        var = torch.var(state[grup])
-                        mean_dict[grup] = mean
-                        max_dict[grup] = max
-                        min_dict[grup] = min
-                        var_dict[grup] = var
+                    for group in state:
+                        mean = torch.mean(state[group])
+                        max = torch.max(state[group])
+                        min = torch.min(state[group])
+                        var = torch.var(state[group])
+                        mean_dict[group] = mean
+                        max_dict[group] = max
+                        min_dict[group] = min
+                        var_dict[group] = var
 
                     writer.add_scalars('data/mean', mean_dict, t)
                     writer.add_scalars('data/max', max_dict, t)
@@ -681,7 +681,7 @@ class Trainer:
 
         # Divide data
         print("Dividing data")
-        input_data_train_b, output_data_train_b, input_data_test_b, output_data_test_b, input_data_validate_b, output_data_validate_b = self.split_dataset(
+        input_data_train_b, output_data_train_b, input_data_test_b, output_data_test_b, input_data_validate_b, output_data_validate_b = self.databaseSplit(
             images, outputs)
 
         # dummy = model(torch.autograd.Variable(torch.rand(1,1600)))
@@ -855,15 +855,15 @@ class Trainer:
                     max_dict = dict()
                     min_dict = dict()
                     var_dict = dict()
-                    for grup in state:
-                        mean = torch.mean(state[grup])
-                        max = torch.max(state[grup])
-                        min = torch.min(state[grup])
-                        var = torch.var(state[grup])
-                        mean_dict[grup] = mean
-                        max_dict[grup] = max
-                        min_dict[grup] = min
-                        var_dict[grup] = var
+                    for group in state:
+                        mean = torch.mean(state[group])
+                        max = torch.max(state[group])
+                        min = torch.min(state[group])
+                        var = torch.var(state[group])
+                        mean_dict[group] = mean
+                        max_dict[group] = max
+                        min_dict[group] = min
+                        var_dict[group] = var
 
                     writer.add_scalars('data/mean', mean_dict, t)
                     writer.add_scalars('data/max', max_dict, t)
