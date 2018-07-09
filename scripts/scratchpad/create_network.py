@@ -66,7 +66,7 @@ layer_sizes = [numOfInputs] + HiddenLayer + [out]
 
 print('Loading Mnist images')
 #get mnist data
-images, labels = Trainer.loadMnistData(mnist_folder)
+images, labels = Trainer.load_mnist_data(mnist_folder)
 print(' Done loading Mnist images')
 #get trajectories
 avaliable = np.array(TrajectoryLoader.getAvaliableTrajectoriesNumbers(trajectories_folder))

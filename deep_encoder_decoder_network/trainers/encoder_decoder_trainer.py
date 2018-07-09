@@ -67,7 +67,7 @@ class Trainer:
 
         return matrix.reshape(fig.canvas.get_width_height()[::-1]+(3,))
 
-    def loadMnistData(mnist_folder):
+    def load_mnist_data(mnist_folder):
         """
         Loads data from the folder containing mnist files
         """
