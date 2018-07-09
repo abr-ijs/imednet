@@ -115,8 +115,8 @@ input_data, output_data, scale = Trainer.get_data_for_network(images, DMPs)
 
 #learn
 print()
-print('Starting learning')
-print(" + Learning with parameters: ")
+print('Starting training')
+print(" + Training with parameters: ")
 print("   - Samples of data", len(input_data))
 print("   - Epochs: ", epochs)
 print("   - Learning rate: ", learning_rate)
@@ -146,8 +146,8 @@ if cuda:
     input_data = input_data.cuda()
     output_data = output_data.cuda()
 
-model.learn(input_data,output_data, batch_size, epochs, learning_rate,momentum, 10, plot, decay)
-print('Learning finished\n')
+model.train(input_data, output_data, batch_size, epochs, learning_rate, momentum, 10, plot, decay)
+print('Training finished\n')
 
 parameters = list(model.parameters())
 

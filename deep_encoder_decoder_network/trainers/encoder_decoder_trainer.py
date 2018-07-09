@@ -24,7 +24,7 @@ from deep_encoder_decoder_network.utils.custom_optim import SCG
 
 class Trainer:
     """
-    Helper class containing methods for preparing data for learning
+    Helper class containing methods for preparing data for training
     """
     train = False
     user_stop = ""
@@ -353,9 +353,9 @@ class Trainer:
 
         return input_data_train, output_data_train, input_data_test, output_data_test, input_data_validate, output_data_validate
 
-    def learn(self, model, images, outputs, path, train_param, file, learning_rate=1e-4, momentum=0, decay=[0,0]):
+    def train(self, model, images, outputs, path, train_param, file, learning_rate=1e-4, momentum=0, decay=[0,0]):
         """
-        teaches the network using provided data
+        Trains the network using provided data
 
         x -> input for the Network
         y -> desired output of the network for given x
@@ -393,10 +393,10 @@ class Trainer:
         saving_epochs = 0
 
         file.write(train_param.write_out())
-        print('Starting learning')
+        print('Starting training')
         print(train_param.write_out())
 
-        # Learn
+        # Train
         writer = SummaryWriter(path+'/log')
 
         command = ["tensorboard", "--logdir=" + path+"/log"]
@@ -486,7 +486,7 @@ class Trainer:
             output_data_train = output_data_train[permutations]
             ena = []
             while j <= len(input_data_train):
-                self.learn_one_step(model,input_data_train[i:j], output_data_train[i:j, 1:], learning_rate,criterion,optimizer)
+                self.train_one_step(model,input_data_train[i:j], output_data_train[i:j, 1:], learning_rate, criterion, optimizer)
                 i = j
                 j += train_param.batch_size
 
@@ -499,7 +499,7 @@ class Trainer:
                             r1 = p.data[0][0]'''
 
             if i < len(input_data_train):
-                self.learn_one_step(model,input_data_train[i:], output_data_train[i:, 1:], learning_rate,criterion,optimizer)
+                self.train_one_step(model,input_data_train[i:], output_data_train[i:, 1:], learning_rate, criterion, optimizer)
 
             if (t-1)%train_param.log_interval ==0:
                 self.loss = self.loss * train_param.batch_size / len(input_data_train)
@@ -624,11 +624,11 @@ class Trainer:
         writer.close()
         proces.terminate()
 
-        print('Learning finished\n')
+        print('Training finished\n')
 
         return best_nn_parameters
 
-    def learn_dmp(self, model, images, outputs, path, train_param, file, learning_rate=1e-4, momentum=0, decay=[0, 0]):
+    def train_dmp(self, model, images, outputs, path, train_param, file, learning_rate=1e-4, momentum=0, decay=[0, 0]):
         """
         teaches the network using provided data
 
@@ -667,10 +667,10 @@ class Trainer:
         saving_epochs = 0
 
         file.write(train_param.write_out())
-        print('Starting learning')
+        print('Starting training')
         print(train_param.write_out())
 
-        # learn
+        # Train
 
         writer = SummaryWriter(path + '/log')
 
@@ -794,7 +794,7 @@ class Trainer:
             ena = []
 
             while j <= len(input_data_train):
-                self.learn_one_step(model, input_data_train[i:j], output_data_train[i*2:j*2, :], learning_rate, criterion,
+                self.train_one_step(model, input_data_train[i:j], output_data_train[i*2:j*2, :], learning_rate, criterion,
                                     optimizer)
                 i = j
                 j += train_param.batch_size
@@ -808,7 +808,7 @@ class Trainer:
                             r1 = p.data[0][0]'''
 
             if i < len(input_data_train):
-                self.learn_one_step(model, input_data_train[i:], output_data_train[i*2:, :], learning_rate, criterion,
+                self.train_one_step(model, input_data_train[i:], output_data_train[i*2:, :], learning_rate, criterion,
                                     optimizer)
 
             if (t - 1) % train_param.log_interval == 0:
@@ -944,11 +944,11 @@ class Trainer:
         writer.close()
         proces.terminate()
 
-        print('Learning finished\n')
+        print('Training finished\n')
 
         return best_nn_parameters
 
-    def learn_one_step(self, model, x, y, learning_rate, criterion, optimizer):
+    def train_one_step(self, model, x, y, learning_rate, criterion, optimizer):
         def wrap():
             optimizer.zero_grad()
             y_pred = model(x)

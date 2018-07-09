@@ -99,7 +99,7 @@ if args.model_load_path:
     trainer.indeks = np.load(net_indeks_path)
 
 # Train
-best_nn_parameters = trainer.learn(model,
+best_nn_parameters = trainer.train(model,
                                    images,
                                    outputs,
                                    args.model_save_path,

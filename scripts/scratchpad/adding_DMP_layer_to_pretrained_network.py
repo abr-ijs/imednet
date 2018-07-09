@@ -92,7 +92,7 @@ for i in range(0,images.shape[0]):
     original_trj_e.append(c1)
 
 # Testing
-best_nn_parameters = trainer.learn_DMP(model, images, original_trj_e, directory_path + directory_name_new, train_param, file, learning_rate, momentum)
+best_nn_parameters = trainer.train_DMP(model, images, original_trj_e, directory_path + directory_name_new, train_param, file, learning_rate, momentum)
 
 original_trj[0].reshape(1,-1)
 

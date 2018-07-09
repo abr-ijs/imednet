@@ -49,8 +49,8 @@ input_data, output_data = MatLoader.data_for_network(images, outputs)
 
 # Learn
 print()
-print('Starting learning')
-print(" + Learning with parameters: ")
+print('Starting training')
+print(" + Training with parameters: ")
 print("   - Samples of data", len(input_data))
 print("   - Epochs: ", epochs)
 print("   - Learning rate: ", learning_rate)
@@ -78,8 +78,8 @@ if cuda:
     input_data = input_data.cuda()
     output_data = output_data.cuda()
 
-model.learn(input_data,output_data, batch_size, epochs, learning_rate,momentum, 1, plot)
-print('Learning finished\n')
+model.train(input_data,output_data, batch_size, epochs, learning_rate,momentum, 1, plot)
+print('Training finished\n')
 
 parameters = list(model.parameters())
 

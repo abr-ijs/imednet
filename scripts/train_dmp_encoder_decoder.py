@@ -112,7 +112,7 @@ for i in range(0,images.shape[0]):
     original_traj.append(c)
     original_traj.append(c1)
 
-best_nn_parameters = trainer.learn_dmp(model,
+best_nn_parameters = trainer.train_dmp(model,
                                        images,
                                        original_traj,
                                        args.model_save_path,
