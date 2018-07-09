@@ -248,7 +248,7 @@ class Trainer:
         new_points = np.array(points) + pivotPoint
         return new_points
 
-    def rotateAround(trajectory, pivotPoint, theta):
+    def rotate_traj(trajectory, pivotPoint, theta):
         pivotPoint = np.append(pivotPoint, 0)
         transformed_trajectory = Trainer.translate(trajectory, -pivotPoint)
         transformed_trajectory = Trainer.create_rotation_matrix(theta).dot(transformed_trajectory.transpose()).transpose()
@@ -258,7 +258,7 @@ class Trainer:
     def rotateImage(image, theta):
         new_image = image.reshape(28, 28)
         points =  np.array([[j, i, 0] for j in np.arange(28) for i in range(28)])
-        transformed = Trainer.rotateAround(points, [12,12], theta)[:,:2]
+        transformed = Trainer.rotate_traj(points, [12,12], theta)[:,:2]
         t = (points[:28,1], points[:28,1])
         return interpn(t, image.reshape(28,28), transformed, method = 'linear', bounds_error=False, fill_value=0)
 
