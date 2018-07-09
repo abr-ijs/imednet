@@ -236,7 +236,7 @@ class Trainer:
         print('goal: ', dmp.goal)
         print('w_sum: ', dmp.w.sum())
 
-    def rotationMatrix(theta, dimensions=3):
+    def create_rotation_matrix(theta, dimensions=3):
         c, s = np.cos(theta), np.sin(theta)
         if dimensions == 3:
             return np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]])
@@ -251,7 +251,7 @@ class Trainer:
     def rotateAround(trajectory, pivotPoint, theta):
         pivotPoint = np.append(pivotPoint, 0)
         transformed_trajectory = Trainer.translate(trajectory, -pivotPoint)
-        transformed_trajectory = Trainer.rotationMatrix(theta).dot(transformed_trajectory.transpose()).transpose()
+        transformed_trajectory = Trainer.create_rotation_matrix(theta).dot(transformed_trajectory.transpose()).transpose()
         transformed_trajectory = Trainer.translate(transformed_trajectory, pivotPoint)
         return transformed_trajectory
 
