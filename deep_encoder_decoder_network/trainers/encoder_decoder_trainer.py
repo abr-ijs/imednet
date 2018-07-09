@@ -255,7 +255,7 @@ class Trainer:
         transformed_trajectory = Trainer.translate(transformed_trajectory, pivotPoint)
         return transformed_trajectory
 
-    def rotateImage(image, theta):
+    def rotate_image(image, theta):
         new_image = image.reshape(28, 28)
         points =  np.array([[j, i, 0] for j in np.arange(28) for i in range(28)])
         transformed = Trainer.rotate_traj(points, [12,12], theta)[:,:2]
@@ -273,7 +273,7 @@ class Trainer:
             for j in range(n):
                 theta = (np.random.rand(1)*np.pi/9)[0]
                 new_trajectory = Trainer.rotateAround(trajectory, [12,12], theta)
-                new_image = Trainer.rotateImage(image, theta)
+                new_image = Trainer.rotate_image(image, theta)
                 transformed_images.append(new_image)
                 transformed_trajectories.append(new_trajectory)
         transformed_trajectories = np.array(transformed_trajectories)
