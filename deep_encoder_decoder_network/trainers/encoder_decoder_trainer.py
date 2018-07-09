@@ -550,7 +550,7 @@ class Trainer:
                         mean_dict[group] = mean
                         max_dict[group] = max
                         min_dict[group] = min
-                        var_dict[grup] = var
+                        var_dict[group] = var
 
                     writer.add_scalars('data/mean', mean_dict, t)
                     writer.add_scalars('data/max', max_dict, t)
