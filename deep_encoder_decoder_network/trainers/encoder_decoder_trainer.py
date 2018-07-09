@@ -534,7 +534,7 @@ class Trainer:
 
                 oldValLoss = val_loss.data.item()
                 writer.add_scalar('data/val_count', val_count, t)
-                print('Validatin: ', t, ' loss: ', val_loss.data.item(), ' best loss:', bestValLoss)
+                print('Validation: ', t, ' loss: ', val_loss.data.item(), ' best loss:', bestValLoss)
 
                 if (t - 1) % 10 == 0:
                     state = model.state_dict()
@@ -550,7 +550,7 @@ class Trainer:
                         mean_dict[group] = mean
                         max_dict[group] = max
                         min_dict[group] = min
-                        var_dict[group] = var
+                        var_dict[grup] = var
 
                     writer.add_scalars('data/mean', mean_dict, t)
                     writer.add_scalars('data/max', max_dict, t)
@@ -847,7 +847,7 @@ class Trainer:
 
                 oldValLoss = val_loss
                 writer.add_scalar('data/val_count', val_count, t)
-                print('Validatin: ', t, ' loss: ', val_loss, ' best loss:', bestValLoss)
+                print('Validation: ', t, ' loss: ', val_loss, ' best loss:', bestValLoss)
 
                 if (t - 1) % 10 == 0:
                     state = model.state_dict()
