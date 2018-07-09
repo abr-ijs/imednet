@@ -200,7 +200,7 @@ class Trainer:
         dmp.values(N, sampling_time, tau, y0, [0, 0], goal, w)
         return dmp
 
-    def showNetworkOutput(network, i, images, trajectories, DMPs, N, sampling_time, avaliable = None, cuda = False):
+    def show_network_output(network, i, images, trajectories, DMPs, N, sampling_time, avaliable = None, cuda = False):
         input_data, output_data, scale = Trainer.get_data_for_network(images, DMPs, avaliable)
         scale = network.scale
         if i != -1:
@@ -292,7 +292,7 @@ class Trainer:
         plt.figure()
         plt.imshow(transformed, cmap='gray')
         plt.show()
-        Trainer.showNetworkOutput(model, 0, np.array([transformed.reshape(784)*255]), None, None, N, sampling_time, cuda = cuda)
+        Trainer.show_network_output(model, 0, np.array([transformed.reshape(784)*255]), None, None, N, sampling_time, cuda = cuda)
 
     def databaseSplit(self, images, outputs, train_set = 0.7, validation_set = 0.15, test_set = 0.15):
         r = len(images)

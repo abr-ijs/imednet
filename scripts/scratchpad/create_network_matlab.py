@@ -85,9 +85,9 @@ parameters = list(model.parameters())
 
 torch.save(model.state_dict(), parameters_file)  # saving parameters
 
-# Trainer.showNetworkOutput(model, 1, images, trajectories,DMPs, N, sampling_time, indexes)
+# Trainer.show_network_output(model, 1, images, trajectories,DMPs, N, sampling_time, indexes)
 if plot:
     for i in range(0,5):
-        Trainer.showNetworkOutput(model, i, images, trajectories,DMPs, N, sampling_time)
+        Trainer.show_network_output(model, i, images, trajectories,DMPs, N, sampling_time)
 
-    Trainer.showNetworkOutput(model, -1, test[:5], None, None, N, sampling_time)
+    Trainer.show_network_output(model, -1, test[:5], None, None, N, sampling_time)
