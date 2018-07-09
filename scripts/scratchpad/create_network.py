@@ -82,7 +82,7 @@ else:
     indexes = avaliable
 
 print('Loading ',  len(indexes), ' trajectories')
-trajectories = Trainer.loadTrajectories(trajectories_folder, indexes)
+trajectories = Trainer.load_trajectories(trajectories_folder, indexes)
 print(' Done loading trajectories')
 test = images[-100:]
 print('Multiplying data')

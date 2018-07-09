@@ -77,7 +77,7 @@ class Trainer:
         labels = np.array(labels)
         return images,labels
 
-    def loadTrajectories(trajectories_folder, avaliable):
+    def load_trajectories(trajectories_folder, avaliable):
         """
         loads trajectories from the folder containing trajectory files
         """
