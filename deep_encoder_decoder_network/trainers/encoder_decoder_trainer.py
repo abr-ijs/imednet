@@ -211,11 +211,11 @@ class Trainer:
 
         if i != -1:
             print('Dmp from network:')
-            Trainer.printDMPdata(dmps[0])
+            Trainer.print_dmp_data(dmps[0])
             print()
         if DMPs is not None and i != -1:
             print('Original DMP from trajectory:')
-            Trainer.printDMPdata(DMPs[i])
+            Trainer.print_dmp_data(DMPs[i])
         if i == -1:
             plt.ion()
             for i in range(len(dmps)):
@@ -229,7 +229,7 @@ class Trainer:
             else:
                 Trainer.show_dmp(images[i], None, dmps[0])
 
-    def printDMPdata(self, dmp):
+    def print_dmp_data(self, dmp):
         print('Tau: ', dmp.tau)
         print('y0: ', dmp.y0)
         print('dy0: ', dmp.dy0)
