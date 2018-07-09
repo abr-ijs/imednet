@@ -280,7 +280,7 @@ class Trainer:
         transformed_images = np.array(transformed_images)
         return transformed_trajectories, transformed_images
 
-    def testOnImage(file, model):
+    def test_on_image(file, model):
         image = plt.imread(file)
         transformed = np.zeros([28, 28])
         for i in range(28):
