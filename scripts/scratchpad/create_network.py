@@ -108,7 +108,7 @@ print(' Done creating DMPs')
 #print('rm ' + " ".join(['image_' +str(i) + '.json' for i in wrong]))
 
 #scale = np.load(scale_file)
-input_data, output_data, scale = Trainer.getDataForNetwork(images, DMPs)
+input_data, output_data, scale = Trainer.get_data_for_network(images, DMPs)
 
 
 # for i in range(int(len(indexes))):

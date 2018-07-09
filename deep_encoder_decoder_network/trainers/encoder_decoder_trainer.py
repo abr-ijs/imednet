@@ -143,11 +143,11 @@ class Trainer:
         outputs = outputs / scale
         return outputs, scale
 
-    def getDataForNetwork(images,DMPs, scale = None, useData = None):
+    def get_data_for_network(images,DMPs, scale = None, useData = None):
         """
         Generates data that will be given to the Network
 
-        getDataForNetwork(images,DMPs,i,j) -> (input_data,output_data) for the Network
+        get_data_for_network(images,DMPs,i,j) -> (input_data,output_data) for the Network
         images -> MNIST images that will be fed to the Network
         DMPs -> DMPs that pair with MNIST images given in the same order
         useData -> array like containing indexes of images to use
@@ -201,7 +201,7 @@ class Trainer:
         return dmp
 
     def showNetworkOutput(network, i, images, trajectories, DMPs, N, sampling_time, avaliable = None, cuda = False):
-        input_data, output_data, scale = Trainer.getDataForNetwork(images, DMPs, avaliable)
+        input_data, output_data, scale = Trainer.get_data_for_network(images, DMPs, avaliable)
         scale = network.scale
         if i != -1:
             input_data = input_data[i]
