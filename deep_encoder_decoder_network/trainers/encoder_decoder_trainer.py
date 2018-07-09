@@ -18,7 +18,8 @@ import matplotlib.pyplot as plt
 
 from deep_encoder_decoder_network.data.trajectory_loader import TrajectoryLoader
 from deep_encoder_decoder_network.utils.dmp_class import DMP
-from deep_encoder_decoder_network.utils import correct_adam
+from deep_encoder_decoder_network.utils.custom_optim import SCG
+# from deep_encoder_decoder_network.utils.custom_optim import Adam
 
 
 class Trainer:
@@ -436,8 +437,8 @@ class Trainer:
         # optimizer = torch.optim.SGD(model.parameters(), lr = 0.4) # for updating weights
         # optimizer = torch.optim.RMSprop(model.parameters())
 
-        optimizer = correct_adam.SCG(filter(lambda p: p.requires_grad, model.parameters()))
-        # optimizer = correct_adam.Adam(model.parameters(), lr = 0.0001, amsgrad=True)
+        optimizer = SCG(filter(lambda p: p.requires_grad, model.parameters()))
+        # optimizer = Adam(model.parameters(), lr = 0.0001, amsgrad=True)
         # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 200)
 
         y_val = model(input_data_validate_b)
@@ -712,8 +713,8 @@ class Trainer:
         # optimizer = torch.optim.SGD(model.parameters(), lr = 0.4) # for updating weights
         # optimizer = torch.optim.RMSprop(model.parameters())
 
-        optimizer = correct_adam.SCG(model.parameters())
-        # optimizer = correct_adam.Adam(model.parameters(), lr = 0.0001, amsgrad=True)
+        optimizer = SCG(model.parameters())
+        # optimizer = Adam(model.parameters(), lr = 0.0001, amsgrad=True)
         # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 200)
 
         y_val = model(input_data_validate_b)

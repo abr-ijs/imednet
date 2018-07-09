@@ -2,19 +2,22 @@ import torch
 from torch.autograd import Variable
 import numpy as np
 
-from network import Network
-import correct_adam
+from os.path import dirname, realpath
+sys.path.append(dirname(dirname(dirname(realpath(__file__)))))
+
+from deep_encoder_decoder_network.models.encoder_decoder import EncoderDecoderNet
+from deep_encoder_decoder_network.utils.custom_optim import SCG
 
 
 layer_sizes = [1] + [3] + [1]
 
-model = Network(layer_sizes, False)
+model = EncoderDecoderNet(layer_sizes, False)
 
 for p in list(model.parameters()):
     torch.nn.init.constant(p.data, 1)
 
-inputs = np.array([[0],[2],[6],[3],[9]])
-outputs = np.array([[0],[9],[4],[7],[1]])
+inputs = np.array([[0], [2], [6], [3], [9]])
+outputs = np.array([[0], [9], [4], [7], [1]])
 
 input_data_train = Variable(torch.from_numpy(inputs)).double()
 output_data_train = Variable(torch.from_numpy(outputs), requires_grad=False).double()
@@ -28,8 +31,7 @@ y_pred = model(input_data_train[0,0])
 # For calculating loss (mean squared error)
 criterion = torch.nn.MSELoss(size_average=True) 
 
-optimizer = correct_adam.SCG(model.parameters())
-
+optimizer = SCG(model.parameters())
 
 def wrap():
     optimizer.zero_grad()
@@ -37,7 +39,6 @@ def wrap():
     loss = criterion(y_pred, output_data_train)
     loss.backward()
     return loss
-
 
 '''
 y_pred = model(x) # output from the network
