@@ -66,7 +66,7 @@ sampling_time = 0.1
 # Define layer sizes
 input_size = 1600
 # hidden_layer_sizes = [1500, 1300, 1000, 600, 200, 20, 35]
-hidden_layer_sizes = [200, 20, 35]
+hidden_layer_sizes = [20, 35]
 output_size = 2*N + 4
 layer_sizes = [input_size] + hidden_layer_sizes + [output_size]
 net_description_file.write('\nNeurons: ' + str(layer_sizes))
