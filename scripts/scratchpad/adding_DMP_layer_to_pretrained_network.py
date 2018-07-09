@@ -30,7 +30,6 @@ net_id = '2018-06-07 15:31:10.101849'
 directory_path = '/home0/barry.ridge/Documents/Neural_networks/'
 directory_name = 'NN ' + net_id
 
-
 date = str(datetime.now())
 directory_name_new = 'NN ' + date
 parameters_file = directory_path + directory_name + '/net_parameters'
@@ -59,22 +58,18 @@ model.register_buffer('scale_t', model.DMPparam.scale_tensor)
 model.register_buffer('param_grad', model.DMPparam.grad_tensor)
 
 input_image = Variable(torch.from_numpy(np.array(images[2]))).float().view(1,-1)
-#trajektorija=model(input_image)
+# trajektorija=model(input_image)
 trainer = Trainer()
 test_output = Variable(torch.from_numpy(np.array(outputs[2])), requires_grad=True).float()
-dmp = trainer.createDMP(test_output, scale, 0.01, 25, cuda=False)
+dmp = trainer.create_dmp(test_output, scale, 0.01, 25, cuda=False)
 dmp.joint()
-#mat = trainer.show_dmp(input_image.data.numpy(), trajektorija.data.numpy(), dmp, plot=True)
-
-
-
-
+# mat = trainer.show_dmp(input_image.data.numpy(), trajektorija.data.numpy(), dmp, plot=True)
 
 torch.save(model, (directory_path+directory_name_new+'/model.pt'))
 
-#Set learning.....................................................................
+# Set learning
 
-#learning params
+# Learning params
 
 train_param = TrainingParameters()
 train_param.epochs = -1
@@ -86,11 +81,9 @@ train_param.validation_ratio = 0.15
 train_param.test_ratio = 0.15
 train_param.val_fail = 60
 
+trainer = Trainer()
 
-trener = Trainer()
-
-
-trener.indeks = np.load(directory_path + 'NN ' + net_id +'/net_indeks.npy')#[0:1000]
+trainer.indeks = np.load(directory_path + 'NN ' + net_id +'/net_indeks.npy')#[0:1000]
 
 original_trj_e = []
 for i in range(0,images.shape[0]):
@@ -98,20 +91,16 @@ for i in range(0,images.shape[0]):
     original_trj_e.append(c)
     original_trj_e.append(c1)
 
-#testiranje
-
-
-
-best_nn_parameters = trener.learn_DMP(model, images, original_trj_e, directory_path + directory_name_new, train_param, file, learning_rate, momentum)
+# Testing
+best_nn_parameters = trainer.learn_DMP(model, images, original_trj_e, directory_path + directory_name_new, train_param, file, learning_rate, momentum)
 
 original_trj[0].reshape(1,-1)
 
+# parameters = list(model.parameters())
 
-#parameters = list(model.parameters())
+# torch.save(model.state_dict(), parameters_file) # saving parameters
 
-#torch.save(model.state_dict(), parameters_file) # saving parameters
-
-np.save(directory_path+directory_name_new+'/net_indeks', trener.indeks)
+np.save(directory_path+directory_name_new+'/net_indeks', trainer.indeks)
 torch.save(best_nn_parameters, parameters_file_new)
 file.close()
 

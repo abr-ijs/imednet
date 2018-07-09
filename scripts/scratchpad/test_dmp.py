@@ -84,8 +84,8 @@ optimizer.zero_grad()
 
 trainer = Trainer()
 
-dmp = trainer.createDMP(test_output[0], scale, 0.01, 25, cuda=True)
-dmp2 = trainer.createDMP(test_output[1], scale, 0.01, 25, cuda=True)
+dmp = trainer.create_dmp(test_output[0], scale, 0.01, 25, cuda=True)
+dmp2 = trainer.create_dmp(test_output[1], scale, 0.01, 25, cuda=True)
 dmp.joint()
 dmp2.joint()
 

@@ -169,19 +169,19 @@ class Trainer:
         return input_data, output_data, scale
 
 
-    def getDMPFromImage(self, network,image, N, sampling_time, cuda = False):
+    def get_dmp_from_image(self, network,image, N, sampling_time, cuda = False):
         if cuda:
           image = image.cuda()
         output = network(image)
         dmps = []
         if len(image.size()) == 1:
-            dmps.append(Trainer.createDMP(output, network.scale,sampling_time,N, cuda))
+            dmps.append(Trainer.create_dmp(output, network.scale,sampling_time,N, cuda))
         else:
             for data in output:
-                dmps.append(Trainer.createDMP(data, network.scale,sampling_time,N, cuda))
+                dmps.append(Trainer.create_dmp(data, network.scale,sampling_time,N, cuda))
         return dmps
 
-    def createDMP(self, output, scale, sampling_time, N, cuda = False):
+    def create_dmp(self, output, scale, sampling_time, N, cuda = False):
         if cuda:
           output = output.cpu()
 
@@ -205,7 +205,7 @@ class Trainer:
         scale = network.scale
         if i != -1:
             input_data = input_data[i]
-        dmps = Trainer.getDMPFromImage(network, input_data, N, sampling_time, cuda)
+        dmps = Trainer.get_dmp_from_image(network, input_data, N, sampling_time, cuda)
         for dmp in dmps:
             dmp.joint()
 
@@ -559,8 +559,8 @@ class Trainer:
 
                 if self.plot_im:
                     plot_vector = torch.cat((output_data_validate[0,0:1], y_val[0, :]), 0)
-                    dmp_v = self.createDMP(plot_vector, model.scale, 0.01, 25, True)
-                    dmp = self.createDMP(output_data_validate[0,:], model.scale, 0.01, 25, True)
+                    dmp_v = self.create_dmp(plot_vector, model.scale, 0.01, 25, True)
+                    dmp = self.create_dmp(output_data_validate[0,:], model.scale, 0.01, 25, True)
                     dmp.joint()
                     dmp_v.joint()
                     mat = self.show_dmp((input_data_validate.data[0]).cpu().numpy(), dmp.Y , dmp_v, plot=False)

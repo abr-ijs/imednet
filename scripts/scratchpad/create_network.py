@@ -41,7 +41,6 @@ digit = 0
 use_good_data = True
 plot_only = False
 
-
 if plot_only:
     load = True
     cuda = False
@@ -53,7 +52,6 @@ else:
     cuda = True
     plot = False
     load_from_cuda = False
-
 
 #layers size
 numOfInputs = 784

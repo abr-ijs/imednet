@@ -69,10 +69,10 @@ criterion = torch.nn.MSELoss(size_average=True)
 
 loss = criterion(nn_output, test_output[:,1:])
 
-letent_out=encoder(test_input)
+latent_out=encoder(test_input)
 
 np.savetxt('output_data.csv', outputs)
-np.savetxt('latent_space.csv', letent_out.detach().numpy())
+np.savetxt('latent_space.csv', latent_out.detach().numpy())
 
 net = net.cuda()
 
@@ -91,8 +91,8 @@ for number in range(0, 10):
 
     trainer = Trainer()
 
-    dmp = trainer.createDMP(real_output, model.scale, 0.01, 25, cuda=False)
-    dmp_v = trainer.createDMP(output_dmp, model.scale, 0.01, 25, cuda=False)
+    dmp = trainer.create_dmp(real_output, model.scale, 0.01, 25, cuda=False)
+    dmp_v = trainer.create_dmp(output_dmp, model.scale, 0.01, 25, cuda=False)
 
     dmp.joint()
     dmp_v.joint()

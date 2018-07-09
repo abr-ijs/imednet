@@ -74,8 +74,8 @@ for number in range(0,10):
 
     trainer = Trainer()
 
-    dmp = trainer.createDMP(real_output.cpu()[number], model.scale, 0.01, 25, cuda=False)
-    #dmp_v = trainer.createDMP(output_dmp, model.scale, 0.01, 25, cuda=False)
+    dmp = trainer.create_dmp(real_output.cpu()[number], model.scale, 0.01, 25, cuda=False)
+    #dmp_v = trainer.create_dmp(output_dmp, model.scale, 0.01, 25, cuda=False)
 
     dmp.joint()
     #dmp_v.joint()
