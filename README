@@ -1,9 +1,0 @@
-Neural network for transforming mnist image into dynamic movement primitives
-
-
-Requirements:
-	torch
-	torch vision
-	numpy
-	matplotlib
-	mnist (pip3 install python-mnist)
