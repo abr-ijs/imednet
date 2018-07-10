@@ -20,9 +20,9 @@ from datetime import datetime
 import torch
 import numpy as np
 
-from deep_encoder_decoder_network.models.encoder_decoder import CNNEncoderDecoderNet, TrainingParameters
-from deep_encoder_decoder_network.data.mat_loader import MatLoader
-from deep_encoder_decoder_network.trainers.encoder_decoder_trainer import Trainer
+from imednet.models.encoder_decoder import CNNEncoderDecoderNet, TrainingParameters
+from imednet.data.mat_loader import MatLoader
+from imednet.trainers.encoder_decoder_trainer import Trainer
 
 # Save datetime
 date = datetime.now()

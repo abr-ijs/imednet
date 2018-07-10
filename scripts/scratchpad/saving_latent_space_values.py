@@ -7,20 +7,20 @@ import network_cutter
 from os.path import dirname, realpath
 sys.path.append(dirname(dirname(dirname(realpath(__file__)))))
 
-from deep_encoder_decoder_network.trainers.encoder_decoder_trainer import Trainer
-from deep_encoder_decoder_network.data.mat_loader import MatLoader
+from imednet.trainers.encoder_decoder_trainer import Trainer
+from imednet.data.mat_loader import MatLoader
 
 # Load model and parameters
 # directory_path = '/home/rpahic/Documents/Neural_networks/'
 # directory_name = 'NN ' + '2018-06-07 15:31:10.101849'
-directory_path='/home/rpahic/deep_encoder_decoder_network/deep_encoder_decoder_data_and_networks/networks/NN 2018-06-14 13:23:28.813445'
+directory_path='/home/rpahic/imednet/deep_encoder_decoder_data_and_networks/networks/NN 2018-06-14 13:23:28.813445'
 model = torch.load(directory_path+'/model.pt')
 
 state = torch.load(directory_path+'/net_parameters')
 
 model.load_state_dict(state)
 
-dataset_name = '/home/rpahic/deep_encoder_decoder_network/deep_encoder_decoder_data_and_networks/slike_780.4251'
+dataset_name = '/home/rpahic/imednet/deep_encoder_decoder_data_and_networks/slike_780.4251'
 
 encoder,decoder = network_cutter.NN_cut(model,6)
 

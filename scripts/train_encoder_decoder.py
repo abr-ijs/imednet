@@ -18,9 +18,9 @@ import numpy as np
 from os.path import dirname, realpath
 sys.path.append(dirname(dirname(realpath(__file__))))
 
-from deep_encoder_decoder_network.models.encoder_decoder import EncoderDecoderNet, TrainingParameters
-from deep_encoder_decoder_network.trainers.encoder_decoder_trainer import Trainer
-from deep_encoder_decoder_network.data.mat_loader import MatLoader
+from imednet.models.encoder_decoder import EncoderDecoderNet, TrainingParameters
+from imednet.trainers.encoder_decoder_trainer import Trainer
+from imednet.data.mat_loader import MatLoader
 
 # Save datetime
 date = datetime.now()

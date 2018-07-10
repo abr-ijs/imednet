@@ -6,7 +6,7 @@ from torch.autograd import Variable
 from os.path import dirname, realpath
 sys.path.append(dirname(dirname(dirname(realpath(__file__)))))
 
-from deep_encoder_decoder_network.utils.dmp_layer import DMPIntegrator
+from imednet.utils.dmp_layer import DMPIntegrator
 
 
 class Net(nn.Module):

@@ -16,10 +16,10 @@ import random
 from torch.autograd import Variable
 import matplotlib.pyplot as plt
 
-from deep_encoder_decoder_network.data.trajectory_loader import TrajectoryLoader
-from deep_encoder_decoder_network.utils.dmp_class import DMP
-from deep_encoder_decoder_network.utils.custom_optim import SCG
-# from deep_encoder_decoder_network.utils.custom_optim import Adam
+from imednet.data.trajectory_loader import TrajectoryLoader
+from imednet.utils.dmp_class import DMP
+from imednet.utils.custom_optim import SCG
+# from imednet.utils.custom_optim import Adam
 
 
 class Trainer:

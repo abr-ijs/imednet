@@ -1,8 +1,8 @@
 import torch
 import numpy as np
 
-from deep_encoder_decoder_network.models.mnist_cnn import Net as MNISTNet
-from deep_encoder_decoder_network.utils.dmp_layer import DMPIntegrator, DMPParameters
+from imednet.models.mnist_cnn import Net as MNISTNet
+from imednet.utils.dmp_layer import DMPIntegrator, DMPParameters
 
 
 class TrainingParameters():

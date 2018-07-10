@@ -7,9 +7,9 @@ import torch.nn as nn
 from os.path import dirname, realpath
 sys.path.append(dirname(dirname(dirname(realpath(__file__)))))
 
-from deep_encoder_decoder_network.utils.dmp_layer import DMPIntegrator, DMPParameters
-from deep_encoder_decoder_network.trainers.encoder_decoder_trainer import Trainer
-from deep_encoder_decoder_network.data.mat_loader import MatLoader
+from imednet.utils.dmp_layer import DMPIntegrator, DMPParameters
+from imednet.trainers.encoder_decoder_trainer import Trainer
+from imednet.data.mat_loader import MatLoader
 
 
 class Net(nn.Module):

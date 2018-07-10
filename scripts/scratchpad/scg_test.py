@@ -5,8 +5,8 @@ import numpy as np
 from os.path import dirname, realpath
 sys.path.append(dirname(dirname(dirname(realpath(__file__)))))
 
-from deep_encoder_decoder_network.models.encoder_decoder import EncoderDecoderNet
-from deep_encoder_decoder_network.utils.custom_optim import SCG
+from imednet.models.encoder_decoder import EncoderDecoderNet
+from imednet.utils.custom_optim import SCG
 
 
 layer_sizes = [1] + [3] + [1]

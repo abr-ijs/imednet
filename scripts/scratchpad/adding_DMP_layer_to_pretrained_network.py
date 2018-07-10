@@ -8,9 +8,9 @@ from datetime import datetime
 from os.path import dirname, realpath
 sys.path.append(dirname(dirname(dirname(realpath(__file__)))))
 
-from deep_encoder_decoder_network.models.encoder_decoder import DMPEncoderDecoderNet, TrainingParameters
-from deep_encoder_decoder_network.trainers.encoder_decoder_trainer import Trainer
-from deep_encoder_decoder_network.data.mat_loader import MatLoader
+from imednet.models.encoder_decoder import DMPEncoderDecoderNet, TrainingParameters
+from imednet.trainers.encoder_decoder_trainer import Trainer
+from imednet.data.mat_loader import MatLoader
 
 
 N = 25

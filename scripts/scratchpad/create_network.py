@@ -5,9 +5,9 @@ import numpy as np
 from os.path import dirname, realpath
 sys.path.append(dirname(dirname(dirname(realpath(__file__)))))
 
-from deep_encoder_decoder_network.models.encoder_decoder import EncoderDecoderNet
-from deep_encoder_decoder_network.trainers.encoder_decoder_trainer import Trainer
-from deep_encoder_decoder_network.data.trajectory_loader import TrajectoryLoader
+from imednet.models.encoder_decoder import EncoderDecoderNet
+from imednet.trainers.encoder_decoder_trainer import Trainer
+from imednet.data.trajectory_loader import TrajectoryLoader
 
 print()
 ## folders containing trajectories and mnist data

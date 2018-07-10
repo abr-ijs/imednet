@@ -20,7 +20,7 @@ import torch.nn.functional as F
 from os.path import dirname, realpath
 sys.path.append(dirname(dirname(realpath(__file__))))
 
-from deep_encoder_decoder_network.models.mnist_cnn import Net
+from imednet.models.mnist_cnn import Net
 
 
 # Training settings
