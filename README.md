@@ -1,4 +1,4 @@
-# Image-to-Motion Encoder-Decoder Network
+# IMEDNet: Image-to-Motion Encoder-Decoder Network
 
 Neural network for transforming mnist images into dynamic movement primitives.
 
