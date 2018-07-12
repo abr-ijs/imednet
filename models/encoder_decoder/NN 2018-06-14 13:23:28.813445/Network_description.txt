@@ -1,0 +1,37 @@
+Network created: 2018-06-14 13:23:28.813445
+ Setting parameters for learning:
+   - Samples of data: 20000
+   - Epochs: -1
+   - Bunch size: 128
+   - training ratio: 0.7
+   - validation ratio: 0.15
+   - test ratio: 0.15
+     -   validation_interval: 1
+     -  test_interval: 1
+     -   log_interval: 1
+     -   cuda = True
+     -  Validation fail: 60
+SCG (
+Parameter Group 0
+    k: 1
+    lamda_1: 1.25e-05
+    lamda_1_I: 0.0
+    loss_wk: 0.009578424505889416
+    p_k: tensor(1.00000e-02 *
+       [-0.0000, -0.0000, -0.0000,  ...,  0.2029, -0.0508,  0.0362], device='cuda:0')
+    sigma0: 5e-05
+    success: True
+    tau_k: 1723.3267822265625
+)
+MSELoss()
+ saving_epochs = 6399
+ Learning finished with this parameters:
+   - Number of epochs: 6460
+   - Last train loss: tensor(1.00000e-02 *
+       4.8652, device='cuda:0')
+   - Last validation loss: tensor(0.1441, device='cuda:0')
+   Last test loss: tensor(0.1438, device='cuda:0')
+   - Elapsed time: 33870.395949
+   - last validation count: 61
+     -   Stop criterion: max validation fail reached
+     -  Minimal gradient: tensor(0., device='cuda:0')
