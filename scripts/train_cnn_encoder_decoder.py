@@ -21,7 +21,7 @@ import torch
 import numpy as np
 
 from imednet.models.encoder_decoder import CNNEncoderDecoderNet, TrainingParameters
-from imednet.data.mat_loader import MatLoader
+from imednet.data.synth_mnist_loader import MatLoader
 from imednet.trainers.encoder_decoder_trainer import Trainer
 
 # Save datetime
