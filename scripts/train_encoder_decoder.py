@@ -20,7 +20,7 @@ sys.path.append(dirname(dirname(realpath(__file__))))
 
 from imednet.models.encoder_decoder import EncoderDecoderNet, TrainingParameters
 from imednet.trainers.encoder_decoder_trainer import Trainer
-from imednet.data.synth_mnist_loader import MatLoader
+from imednet.data.image_traj_loader import MatLoader
 
 # Save datetime
 date = datetime.now()
