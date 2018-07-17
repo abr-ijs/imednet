@@ -49,6 +49,9 @@ parser.add_argument('--cnn-model-load-path', type=str, default=default_cnn_model
                     help='cnn model load path (default: "{}")'.format(str(default_cnn_model_load_path)))
 args = parser.parse_args()
 
+# Append the current date/time to any user-defined model save path
+args.model_save_path = args.model_save_path + ' ' + str(date)
+
 # Set up model save files
 os.makedirs(args.model_save_path)
 net_description_save_path = os.path.join(args.model_save_path, 'network_description.txt')
@@ -68,7 +71,6 @@ input_size = 1600
 hidden_layer_sizes = [20, 35]
 output_size = 2*N + 4
 layer_sizes = [input_size] + hidden_layer_sizes + [output_size]
-net_description_file.write('\nNeurons: ' + str(layer_sizes))
 
 # Load the model
 model = CNNEncoderDecoderNet(args.cnn_model_load_path, layer_sizes, scale)
@@ -90,8 +92,6 @@ else:
             torch.nn.init.xavier_uniform(p, gain=1)
     print(' + Initialized parameters randomly')
 
-torch.save(model, (os.path.join(args.model_save_path, 'model.pt')))
-
 # Set up trainer
 train_param = TrainingParameters()
 train_param.epochs = -1
@@ -104,6 +104,39 @@ train_param.test_ratio = 0.15
 train_param.val_fail = 60
 trainer = Trainer()
 
+# Save model parameters to file
+torch.save(model, (os.path.join(args.model_save_path, 'model.pt')))
+
+# Save model type to file
+net_description_file.write('\nModel: imednet.models.encoder_decoder.CNNEncoderDecoderNet')
+
+# Save data path
+if args.data_path:
+    net_description_file.write('\nData path: ' + args.data_path)
+
+# Save model save path to file
+if args.model_save_path:
+    net_description_file.write('\nModel save path: ' + args.model_save_path)
+
+# Save model load path to file
+if args.model_load_path:
+    net_description_file.write('\nModel load path: ' + args.model_load_path)
+
+# Save pre-trained CNN model load path to file
+if args.cnn_model_load_path:
+    net_description_file.write('\nPre-trained CNN model load path: ' + args.cnn_model_load_path)
+
+# Save layer sizes to file
+net_description_file.write('\nLayer sizes: ' + str(layer_sizes))
+np.save(os.path.join(args.model_save_path, 'layer_sizes'), np.asarray(layer_sizes))
+
+# Save data scaling to file
+np.save(os.path.join(args.model_save_path, 'scale_x_min'), scale.x_min)
+np.save(os.path.join(args.model_save_path, 'scale_x_max'), scale.x_max)
+np.save(os.path.join(args.model_save_path, 'scale_y_min'), scale.y_min)
+np.save(os.path.join(args.model_save_path, 'scale_y_max'), scale.y_max)
+
+# Load previously trained model
 if args.model_load_path:
     net_indeks_path = os.path.join(args.model_load_path, 'net_indeks.npy')
     trainer.indeks = np.load(net_indeks_path)

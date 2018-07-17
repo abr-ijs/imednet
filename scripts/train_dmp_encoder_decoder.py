@@ -43,6 +43,9 @@ parser.add_argument('--model-load-path', type=str, default=None,
                     help='model load path (default: "{}")'.format(str(default_model_load_path)))
 args = parser.parse_args()
 
+# Append the current date/time to any user-defined model save path
+args.model_save_path = args.model_save_path + ' ' + str(date)
+
 # Set up model save files
 os.makedirs(args.model_save_path)
 net_description_save_path = os.path.join(args.model_save_path, 'network_description.txt')
@@ -63,7 +66,6 @@ hidden_layer_sizes = [1500, 1300, 1000, 600, 200, 20, 35]
 output_size = 2*N + 4
 conv = None
 layer_sizes = [input_size] + hidden_layer_sizes + [output_size]
-net_description_file.write('\nNeurons: ' + str(layer_sizes))
 
 # Load the model
 model = DMPEncoderDecoderNet(layer_sizes, conv, scale)
@@ -84,11 +86,6 @@ else:
             torch.nn.init.xavier_uniform(p, gain=1)
     print(' + Initialized parameters randomly')
 
-# NOTE: torch.save(model, PATH) causes a pickling error due to DMPIntegrator
-# TODO: Check to ensure models saved this way can be properly loaded.
-# See: https://pytorch.org/docs/master/notes/serialization.html
-torch.save(model.state_dict(), (os.path.join(args.model_save_path, 'model.pt')))
-
 # Set up trainer
 train_param = TrainingParameters()
 train_param.epochs = -1
@@ -99,9 +96,46 @@ train_param.training_ratio = 0.7
 train_param.validation_ratio = 0.15
 train_param.test_ratio = 0.15
 train_param.val_fail = 60
-
 trainer = Trainer()
 
+# Save model to file
+# NOTE: torch.save(model, PATH) causes a pickling error due to DMPIntegrator
+# TODO: Check to ensure models saved this way can be properly loaded.
+# See: https://pytorch.org/docs/master/notes/serialization.html
+torch.save(model.state_dict(), (os.path.join(args.model_save_path, 'model.pt')))
+
+# Save model type to file
+net_description_file.write('\nModel: imednet.models.encoder_decoder.DMPEncoderDecoderNet')
+
+# Save data path
+if args.data_path:
+    net_description_file.write('\nData path: ' + args.data_path)
+
+# Save model save path to file
+if args.model_save_path:
+    net_description_file.write('\nModel save path: ' + args.model_save_path)
+
+# Save model load path to file
+if args.model_load_path:
+    net_description_file.write('\nModel load path: ' + args.model_load_path)
+
+# Save layer sizes to file
+net_description_file.write('\nLayer sizes: ' + str(layer_sizes))
+np.save(os.path.join(args.model_save_path, 'layer_sizes'), np.asarray(layer_sizes))
+
+# Save data scaling to file
+np.save(os.path.join(args.model_save_path, 'scale_x_min'), scale.x_min)
+np.save(os.path.join(args.model_save_path, 'scale_x_max'), scale.x_max)
+np.save(os.path.join(args.model_save_path, 'scale_y_min'), scale.y_min)
+np.save(os.path.join(args.model_save_path, 'scale_y_max'), scale.y_max)
+
+# Save training parameters to file
+net_description_file.write('\nTraining parameters: ')
+for key in dir(train_param):
+    if not key.startswith('__'):
+        net_description_file.write('\n    {}: {}'.format(key, str(getattr(train_param, key))))
+
+# Load previously trained model
 if args.model_load_path:
     net_indeks_path = os.path.join(args.model_load_path, 'net_indeks.npy')
     trainer.indeks = np.load(net_indeks_path)
