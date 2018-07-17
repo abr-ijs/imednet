@@ -41,22 +41,22 @@ class TrajectoryLoader:
             print('Could not load file ' + file)
 
 
-    def getAvaliableTrajectoriesNumbers(folder):
+    def getAvailableTrajectoriesNumbers(folder):
         """
         Checks folder for all json files containing trajectories and returns its numbers gained from filenames
         Each number n coresponds to the n-th image from the MNIST dataset
 
-        getAvaliableTrajectoriesNumbers(folder) -> sorted list of numbers of avaliable trajectories inf the folder
+        getAvailableTrajectoriesNumbers(folder) -> sorted list of numbers of available trajectories inf the folder
         folder -> the string path of the folder to check
         """
         datoteke =  [f for f in os.listdir(folder)]
-        avaliable = []
+        available = []
         for datoteka in datoteke:
             if datoteka.startswith(prefix) and datoteka.endswith(suffix):
                 number = datoteka[len(prefix):]
                 number = int(number[:-len(suffix)])
-                avaliable.append(number)
-        return sorted(avaliable)
+                available.append(number)
+        return sorted(available)
 
     def getTrajectoryFile(folder, n):
         """

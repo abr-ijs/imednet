@@ -41,6 +41,10 @@ parser.add_argument('--model-save-path', type=str, default=default_model_save_pa
                     help='model save path (default: "{}")'.format(str(default_model_save_path)))
 parser.add_argument('--model-load-path', type=str, default=None,
                     help='model load path (default: "{}")'.format(str(default_model_load_path)))
+parser.add_argument('--launch-tensorboard', action='store_true', default=False,
+                    help='launch tensorboard process')
+parser.add_argument('--launch-gui', action='store_true', default=False,
+                    help='launch GUI control panel')
 args = parser.parse_args()
 
 # Append the current date/time to any user-defined model save path
@@ -92,7 +96,8 @@ train_param.training_ratio = 0.7
 train_param.validation_ratio = 0.15
 train_param.test_ratio = 0.15
 train_param.val_fail = 60
-trainer = Trainer()
+trainer = Trainer(launch_tensorboard=args.launch_tensorboard,
+                  launch_gui=args.launch_gui)
 
 # Save model to file
 torch.save(model, (os.path.join(args.model_save_path, 'model.pt')))

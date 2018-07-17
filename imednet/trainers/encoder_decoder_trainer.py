@@ -30,7 +30,11 @@ class Trainer:
     user_stop = ""
     plot_im = False
     indeks = []
-    reseting_optimizer = False
+    resetting_optimizer = False
+
+    def __init__(self, launch_tensorboard=False, launch_gui=False):
+        self._launch_tensorboard = launch_tensorboard
+        self._launch_gui = launch_gui
 
     def show_dmp(self, image, trajectory, dmp, plot=False, save=-1):
         """
@@ -77,12 +81,12 @@ class Trainer:
         labels = np.array(labels)
         return images,labels
 
-    def load_trajectories(trajectories_folder, avaliable):
+    def load_trajectories(trajectories_folder, available):
         """
         loads trajectories from the folder containing trajectory files
         """
         trajectories = []
-        for i in avaliable:
+        for i in available:
             t = TrajectoryLoader.loadNTrajectory(trajectories_folder,i)
             trajectories.append(t)
         trajectories = np.array(trajectories)
@@ -200,8 +204,8 @@ class Trainer:
         dmp.values(N, sampling_time, tau, y0, [0, 0], goal, w)
         return dmp
 
-    def show_network_output(network, i, images, trajectories, DMPs, N, sampling_time, avaliable = None, cuda = False):
-        input_data, output_data, scale = Trainer.get_data_for_network(images, DMPs, avaliable)
+    def show_network_output(network, i, images, trajectories, DMPs, N, sampling_time, available=None, cuda=False):
+        input_data, output_data, scale = Trainer.get_data_for_network(images, DMPs, available)
         scale = network.scale
         if i != -1:
             input_data = input_data[i]
@@ -222,8 +226,8 @@ class Trainer:
                 Trainer.show_dmp(images[i], None, dmps[i])
             plt.ioff()
         else:
-            if avaliable is not None:
-                Trainer.show_dmp(images[avaliable[i]], trajectories[i], dmps[0])
+            if available is not None:
+                Trainer.show_dmp(images[available[i]], trajectories[i], dmps[0])
             elif trajectories is not None:
                 Trainer.show_dmp(images[i], trajectories[i], dmps[0])
             else:
@@ -363,26 +367,24 @@ class Trainer:
         learning_rate -> how much the weight will be changed each epoch
         log_interval -> on each epoch divided by log_interval log will be printed
         """
-        root = tk.Tk()
-
-
-        button = tk.Button(root,
-                           text="QUIT",
-                           fg="red",
-                           command=self.cancel_training)
-        button1 = tk.Button(root,
-                           text="plot",
-                           fg="blue",
-                           command=self.plot_image)
-
-        buttonResetAdam = tk.Button(root,
-                            text="reset ADAM",
-                            fg="blue",
-                            command=self.reset_ADAM)
-
-        button.pack(side=tk.LEFT)
-        button1.pack(side=tk.RIGHT)
-        buttonResetAdam.pack(side=tk.RIGHT)
+        # Launch GUI
+        if self._launch_gui:
+            root = tk.Tk()
+            button = tk.Button(root,
+                               text="QUIT",
+                               fg="red",
+                               command=self.cancel_training)
+            button1 = tk.Button(root,
+                               text="plot",
+                               fg="blue",
+                               command=self.plot_image)
+            buttonResetAdam = tk.Button(root,
+                                text="reset ADAM",
+                                fg="blue",
+                                command=self.reset_ADAM)
+            button.pack(side=tk.LEFT)
+            button1.pack(side=tk.RIGHT)
+            buttonResetAdam.pack(side=tk.RIGHT)
 
         # Prepare parameters
         starting_time = datetime.now()
@@ -399,10 +401,10 @@ class Trainer:
         # Train
         writer = SummaryWriter(path+'/log')
 
-        command = ["tensorboard", "--logdir=" + path+"/log"]
-        proces = subprocess.Popen(command)
-        print(proces.pid)
-        print('init')
+        if self._launch_tensorboard:
+            command = ["tensorboard", "--logdir=" + path+"/log"]
+            tensorboard_process = subprocess.Popen(command)
+            print('Launching tensorboard with process id: {}'.format(tensorboard_process.pid))
 
         # Divide data
         print("Dividing data")
@@ -466,7 +468,9 @@ class Trainer:
             input_data_validate = input_data_validate_b.clone()
             output_data_validate = output_data_validate_b.clone()
 
-            root.update()
+            if self._launch_gui:
+                root.update()
+
             t = t+1
             i = 0
             j = train_param.batch_size
@@ -579,7 +583,7 @@ class Trainer:
                 optimizer.reset = True
                 print('reset optimizer')
             '''
-            if self.reseting_optimizer:
+            if self.resetting_optimizer:
                 optimizer.reset = True
             if val_count > 7:
 
@@ -622,7 +626,10 @@ class Trainer:
         file.write('\n saving_epochs = ' + str(saving_epochs))
         file.write(train_param.write_out_after())
         writer.close()
-        proces.terminate()
+
+        if self._launch_tensorboard:
+            print('Terminating tensorboard with process id: {}'.format(tensorboard_process.pid))
+            tensorboard_process.terminate()
 
         print('Training finished\n')
 
@@ -638,25 +645,24 @@ class Trainer:
         learning_rate -> how much the weight will be changed each epoch
         log_interval -> on each epoch divided by log_interval log will be printed
         """
-        root = tk.Tk()
-
-        button = tk.Button(root,
-                           text="QUIT",
-                           fg="red",
-                           command=self.cancel_training)
-        button1 = tk.Button(root,
-                            text="plot",
-                            fg="blue",
-                            command=self.plot_image)
-
-        buttonResetAdam = tk.Button(root,
-                                    text="reset ADAM",
-                                    fg="blue",
-                                    command=self.reset_ADAM)
-
-        button.pack(side=tk.LEFT)
-        button1.pack(side=tk.RIGHT)
-        buttonResetAdam.pack(side=tk.RIGHT)
+        # Launch GUI
+        if self._launch_gui:
+            root = tk.Tk()
+            button = tk.Button(root,
+                               text="QUIT",
+                               fg="red",
+                               command=self.cancel_training)
+            button1 = tk.Button(root,
+                                text="plot",
+                                fg="blue",
+                                command=self.plot_image)
+            buttonResetAdam = tk.Button(root,
+                                        text="reset ADAM",
+                                        fg="blue",
+                                        command=self.reset_ADAM)
+            button.pack(side=tk.LEFT)
+            button1.pack(side=tk.RIGHT)
+            buttonResetAdam.pack(side=tk.RIGHT)
 
         # prepare parameters
         starting_time = datetime.now()
@@ -674,10 +680,10 @@ class Trainer:
 
         writer = SummaryWriter(path + '/log')
 
-        command = ["tensorboard", "--logdir=" + path + "/log"]
-        proces = subprocess.Popen(command)
-        print(proces.pid)
-        print('init')
+        if self._launch_tensorboard:
+            command = ["tensorboard", "--logdir=" + path + "/log"]
+            tensorboard_process = subprocess.Popen(command)
+            print('Launching tensorboard with process id: {}'.format(tensorboard_process.pid))
 
         # Divide data
         print("Dividing data")
@@ -767,7 +773,9 @@ class Trainer:
             input_data_validate = input_data_validate_b.clone()
             output_data_validate = output_data_validate_b.clone()
 
-            root.update()
+            if self._launch_gui:
+                root.update()
+
             t = t + 1
             i = 0
             j = train_param.batch_size
@@ -900,7 +908,7 @@ class Trainer:
                 optimizer.reset = True
                 print('reset optimizer')
             '''
-            if self.reseting_optimizer:
+            if self.resetting_optimizer:
                 optimizer.reset = True
 
             if val_count > 7:
@@ -942,7 +950,10 @@ class Trainer:
         file.write('\n saving_epochs = ' + str(saving_epochs))
         file.write(train_param.write_out_after())
         writer.close()
-        proces.terminate()
+
+        if self._launch_tensorboard:
+            print('Terminating tensorboard with process id: {}'.format(tensorboard_process.pid))
+            tensorboard_process.terminate()
 
         print('Training finished\n')
 
@@ -976,5 +987,5 @@ class Trainer:
         self.plot_im = True
 
     def reset_ADAM(self):
-        self.reseting_optimizer = True
+        self.resetting_optimizer = True
         print('reseting ADAM')

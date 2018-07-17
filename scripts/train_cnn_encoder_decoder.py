@@ -37,7 +37,7 @@ default_cnn_model_load_path = os.path.join(dirname(dirname(realpath(__file__))),
 default_model_load_path = None
 
 # Parse arguments
-description = 'Train an encoder-decoder network on image/trajectory data.'
+description = 'Train a cnn-encoder-decoder network on image/trajectory data.'
 parser = argparse.ArgumentParser(description=description)
 parser.add_argument('--data-path', type=str, default=default_data_path,
                     help='data path (default: "{}")'.format(str(default_data_path)))
@@ -47,6 +47,10 @@ parser.add_argument('--model-load-path', type=str, default=None,
                     help='model load path (default: "{}")'.format(str(default_model_load_path)))
 parser.add_argument('--cnn-model-load-path', type=str, default=default_cnn_model_load_path,
                     help='cnn model load path (default: "{}")'.format(str(default_cnn_model_load_path)))
+parser.add_argument('--launch-tensorboard', action='store_true', default=False,
+                    help='launch tensorboard process')
+parser.add_argument('--launch-gui', action='store_true', default=False,
+                    help='launch GUI control panel')
 args = parser.parse_args()
 
 # Append the current date/time to any user-defined model save path
@@ -102,7 +106,8 @@ train_param.training_ratio = 0.7
 train_param.validation_ratio = 0.15
 train_param.test_ratio = 0.15
 train_param.val_fail = 60
-trainer = Trainer()
+trainer = Trainer(launch_tensorboard=args.launch_tensorboard,
+                  launch_gui=args.launch_gui)
 
 # Save model parameters to file
 torch.save(model, (os.path.join(args.model_save_path, 'model.pt')))
