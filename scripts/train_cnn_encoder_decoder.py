@@ -21,18 +21,17 @@ import torch
 import numpy as np
 
 from imednet.models.encoder_decoder import CNNEncoderDecoderNet, TrainingParameters
-from imednet.data.image_traj_loader import MatLoader
+from imednet.data.smnist_loader import MatLoader
 from imednet.trainers.encoder_decoder_trainer import Trainer
 
 # Save datetime
 date = datetime.now()
 
 # Set defaults
-default_data_path = os.path.join(dirname(dirname(realpath(__file__))), 'data/slike_780.4251')
+default_data_path = os.path.join(dirname(dirname(realpath(__file__))), 'data/s-mnist/40x40-smnist.mat')
 default_model_save_path = os.path.join(dirname(dirname(realpath(__file__))),
                                        'models/cnn_encoder_decoder',
                                        'Model ' + str(date))
-print('default_model_save_path: {}'.format(default_model_save_path))
 default_cnn_model_load_path = os.path.join(dirname(dirname(realpath(__file__))),
                                            'models/mnist_cnn/mnist_cnn.model')
 default_model_load_path = None

@@ -13,3 +13,5 @@ data/mnist/train-labels-idx1-ubyte filter=lfs diff=lfs merge=lfs -text
 models/cnn_encoder_decoder/Model/[[:space:]]2018-07-11/[[:space:]]17/:31/:04.763401/** filter=lfs diff=lfs merge=lfs -text
 models/nmnist_cnn/nmnist_cnn.model filter=lfs diff=lfs merge=lfs -text
 data/n-mnist/** filter=lfs diff=lfs merge=lfs -text
+data/s-mnist/** filter=lfs diff=lfs merge=lfs -text
+models/nmnist_cnn/** filter=lfs diff=lfs merge=lfs -text

@@ -20,13 +20,13 @@ sys.path.append(dirname(dirname(realpath(__file__))))
 
 from imednet.models.encoder_decoder import EncoderDecoderNet, TrainingParameters
 from imednet.trainers.encoder_decoder_trainer import Trainer
-from imednet.data.image_traj_loader import MatLoader
+from imednet.data.smnist_loader import MatLoader
 
 # Save datetime
 date = datetime.now()
 
 # Set defaults
-default_data_path = os.path.join(dirname(dirname(realpath(__file__))), 'data/slike_780.4251')
+default_data_path = os.path.join(dirname(dirname(realpath(__file__))), 'data/s-mnist/40x40-smnist.mat')
 default_model_save_path = os.path.join(dirname(dirname(realpath(__file__))),
                                        'models/encoder_decoder',
                                        'Model ' + str(date))

@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-__pycache__/
-nninit
-=======
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -106,4 +102,7 @@ venv.bak/
 
 # mypy
 .mypy_cache/
->>>>>>> deep_encoder_decoder_network/master
+
+# Vim swap files
+*.swp
+*.swo
