@@ -412,7 +412,9 @@ class Trainer:
 
         # dummy = model(torch.autograd.Variable(torch.rand(1,1600)))
         # writer.add_graph(model, dummy)
-        window = webbrowser.open_new('http://localhost:6006')
+
+        if self._launch_tensorboard:
+            window = webbrowser.open_new('http://localhost:6006')
 
         if train_param.cuda:
             '''model = model.double().cuda()
@@ -692,7 +694,9 @@ class Trainer:
 
         # dummy = model(torch.autograd.Variable(torch.rand(1,1600)))
         # writer.add_graph(model, dummy)
-        window = webbrowser.open_new('http://localhost:6006')
+
+        if self._launch_tensorboard:
+            window = webbrowser.open_new('http://localhost:6006')
 
         if train_param.cuda:
             '''model = model.double().cuda()
