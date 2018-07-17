@@ -36,12 +36,12 @@ class NMNIST(MNIST):
         target_transform (callable, optional): A function/transform that takes in the
             target and transforms it.
         dataset (string, optional): Select the particular n-MNIST dataset to load:
-            "awgn", "motion-blur", "contrast-and-awgn" or "all".
+            "awgn", "motion-blur", "reduced-contrast-and-awgn" or "all".
     """
     urls = {
             'awgn': 'http://www.csc.lsu.edu/~saikat/n-mnist/data/mnist-with-awgn.gz',
             'motion-blur': 'http://www.csc.lsu.edu/~saikat/n-mnist/data/mnist-with-motion-blur.gz',
-            'contrast-and-awgn': 'http://www.csc.lsu.edu/~saikat/n-mnist/data/mnist-with-reduced-contrast-and-awgn.gz',
+            'reduced-contrast-and-awgn': 'http://www.csc.lsu.edu/~saikat/n-mnist/data/mnist-with-reduced-contrast-and-awgn.gz',
     }
     def __init__(self, root, train=True, transform=None, target_transform=None, download=False, dataset='awgn'):
         self.dataset = dataset

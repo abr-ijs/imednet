@@ -45,7 +45,7 @@ parser.add_argument('--log-interval', type=int, default=10, metavar='N',
 parser.add_argument('--data-path', type=str, default='./data/n-mnist',
                     help='data path (default: \'./data/n-mnist\')')
 parser.add_argument('--dataset', type=str, default='awgn',
-                    help='dataset (default: \'awgn\', options: \'awgn\', \'motion-blur\', \'contrast-and-awgn\' or \'all\')')
+                    help='dataset (default: \'awgn\', options: \'awgn\', \'motion-blur\', \'reduced-contrast-and-awgn\' or \'all\')')
 parser.add_argument('--model-path', type=str, default='./models/nmnist_cnn/nmnist_cnn.model',
                     help='model path (default: \'./models/nmnist_cnn/nmnist_cnn.model\')')
 args = parser.parse_args()
