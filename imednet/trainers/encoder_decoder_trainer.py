@@ -424,6 +424,7 @@ class Trainer:
             output_data_test_b = output_data_test_b.double().cuda()
             input_data_validate_b = input_data_validate_b.double().cuda()
             output_data_validate_b = output_data_validate_b.double().cuda()'''
+            torch.cuda.set_device(train_param.device)
             model = model.cuda()
             input_data_train_b = input_data_train_b.cuda()
             output_data_train_b = output_data_train_b.cuda()
@@ -706,6 +707,7 @@ class Trainer:
             output_data_test_b = output_data_test_b.double().cuda()
             input_data_validate_b = input_data_validate_b.double().cuda()
             output_data_validate_b = output_data_validate_b.double().cuda()'''
+            torch.cuda.set_device(train_param.device)
             model = model.cuda()
             input_data_train_b = input_data_train_b.cuda()
             output_data_train_b = output_data_train_b.cuda()

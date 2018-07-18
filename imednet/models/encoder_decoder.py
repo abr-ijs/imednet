@@ -13,6 +13,7 @@ class TrainingParameters():
     time = -1
 
     cuda = True
+    device = 0
 
     validation_interval = 1
     log_interval = 1

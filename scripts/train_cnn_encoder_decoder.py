@@ -51,6 +51,8 @@ parser.add_argument('--launch-tensorboard', action='store_true', default=False,
                     help='launch tensorboard process')
 parser.add_argument('--launch-gui', action='store_true', default=False,
                     help='launch GUI control panel')
+parser.add_argument('--device', type=int, default=0,
+                    help='select CUDA device (default: 0)')
 args = parser.parse_args()
 
 # Append the current date/time to any user-defined model save path
@@ -98,6 +100,7 @@ else:
 
 # Set up trainer
 train_param = TrainingParameters()
+device = args.device
 train_param.epochs = -1
 learning_rate = 0.0005
 momentum = 0.5
