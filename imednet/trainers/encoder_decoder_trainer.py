@@ -692,7 +692,7 @@ class Trainer:
 
         # Divide data
         print("Dividing data")
-        input_data_train_b, output_data_train_b, input_data_test_b, output_data_test_b, input_data_validate_b, output_data_validate_b = self.databaseSplit(
+        input_data_train_b, output_data_train_b, input_data_test_b, output_data_test_b, input_data_validate_b, output_data_validate_b = self.split_dataset(
             images, outputs)
 
         # dummy = model(torch.autograd.Variable(torch.rand(1,1600)))
@@ -919,7 +919,7 @@ class Trainer:
             if self.resetting_optimizer:
                 optimizer.reset = True
 
-            if val_count > 7 or (t - 1) % 500:
+            if val_count == 7 or (t - 1) % 500==0:
                 train_param.stop_criterion = "reset optimizer"
                 optimizer.reset = True
 
