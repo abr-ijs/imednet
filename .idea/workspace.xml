@@ -2,7 +2,56 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a5e94429-d941-45a1-8dd2-98564c301bf0" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitattributes" afterPath="$PROJECT_DIR$/.gitattributes" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/input_layer.bias/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/input_layer.bias/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/input_layer.weight/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/input_layer.weight/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/middle_layer_1.bias/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/middle_layer_1.bias/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/middle_layer_1.weight/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/middle_layer_1.weight/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/middle_layer_2.bias/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/middle_layer_2.bias/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/middle_layer_2.weight/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/middle_layer_2.weight/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/middle_layer_3.bias/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/middle_layer_3.bias/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/middle_layer_3.weight/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/middle_layer_3.weight/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/middle_layer_4.bias/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/middle_layer_4.bias/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/middle_layer_4.weight/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/middle_layer_4.weight/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/middle_layer_5.bias/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/middle_layer_5.bias/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/middle_layer_5.weight/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/middle_layer_5.weight/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/middle_layer_6.bias/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/middle_layer_6.bias/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/middle_layer_6.weight/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/middle_layer_6.weight/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/output_layer.bias/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/output_layer.bias/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/output_layer.weight/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/max/output_layer.weight/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/input_layer.bias/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/input_layer.bias/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/input_layer.weight/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/input_layer.weight/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/middle_layer_1.bias/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/middle_layer_1.bias/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/middle_layer_1.weight/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/middle_layer_1.weight/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/middle_layer_2.bias/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/middle_layer_2.bias/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/middle_layer_2.weight/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/middle_layer_2.weight/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/middle_layer_3.bias/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/middle_layer_3.bias/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/middle_layer_3.weight/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/middle_layer_3.weight/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/middle_layer_4.bias/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/middle_layer_4.bias/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/middle_layer_4.weight/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/middle_layer_4.weight/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/middle_layer_5.bias/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/middle_layer_5.bias/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/middle_layer_5.weight/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/middle_layer_5.weight/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/middle_layer_6.bias/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/middle_layer_6.bias/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/middle_layer_6.weight/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/middle_layer_6.weight/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/output_layer.bias/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/output_layer.bias/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/output_layer.weight/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/mean/output_layer.weight/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/input_layer.bias/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/input_layer.bias/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/input_layer.weight/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/input_layer.weight/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/middle_layer_1.bias/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/middle_layer_1.bias/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/middle_layer_1.weight/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/middle_layer_1.weight/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/middle_layer_2.bias/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/middle_layer_2.bias/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/middle_layer_2.weight/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/middle_layer_2.weight/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/middle_layer_3.bias/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/middle_layer_3.bias/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/middle_layer_3.weight/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/middle_layer_3.weight/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/middle_layer_4.bias/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/middle_layer_4.bias/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/middle_layer_4.weight/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/middle_layer_4.weight/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/middle_layer_5.bias/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/middle_layer_5.bias/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/middle_layer_5.weight/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/middle_layer_5.weight/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/middle_layer_6.bias/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/middle_layer_6.bias/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/middle_layer_6.weight/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/middle_layer_6.weight/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/output_layer.bias/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/output_layer.bias/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/output_layer.weight/events.out.tfevents.1531913346.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/data/min/output_layer.weight/events.out.tfevents.1531913346.fangorn" />
+      <change beforePath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/events.out.tfevents.1531913344.fangorn" afterPath="$PROJECT_DIR$/models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976/log/events.out.tfevents.1531913344.fangorn" />
       <change beforePath="$PROJECT_DIR$/scripts/dtw_evaluate.py" afterPath="$PROJECT_DIR$/scripts/dtw_evaluate.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -17,8 +66,8 @@
       <file leaf-file-name="train_dmp_encoder_decoder.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/scripts/train_dmp_encoder_decoder.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="102">
-              <caret line="51" column="66" lean-forward="false" selection-start-line="51" selection-start-column="66" selection-end-line="51" selection-end-column="66" />
+            <state relative-caret-position="-384">
+              <caret line="66" column="19" lean-forward="false" selection-start-line="66" selection-start-column="19" selection-end-line="66" selection-end-column="19" />
               <folding />
             </state>
           </provider>
@@ -27,8 +76,8 @@
       <file leaf-file-name="dtw_evaluate.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/scripts/dtw_evaluate.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="340">
-              <caret line="62" column="0" lean-forward="false" selection-start-line="62" selection-start-column="0" selection-end-line="62" selection-end-column="0" />
+            <state relative-caret-position="90">
+              <caret line="29" column="0" lean-forward="false" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
               <folding>
                 <element signature="e#92#102#0" expanded="true" />
               </folding>
@@ -39,8 +88,18 @@
       <file leaf-file-name="network_description.txt" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/models/cnn_encoder_decoder/40x40-smnist-with-all-nmnist-noise 2018-07-18 01:25:42.205735/network_description.txt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-269">
+            <state relative-caret-position="0">
               <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="train_cnn_encoder_decoder.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/scripts/train_cnn_encoder_decoder.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="918">
+              <caret line="58" column="61" lean-forward="false" selection-start-line="58" selection-start-column="61" selection-end-line="58" selection-end-column="61" />
               <folding />
             </state>
           </provider>
@@ -171,56 +230,7 @@
               <item name="imednet" type="b2602c69:ProjectViewProjectNode" />
               <item name="imednet" type="462c0819:PsiDirectoryNode" />
               <item name="models" type="462c0819:PsiDirectoryNode" />
-              <item name="cnn_encoder_decoder" type="462c0819:PsiDirectoryNode" />
-              <item name="40x40-smnist-with-gaussian-background 2018-07-18 01:49:46.604351" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="imednet" type="b2602c69:ProjectViewProjectNode" />
-              <item name="imednet" type="462c0819:PsiDirectoryNode" />
-              <item name="models" type="462c0819:PsiDirectoryNode" />
-              <item name="cnn_encoder_decoder" type="462c0819:PsiDirectoryNode" />
-              <item name="40x40-smnist-with-reduced-contrast-and-awgn 2018-07-18 01:21:36.841931" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="imednet" type="b2602c69:ProjectViewProjectNode" />
-              <item name="imednet" type="462c0819:PsiDirectoryNode" />
-              <item name="models" type="462c0819:PsiDirectoryNode" />
               <item name="encoder_decoder" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="imednet" type="b2602c69:ProjectViewProjectNode" />
-              <item name="imednet" type="462c0819:PsiDirectoryNode" />
-              <item name="models" type="462c0819:PsiDirectoryNode" />
-              <item name="encoder_decoder" type="462c0819:PsiDirectoryNode" />
-              <item name="40x40-smnist-with-all-nmnist-noise--launch-tensorboard 2018-07-18 13:13:32.443084" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="imednet" type="b2602c69:ProjectViewProjectNode" />
-              <item name="imednet" type="462c0819:PsiDirectoryNode" />
-              <item name="models" type="462c0819:PsiDirectoryNode" />
-              <item name="encoder_decoder" type="462c0819:PsiDirectoryNode" />
-              <item name="40x40-smnist-with-awgn 2018-07-18 13:09:46.760029" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="imednet" type="b2602c69:ProjectViewProjectNode" />
-              <item name="imednet" type="462c0819:PsiDirectoryNode" />
-              <item name="models" type="462c0819:PsiDirectoryNode" />
-              <item name="encoder_decoder" type="462c0819:PsiDirectoryNode" />
-              <item name="40x40-smnist-with-motion-blur 2018-07-18 10:18:29.314999" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="imednet" type="b2602c69:ProjectViewProjectNode" />
-              <item name="imednet" type="462c0819:PsiDirectoryNode" />
-              <item name="models" type="462c0819:PsiDirectoryNode" />
-              <item name="encoder_decoder" type="462c0819:PsiDirectoryNode" />
-              <item name="40x40-smnist-with-reduced-contrast-and-awgn 2018-07-18 10:52:48.923917" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="imednet" type="b2602c69:ProjectViewProjectNode" />
-              <item name="imednet" type="462c0819:PsiDirectoryNode" />
-              <item name="models" type="462c0819:PsiDirectoryNode" />
-              <item name="encoder_decoder" type="462c0819:PsiDirectoryNode" />
-              <item name="40x40-smnist 2018-07-18 13:28:59.539976" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="imednet" type="b2602c69:ProjectViewProjectNode" />
@@ -438,7 +448,7 @@
     <frame x="64" y="-4" width="1857" height="997" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2619946" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.4134771" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3011236" sideWeight="0.51913744" order="-1" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3011236" sideWeight="0.48086253" order="2" side_tool="false" content_ui="tabs" />
@@ -654,14 +664,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/scripts/train_cnn_encoder_decoder.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="432">
-          <caret line="37" column="0" lean-forward="false" selection-start-line="37" selection-start-column="0" selection-end-line="37" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/imednet/data/trajectory_loader.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-666">
@@ -688,14 +690,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/scripts/train_dmp_encoder_decoder.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="51" column="66" lean-forward="false" selection-start-line="51" selection-start-column="66" selection-end-line="51" selection-end-column="66" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/models/cnn_encoder_decoder/40x40-smnist-with-motion-blur 2018-07-18 01:19:08.404354/network_description.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="91">
@@ -707,14 +701,6 @@
     <entry file="file://$PROJECT_DIR$/models/encoder_decoder/40x40-smnist-with-all-nmnist-noise--launch-tensorboard 2018-07-18 13:13:32.443084/network_description.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-697">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/models/cnn_encoder_decoder/40x40-smnist-with-all-nmnist-noise 2018-07-18 01:25:42.205735/network_description.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-269">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding />
         </state>
@@ -760,10 +746,34 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/train_dmp_encoder_decoder.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-384">
+          <caret line="66" column="19" lean-forward="false" selection-start-line="66" selection-start-column="19" selection-end-line="66" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/models/cnn_encoder_decoder/40x40-smnist-with-all-nmnist-noise 2018-07-18 01:25:42.205735/network_description.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/train_cnn_encoder_decoder.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="918">
+          <caret line="58" column="61" lean-forward="false" selection-start-line="58" selection-start-column="61" selection-end-line="58" selection-end-column="61" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/scripts/dtw_evaluate.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="340">
-          <caret line="62" column="0" lean-forward="false" selection-start-line="62" selection-start-column="0" selection-end-line="62" selection-end-column="0" />
+        <state relative-caret-position="90">
+          <caret line="29" column="0" lean-forward="false" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
           <folding>
             <element signature="e#92#102#0" expanded="true" />
           </folding>
