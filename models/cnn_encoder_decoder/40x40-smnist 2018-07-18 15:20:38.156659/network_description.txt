@@ -1,0 +1,43 @@
+Network created: 2018-07-18 15:20:38.156659
+Model: imednet.models.encoder_decoder.CNNEncoderDecoderNet
+Data path: data/s-mnist/40x40-smnist.mat
+Model save path: models/cnn_encoder_decoder/40x40-smnist 2018-07-18 15:20:38.156659
+Pre-trained CNN model load path: models/mnist_cnn/mnist_cnn.model
+Layer sizes: [1600, 600, 200, 20, 35, 54]
+ Setting parameters for learning:
+   - Samples of data: 20000
+   - Epochs: -1
+   - Batch size: 128
+   - training ratio: 0.7
+   - validation ratio: 0.15
+   - test ratio: 0.15
+     -   validation_interval: 1
+     -  test_interval: 1
+     -   log_interval: 1
+     -   cuda = True
+     -  Validation fail: 60
+SCG (
+Parameter Group 0
+    k: 1
+    lamda_1: 1.25e-05
+    lamda_1_I: 0.0
+    loss_wk: 0.0004975413321517408
+    p_k: tensor(1.00000e-04 *
+       [-0.0000, -0.0000, -0.0000,  ..., -0.1915, -0.2742, -0.2319], device='cuda:0')
+    sigma0: 5e-05
+    success: True
+    tau_k: 0.022079911082983017
+)
+MSELoss()
+ saving_epochs = 4114
+ Learning finished with this parameters:
+   - Number of epochs: 4175
+   - Last train loss: tensor(1.00000e-04 *
+       5.6609, device='cuda:0')
+   - Last validation loss: 0.0008072318742051721
+   Last test loss: tensor(1.00000e-04 *
+       8.0726, device='cuda:0')
+   - Elapsed time: 6596.907477
+   - last validation count: 61
+     -   Stop criterion: max validation fail reached
+     -  Minimal gradient: tensor(0., device='cuda:0')
