@@ -1,0 +1,66 @@
+Network created: 2018-07-18 13:28:59.539976
+Model: imednet.models.encoder_decoder.EncoderDecoderNet
+Data path: data/s-mnist/40x40-smnist.mat
+Model save path: models/encoder_decoder/40x40-smnist 2018-07-18 13:28:59.539976
+Layer sizes: [1600, 1500, 1300, 1000, 600, 200, 20, 35, 54]
+Training parameters: 
+    batch_size: 128
+    cuda: True
+    data_samples: 0
+    device: 0
+    elapsed_time: -1
+    epochs: -1
+    log_interval: 1
+    min_grad: -1
+    min_test_loss: -1
+    min_train_loss: -1
+    min_val_loss: -1
+    real_epochs: 0
+    stop_criterion: 
+    test_interval: 1
+    test_ratio: 0.15
+    time: -1
+    training_ratio: 0.7
+    val_count: -1
+    val_fail: 60
+    validation_interval: 1
+    validation_ratio: 0.15
+    write_out: <bound method TrainingParameters.write_out of <imednet.models.encoder_decoder.TrainingParameters object at 0x7f2a74ca1fd0>>
+    write_out_after: <bound method TrainingParameters.write_out_after of <imednet.models.encoder_decoder.TrainingParameters object at 0x7f2a74ca1fd0>>
+ Setting parameters for learning:
+   - Samples of data: 20000
+   - Epochs: -1
+   - Batch size: 128
+   - training ratio: 0.7
+   - validation ratio: 0.15
+   - test ratio: 0.15
+     -   validation_interval: 1
+     -  test_interval: 1
+     -   log_interval: 1
+     -   cuda = True
+     -  Validation fail: 60
+SCG (
+Parameter Group 0
+    k: 1
+    lamda_1: 1.25e-05
+    lamda_1_I: 0.0
+    loss_wk: 0.0003070564416702837
+    p_k: tensor(1.00000e-04 *
+       [-0.0000, -0.0000, -0.0000,  ..., -0.0807, -0.0902, -0.1918], device='cuda:0')
+    sigma0: 5e-05
+    success: True
+    tau_k: 0.01681400276720524
+)
+MSELoss()
+ saving_epochs = 6188
+ Learning finished with this parameters:
+   - Number of epochs: 6249
+   - Last train loss: tensor(1.00000e-04 *
+       3.3362, device='cuda:0')
+   - Last validation loss: 0.0006102152983658016
+   Last test loss: tensor(1.00000e-04 *
+       6.1481, device='cuda:0')
+   - Elapsed time: 7007.012712
+   - last validation count: 61
+     -   Stop criterion: max validation fail reached
+     -  Minimal gradient: tensor(0., device='cuda:0')
