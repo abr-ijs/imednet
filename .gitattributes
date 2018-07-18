@@ -34,5 +34,6 @@ file:///home/rpahic/Documents/imednet/models/encoder_decoder/40x40-smnist-with-r
 40x40-smnist[[:space:]]2018-07-18[[:space:]]14:04:44.658272 filter=lfs diff=lfs merge=lfs -text
 models/cnn_encoder_decoder/40x40-pretrain-mnist-smnist-with-awgn-end-to-end/[[:space:]]2018-07-18/[[:space:]]21/:40/:58.086895/** filter=lfs diff=lfs merge=lfs -text
 models/cnn_encoder_decoder/40x40-pretrain-mnist-smnist-with-reduced-contrast-and-awgn-end-to-end/[[:space:]]2018-07-18/[[:space:]]21/:53/:54.653528/** filter=lfs diff=lfs merge=lfs -text
+models/cnn_encoder_decoder/40x40-pretrain-mnist-smnist-with-motion-blur-end-to-end[[:space:]]2018-07-18[[:space:]]21:47:17.487709/** filter=lfs diff=lfs merge=lfs -text
 40x40-smnist[[:space:]]2018-07-18[[:space:]]15:20:38.156659 filter=lfs diff=lfs merge=lfs -text
 40x40-smnist-with-awgn[[:space:]]2018-07-18[[:space:]]17:01:12.543238 filter=lfs diff=lfs merge=lfs -text
