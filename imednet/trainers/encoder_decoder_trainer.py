@@ -588,9 +588,11 @@ class Trainer:
             '''
             if self.resetting_optimizer:
                 optimizer.reset = True
-            if val_count > 7:
+
+            if val_count == 7 or (t - 1) % 500 == 0:
 
                 train_param.stop_criterion = "reset optimizer"
+                print('periodic optimizer reset')
                 optimizer.reset = True
 
             #End condition
