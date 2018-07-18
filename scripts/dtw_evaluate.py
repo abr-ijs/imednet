@@ -23,9 +23,9 @@ default_data_path = os.path.join(dirname(dirname(realpath(__file__))),
                                  'data/s-mnist',
                                  #'40x40-smnist-with-all-nmnist-noise.mat'
                                  #'40x40-smnist-with-awgn.mat'
-                                 '40x40-smnist-with-reduced-contrast-and-awgn.mat'
+                                 #'40x40-smnist-with-reduced-contrast-and-awgn.mat'
                                  #'40x40-smnist-with-motion-blur.mat'
-
+                                 '40x40-smnist.mat'
                                  )
 
 dmp_network = False
@@ -40,11 +40,14 @@ else:
                                              #'models/encoder_decoder',
                                              #'40x40-smnist-with-motion-blur 2018-07-18 10:18:29.314999'
                                              #'40x40-smnist-with-reduced-contrast-and-awgn 2018-07-18 10:52:48.923917'
+                                             #'40x40-smnist-with-awgn 2018-07-18 13:09:46.760029'
+                                             #'40x40-smnist-with-all-nmnist-noise--launch-tensorboard 2018-07-18 13:13:32.443084'
                                              'models/cnn_encoder_decoder',
                                              #'40x40-smnist-with-all-nmnist-noise 2018-07-18 01:25:42.205735'
                                             #'40x40-smnist-with-motion-blur 2018-07-18 01:19:08.404354'
                                             #'40x40-smnist-with-awgn 2018-07-18 01:18:50.181843'
-                                             '40x40-smnist-with-reduced-contrast-and-awgn 2018-07-18 01:21:36.841931'
+                                             #'40x40-smnist-with-reduced-contrast-and-awgn 2018-07-18 01:21:36.841931'
+                                             '40x40-smnist 2018-07-18 14:04:44.658272'
                                             )
 
 
