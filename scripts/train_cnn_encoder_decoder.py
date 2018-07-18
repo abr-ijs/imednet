@@ -47,6 +47,8 @@ parser.add_argument('--model-load-path', type=str, default=None,
                     help='model load path (default: "{}")'.format(str(default_model_load_path)))
 parser.add_argument('--cnn-model-load-path', type=str, default=default_cnn_model_load_path,
                     help='cnn model load path (default: "{}")'.format(str(default_cnn_model_load_path)))
+parser.add_argument('--end-to-end', action='store_true', default=False,
+                    help='fine-tune the weights in all layers (unfreeze pretrained CNN weights)')
 parser.add_argument('--launch-tensorboard', action='store_true', default=False,
                     help='launch tensorboard process')
 parser.add_argument('--launch-gui', action='store_true', default=False,
@@ -82,8 +84,12 @@ layer_sizes = [input_size] + hidden_layer_sizes + [output_size]
 model = CNNEncoderDecoderNet(args.cnn_model_load_path, layer_sizes, scale)
 
 # Freeze pretrained CNN weights
-for param in model.cnn_model.parameters():
-    param.requires_grad = False
+if not args.end_to_end:
+    print('Freezing pretrained CNN weights!')
+    for param in model.cnn_model.parameters():
+        param.requires_grad = False
+else:
+    print('Training end-to-end!')
 
 # Initialize the model
 if args.model_load_path:
