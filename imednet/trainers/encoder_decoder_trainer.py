@@ -917,7 +917,7 @@ class Trainer:
             if self.resetting_optimizer:
                 optimizer.reset = True
 
-            if val_count > 7:
+            if val_count > 7 or (t - 1) % 500:
                 train_param.stop_criterion = "reset optimizer"
                 optimizer.reset = True
 
