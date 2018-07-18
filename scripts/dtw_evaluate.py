@@ -33,7 +33,8 @@ else:
                                              #'models/encoder_decoder',
                                              #'Model 2018-07-12 09:19:45.174311')
                                              'models/cnn_encoder_decoder',
-                                             '40x40-smnist-with-all-nmnist-noise 2018-07-18 01:25:42.205735')
+                                             '40x40-smnist-with-all-nmnist-noise 2018-07-18 01:25:42.205735'
+                                                )
 
 
 # Load the model
@@ -107,7 +108,7 @@ def my_custom_norm(x, y):
 
 avr_error = 0
 dtw_error = np.array([])
-for i in range(0, nn_output.shape[0]):
+for i in range(0, 10):#nn_output.shape[0]
 
     print(i)
 
@@ -126,3 +127,4 @@ print(np.mean(dtw_error))
 max=np.max(dtw_error)
 print('Maximal DTW error:')
 print(max)
+np.save(default_network_load_path+'/dtw_errors'+str(i),dtw_error)
