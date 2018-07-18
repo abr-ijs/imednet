@@ -1,0 +1,103 @@
+
+#!/usr/bin/env python
+"""
+Evaluate neural network results with Dynamic time warping.
+
+"""
+
+
+import sys
+import os
+from os.path import dirname, realpath
+from imednet.data.mat_loader import MatLoader
+from imednet.trainers.encoder_decoder_trainer import Trainer
+
+import torch
+import numpy as np
+from dtw import dtw
+
+sys.path.append(dirname(dirname(realpath(__file__))))
+
+# region Import data and networks
+default_data_path = os.path.join(dirname(dirname(dirname(realpath(__file__)))), 'data/test_set')
+
+dmp_network = True
+
+if dmp_network:
+    default_network_load_path = os.path.join(dirname(dirname(dirname(realpath(__file__)))),
+                                            'models/encoder_decoder',
+                                            'Model 2018-07-12 09:19:45.174311')
+else:
+    default_network_load_path = os.path.join(dirname(dirname(dirname(realpath(__file__)))),
+                                            'models/dmp_encoder_decoder',
+                                            'Model 2018-07-12 11:44:21.234266')
+
+
+# Load the model
+model = torch.load(default_network_load_path + '/model.pt')
+
+state = torch.load(default_network_load_path + '/net_parameters2442')
+
+model.load_state_dict(state)
+
+# Load data and scale it
+images, outputs, scale, original_trj = MatLoader.load_data(default_data_path,
+                                                           load_original_trajectories=True,
+                                                           scale = model.scale)
+# endregion
+
+##  Reshape original trajectory matrix
+
+original_trj_e = []
+for i in range(0, images.shape[0]):
+    c, c1, c2 = zip(*original_trj[i])
+    original_trj_e.append(c)
+    original_trj_e.append(c1)
+
+if dmp_network:
+    test_input = torch.from_numpy(np.array(images)).float().cuda()
+else:
+    test_input = torch.from_numpy(np.array(images)).float()
+
+    nn_output = model(test_input)
+    test_output = torch.from_numpy(np.array(original_trj_e)).float()
+
+
+
+
+trainer = Trainer()
+
+
+
+
+
+def my_custom_norm(x, y):
+
+    dif = x-y
+
+    return (dif[0]**2 + dif[1]**2)**0.5
+
+
+avr_error = 0
+dtw_error = np.array([])
+for i in range(0, 20):
+
+    print(i)
+
+    DMP_parameters = torch.cat((torch.tensor(outputs[i]).float()[0:1], nn_output[i, :]), 0)
+    dmp_obj = trainer.create_dmp(DMP_parameters, model.scale, 0.01, 25, True)
+    dmp_obj.joint()
+
+    b, b1, b2, b3 = dtw(np.transpose(original_trj_e[i*2:i*2+2]), dmp_obj.Y, dist=my_custom_norm )
+
+    #b, b1, b2, b3 = dtw(np.transpose(original_trj_e[i*2:i*2+2]), np.transpose(nn_output[i*2:i*2+2].detach().cpu().numpy()), dist=my_custom_norm )
+    dtw_error = np.append(dtw_error, b)
+
+print('Mean DTW error:')
+print(np.mean(dtw_error))
+print('Maximal DTW error:')
+print(np.max(dtw_error))
+
+
+
+

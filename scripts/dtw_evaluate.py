@@ -10,7 +10,7 @@ import os
 from os.path import dirname, realpath
 from imednet.data.smnist_loader import MatLoader, Mapping
 from imednet.trainers.encoder_decoder_trainer import Trainer
-from imednet.models.encoder_decoder import CNNEncoderDecoderNet
+from imednet.models.encoder_decoder import CNNEncoderDecoderNet,EncoderDecoderNet
 
 import torch
 import numpy as np
@@ -19,7 +19,14 @@ from dtw import dtw
 sys.path.append(dirname(dirname(realpath(__file__))))
 
 # region Import data and networks
-default_data_path = os.path.join(dirname(dirname(realpath(__file__))), 'data/s-mnist/40x40-smnist-with-all-nmnist-noise.mat')
+default_data_path = os.path.join(dirname(dirname(realpath(__file__))),
+                                 'data/s-mnist',
+                                 #'40x40-smnist-with-all-nmnist-noise.mat'
+                                 #'40x40-smnist-with-awgn.mat'
+                                 '40x40-smnist-with-reduced-contrast-and-awgn.mat'
+                                 #'40x40-smnist-with-motion-blur.mat'
+
+                                 )
 
 dmp_network = False
 
@@ -31,10 +38,14 @@ if dmp_network:
 else:
     default_network_load_path = os.path.join(dirname(dirname(realpath(__file__))),
                                              #'models/encoder_decoder',
-                                             #'Model 2018-07-12 09:19:45.174311')
+                                             #'40x40-smnist-with-motion-blur 2018-07-18 10:18:29.314999'
+                                             #'40x40-smnist-with-reduced-contrast-and-awgn 2018-07-18 10:52:48.923917'
                                              'models/cnn_encoder_decoder',
-                                             '40x40-smnist-with-all-nmnist-noise 2018-07-18 01:25:42.205735'
-                                                )
+                                             #'40x40-smnist-with-all-nmnist-noise 2018-07-18 01:25:42.205735'
+                                            #'40x40-smnist-with-motion-blur 2018-07-18 01:19:08.404354'
+                                            #'40x40-smnist-with-awgn 2018-07-18 01:18:50.181843'
+                                             '40x40-smnist-with-reduced-contrast-and-awgn 2018-07-18 01:21:36.841931'
+                                            )
 
 
 # Load the model
@@ -49,9 +60,14 @@ scaling.x_min = np.load(os.path.join(default_network_load_path,'scale_x_min.npy'
 scaling.y_max = np.load(os.path.join(default_network_load_path,'scale_y_max.npy'))
 scaling.y_min = np.load(os.path.join(default_network_load_path,'scale_y_min.npy'))
 
+
+
 default_cnn_model_load_path = os.path.join(dirname(dirname(realpath(__file__))),
                                            'models/mnist_cnn/mnist_cnn.model')
+
 model = CNNEncoderDecoderNet(default_cnn_model_load_path, layer_sizes, scaling)
+
+#model = EncoderDecoderNet(layer_sizes, False, scaling)
 
 state = torch.load(default_network_load_path + '/net_parameters')
 
@@ -108,7 +124,7 @@ def my_custom_norm(x, y):
 
 avr_error = 0
 dtw_error = np.array([])
-for i in range(0, 10):#nn_output.shape[0]
+for i in range(0, nn_output.shape[0]):#
 
     print(i)
 
@@ -128,3 +144,6 @@ max=np.max(dtw_error)
 print('Maximal DTW error:')
 print(max)
 np.save(default_network_load_path+'/dtw_errors'+str(i),dtw_error)
+print(default_data_path)
+print(default_network_load_path)
+

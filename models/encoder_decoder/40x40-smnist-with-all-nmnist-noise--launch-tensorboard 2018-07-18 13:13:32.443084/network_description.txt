@@ -1,0 +1,66 @@
+Network created: 2018-07-18 13:13:32.443084
+Model: imednet.models.encoder_decoder.EncoderDecoderNet
+Data path: data/s-mnist/40x40-smnist-with-all-nmnist-noise.mat
+Model save path: models/encoder_decoder/40x40-smnist-with-all-nmnist-noise--launch-tensorboard 2018-07-18 13:13:32.443084
+Layer sizes: [1600, 1500, 1300, 1000, 600, 200, 20, 35, 54]
+Training parameters: 
+    batch_size: 128
+    cuda: True
+    data_samples: 0
+    device: 0
+    elapsed_time: -1
+    epochs: -1
+    log_interval: 1
+    min_grad: -1
+    min_test_loss: -1
+    min_train_loss: -1
+    min_val_loss: -1
+    real_epochs: 0
+    stop_criterion: 
+    test_interval: 1
+    test_ratio: 0.15
+    time: -1
+    training_ratio: 0.7
+    val_count: -1
+    val_fail: 60
+    validation_interval: 1
+    validation_ratio: 0.15
+    write_out: <bound method TrainingParameters.write_out of <imednet.models.encoder_decoder.TrainingParameters object at 0x7f96b2aced30>>
+    write_out_after: <bound method TrainingParameters.write_out_after of <imednet.models.encoder_decoder.TrainingParameters object at 0x7f96b2aced30>>
+ Setting parameters for learning:
+   - Samples of data: 60000
+   - Epochs: -1
+   - Batch size: 128
+   - training ratio: 0.7
+   - validation ratio: 0.15
+   - test ratio: 0.15
+     -   validation_interval: 1
+     -  test_interval: 1
+     -   log_interval: 1
+     -   cuda = True
+     -  Validation fail: 60
+SCG (
+Parameter Group 0
+    k: 1
+    lamda_1: 1.25e-05
+    lamda_1_I: 0.0
+    loss_wk: 0.00038287267670966685
+    p_k: tensor([-2.3106e-06,  6.8445e-09,  2.3264e-06,  ..., -2.2380e-05,
+        -6.7611e-05, -1.5405e-05], device='cuda:0')
+    sigma0: 5e-05
+    success: True
+    tau_k: 0.00035764751373790205
+)
+MSELoss()
+ saving_epochs = 260
+ Learning finished with this parameters:
+   - Number of epochs: 321
+   - Last train loss: tensor(1.00000e-04 *
+       5.6548, device='cuda:0')
+   - Last validation loss: 0.002611373784020543
+   Last test loss: tensor(1.00000e-03 *
+       2.6835, device='cuda:0')
+   - Elapsed time: 930.887905
+   - last validation count: 61
+     -   Stop criterion: max validation fail reached
+     -  Minimal gradient: tensor(0., device='cuda:0')
