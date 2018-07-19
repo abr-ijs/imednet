@@ -24,8 +24,8 @@ default_data_path = os.path.join(dirname(dirname(realpath(__file__))),
                                  #'40x40-smnist-with-all-nmnist-noise.mat'
                                  #'40x40-smnist-with-awgn.mat'
                                  #'40x40-smnist-with-reduced-contrast-and-awgn.mat'
-                                 #'40x40-smnist-with-motion-blur.mat'
-                                 '40x40-smnist.mat'
+                                 '40x40-smnist-with-motion-blur.mat'
+                                 #'40x40-smnist.mat'
                                  )
 
 dmp_network = False
@@ -47,7 +47,9 @@ else:
                                             #'40x40-smnist-with-motion-blur 2018-07-18 01:19:08.404354'
                                             #'40x40-smnist-with-awgn 2018-07-18 01:18:50.181843'
                                              #'40x40-smnist-with-reduced-contrast-and-awgn 2018-07-18 01:21:36.841931'
-                                             '40x40-smnist 2018-07-18 14:04:44.658272'
+                                             #'40x40-smnist 2018-07-18 14:04:44.658272'
+                                             #'40x40-smnist-with-all-nmnist-noise-and-awgn-end-to-end-noise-pretrain 2018-07-18 18:12:16.078986'
+                                            '40x40-pretrain-mnist-smnist-with-motion-blur-end-to-end 2018-07-18 17:27:25.744281'
                                             )
 
 
