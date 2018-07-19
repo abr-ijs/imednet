@@ -11,18 +11,18 @@ from __future__ import print_function
 
 import os
 import sys
-from os.path import dirname, realpath
-sys.path.append(dirname(dirname(realpath(__file__))))
-
 import argparse
 from datetime import datetime
-
 import torch
 import numpy as np
+
+from os.path import dirname, realpath
+sys.path.append(dirname(dirname(realpath(__file__))))
 
 from imednet.models.encoder_decoder import CNNEncoderDecoderNet, TrainingParameters
 from imednet.data.smnist_loader import MatLoader
 from imednet.trainers.encoder_decoder_trainer import Trainer
+
 
 # Save datetime
 date = datetime.now()
