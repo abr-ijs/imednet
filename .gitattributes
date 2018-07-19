@@ -40,3 +40,4 @@ models/cnn_encoder_decoder/40x40-pretrain-mnist-smnist-with-motion-blur-end-to-e
 40x40-smnist-with-reduced-contrast-and-awgn-end-to-end-noise-pretrain[[:space:]]2018-07-18[[:space:]]17:45:43.159252 filter=lfs diff=lfs merge=lfs -text
 40x40-smnist-with-all-nmnist-noise-and-awgn-end-to-end-noise-pretrain[[:space:]]2018-07-18[[:space:]]18:12:16.078986 filter=lfs diff=lfs merge=lfs -text
 40x40-pretrain-mnist-smnist-with-motion-blur-end-to-end[[:space:]]2018-07-18[[:space:]]17:27:25.744281 filter=lfs diff=lfs merge=lfs -text
+models/encoder_decoder/40x40-smnist/[[:space:]]2018-07-19/[[:space:]]14/:03/:57.743758/** filter=lfs diff=lfs merge=lfs -text
