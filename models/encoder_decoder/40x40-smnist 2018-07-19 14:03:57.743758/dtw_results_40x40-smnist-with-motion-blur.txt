@@ -1,0 +1,6 @@
+Model path: models/encoder_decoder/40x40-smnist 2018-07-19 14:03:57.743758/
+Data path: data/s-mnist/40x40-smnist-with-motion-blur.mat
+DTW error mean: 0.34359604381012504
+DTW error STD: 0.20286285384232272
+DTW error min: 0.0676063377807894
+DTW error max: 2.2517580156118746
