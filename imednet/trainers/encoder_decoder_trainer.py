@@ -52,12 +52,15 @@ class Trainer:
 
         if dmp is not None:
             dmp.joint()
-            plt.plot(dmp.Y[:,0], dmp.Y[:,1],'--r', label='dmp')
+            # plt.plot(dmp.Y[:,0], dmp.Y[:,1],'-r', label='dmp', )
+            plt.plot(dmp.Y[:,0], dmp.Y[:,1],'-r', linewidth=3.0)
         if trajectory is not None:
-            plt.plot(trajectory[:,0], trajectory[:,1],'-g', label='trajectory')
-        plt.legend()
-        plt.xlim([0,40])
-        plt.ylim([40,0])
+            # plt.plot(trajectory[:,0], trajectory[:,1],'-b', label='trajectory')
+            plt.plot(trajectory[:,0], trajectory[:,1],'-b', linewidth=3.0)
+        # plt.legend()
+        # plt.xlim([0,40])
+        # plt.ylim([40,0])
+        plt.axis('off')
 
         fig.canvas.draw()
         matrix = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
@@ -69,7 +72,8 @@ class Trainer:
         if plot:
             plt.show()
 
-        return matrix.reshape(fig.canvas.get_width_height()[::-1]+(3,))
+        # return matrix.reshape(fig.canvas.get_width_height()[::-1]+(3,))
+        return fig
 
     def load_mnist_data(mnist_folder):
         """
