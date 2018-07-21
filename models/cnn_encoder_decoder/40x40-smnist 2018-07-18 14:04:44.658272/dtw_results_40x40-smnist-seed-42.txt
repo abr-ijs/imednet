@@ -1,0 +1,6 @@
+Model path: models/cnn_encoder_decoder/40x40-smnist 2018-07-18 14:04:44.658272/
+Data path: data/s-mnist/40x40-smnist-seed-42.mat
+DTW error mean: 0.3957214509982757
+DTW error STD: 0.22619519960445067
+DTW error min: 0.08819356483148766
+DTW error max: 3.389635910727482
