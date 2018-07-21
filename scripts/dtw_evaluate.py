@@ -12,6 +12,7 @@ import importlib
 import torch
 import numpy as np
 from dtw import dtw
+from torch.autograd import Variable
 
 import argparse
 
@@ -28,6 +29,8 @@ parser.add_argument('--model-path', type=str, default=None,
                     help='model path (directory)')
 parser.add_argument('--data-path', type=str, default=None,
                     help='data path (.mat file)')
+parser.add_argument('--test-all-data', action='store_true', default=False,
+                    help='test all data in dataset (ignore splits)')
 args = parser.parse_args()
 
 # Exit if no model or data path arguments are provided
@@ -78,7 +81,8 @@ images, outputs, scale, original_trj = MatLoader.load_data(args.data_path,
                                                            )
 trainer = Trainer()
 
-trainer.indeks = np.load(os.path.join(args.model_path, 'net_indeks.npy'))
+if not args.test_all_data:
+    trainer.indeks = np.load(os.path.join(args.model_path, 'net_indeks.npy'))
 
 original_trj_e = []
 for i in range(0, images.shape[0]):
@@ -86,10 +90,14 @@ for i in range(0, images.shape[0]):
     original_trj_e.append(c)
     original_trj_e.append(c1)
 
-input_data_train_b, output_data_train_b, \
-    input_data_test_b, output_data_test_b, \
-    input_data_validate_b, output_data_validate_b \
-    = trainer.split_dataset(images, original_trj_e)
+if args.test_all_data:
+    input_data_test_b = Variable(torch.from_numpy(images)).float()
+    output_data_test_b = Variable(torch.from_numpy(np.array(original_trj_e)), requires_grad=False).float()
+else:
+    input_data_train_b, output_data_train_b, \
+        input_data_test_b, output_data_test_b, \
+        input_data_validate_b, output_data_validate_b \
+        = trainer.split_dataset(images, original_trj_e)
 
 # Reshape original trajectory matrix
 print('Generating model output predictions from input data...')
