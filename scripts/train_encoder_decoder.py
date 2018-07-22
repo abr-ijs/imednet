@@ -92,6 +92,7 @@ else:
 train_param = TrainingParameters()
 device = args.device
 train_param.epochs = -1
+optimizer = 'SCG'
 learning_rate = 0.0005
 momentum = 0.5
 train_param.batch_size = 128
@@ -148,7 +149,9 @@ best_nn_parameters = trainer.train(model,
                                    args.model_save_path,
                                    train_param,
                                    net_description_file,
-                                   learning_rate, momentum)
+                                   optimizer_type=optimizer,
+                                   learning_rate=learning_rate,
+                                   momentum=momentum)
 
 # Save model
 np.save(os.path.join(args.model_save_path, 'net_indeks'), trainer.indeks)
