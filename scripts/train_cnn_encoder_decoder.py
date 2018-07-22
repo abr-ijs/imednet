@@ -35,6 +35,8 @@ default_model_save_path = os.path.join(dirname(dirname(realpath(__file__))),
 default_cnn_model_load_path = os.path.join(dirname(dirname(realpath(__file__))),
                                            'models/mnist_cnn/mnist_cnn.model')
 default_model_load_path = None
+default_optimizer = 'SCG'
+default_hidden_layer_sizes = ['20', '35']
 
 # Parse arguments
 description = 'Train a cnn-encoder-decoder network on image/trajectory data.'
@@ -55,6 +57,10 @@ parser.add_argument('--launch-gui', action='store_true', default=False,
                     help='launch GUI control panel')
 parser.add_argument('--device', type=int, default=0,
                     help='select CUDA device (default: 0)')
+parser.add_argument('--optimizer', type=str, default=default_optimizer,
+                    help='optimizer (default: "{}")'.format(str(default_optimizer)))
+parser.add_argument('--hidden-layer-sizes', nargs='+', default=default_hidden_layer_sizes,
+                    help='hidden layer sizes (default: {})'.format(' '.join(default_hidden_layer_sizes)))
 args = parser.parse_args()
 
 # Append the current date/time to any user-defined model save path
@@ -75,8 +81,7 @@ sampling_time = 0.1
 
 # Define layer sizes
 input_size = 1600
-# hidden_layer_sizes = [1500, 1300, 1000, 600, 200, 20, 35]
-hidden_layer_sizes = [20, 35]
+hidden_layer_sizes = list(map(int, args.hidden_layer_sizes))
 output_size = 2*N + 4
 layer_sizes = [input_size] + hidden_layer_sizes + [output_size]
 
@@ -108,7 +113,7 @@ else:
 train_param = TrainingParameters()
 device = args.device
 train_param.epochs = -1
-optimizer = 'Adam'
+optimizer = args.optimizer
 learning_rate = 0.0005
 momentum = 0.5
 train_param.batch_size = 128
@@ -150,6 +155,11 @@ np.save(os.path.join(args.model_save_path, 'scale_x_min'), scale.x_min)
 np.save(os.path.join(args.model_save_path, 'scale_x_max'), scale.x_max)
 np.save(os.path.join(args.model_save_path, 'scale_y_min'), scale.y_min)
 np.save(os.path.join(args.model_save_path, 'scale_y_max'), scale.y_max)
+
+# Save training parameters to file
+net_description_file.write('\nOptimizer: {}'.format(args.optimizer))
+net_description_file.write('\nLearning rate: {}'.format(learning_rate))
+net_description_file.write('\nMomentum: {}'.format(momentum))
 
 # Load previously trained model
 if args.model_load_path:

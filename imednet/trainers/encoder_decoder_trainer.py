@@ -445,17 +445,17 @@ class Trainer:
         # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 200)
 
         # Set up optimizer
-        if lower(optimizer_type) == 'custom adam':
+        if optimizer_type.lower() == 'customadam':
             if learning_rate:
                 optimizer = Adam(model.parameters(), lr=learning_rate, amsgrad=True)
             else:
                 optimizer = Adam(model.parameters(), amsgrad=True)
-        elif lower(optimizer_type) == 'adam':
+        elif optimizer_type.lower() == 'adam':
             if learning_rate:
                 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, eps = 0.001)
             else:
                 optimizer = torch.optim.Adam(model.parameters(), eps = 0.001)
-        elif lower(optimizer_type) == 'sgd':
+        elif optimizer_type.lower() == 'sgd':
             if learning_rate and mometum:
                 optimizer = torch.optim.SGD(self.parameters(), lr=learning_rate, mometum=momentum)
             elif learning_rate:
@@ -464,7 +464,7 @@ class Trainer:
                 optimizer = torch.optim.SGD(self.parameters(), momentum=momentum)
             else:
                 optimizer = torch.optim.SGD(self.parameters())
-        elif lower(optimizer_type) == 'adagrad':
+        elif optimizer_type.lower() == 'adagrad':
             if learning_rate and decay:
                 optimizer = torch.optim.Adagrad(model.parameters(), lr=learning_rate, lr_decay = decay[0], weight_decay = decay[1]) 
             elif learning_rate:
@@ -473,7 +473,7 @@ class Trainer:
                 optimizer = torch.optim.Adagrad(model.parameters(), lr_decay = decay[0], weight_decay = decay[1]) 
             else:
                 optimizer = torch.optim.Adagrad(model.parameters())
-        elif: lower(optimizer_type == 'rmsprop':
+        elif optimizer_type.lower() == 'rmsprop':
             optimizer = torch.optim.RMSprop(model.parameters())
         else:
             optimizer = SCG(filter(lambda p: p.requires_grad, model.parameters()))
