@@ -1,0 +1,6 @@
+Model path: models/cnn_encoder_decoder/cfcimednet-40x40-smnist-adam 2018-07-22 17:11:11.006303/
+Data path: data/s-mnist/40x40-smnist-with-awgn-double-snr-seed-42.mat
+DTW error mean: 0.5403346077045024
+DTW error STD: 0.19959686196611764
+DTW error min: 0.14616911656255865
+DTW error max: 1.7617185373433195
