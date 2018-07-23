@@ -48,7 +48,7 @@ class Trainer:
         fig = plt.figure()
         if image is not None:
             plt.imshow((np.reshape(image, (40, 40))),
-                       cmap='gray', extent=[0, 40, 40, 0])
+                       cmap='gray', extent=[0, 41, 41, 0])
 
         if dmp is not None:
             dmp.joint()
