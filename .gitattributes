@@ -47,3 +47,5 @@ models/cnn_encoder_decoder/cimednet-40x40-smnist-adam[[:space:]]2018-07-22[[:spa
 models/cnn_encoder_decoder/cimednet-40x40-smnist-end-to-end-adam[[:space:]]2018-07-22[[:space:]]17:10:57.504620/** filter=lfs diff=lfs merge=lfs -text
 models/encoder_decoder/40x40-smnist-adam[[:space:]]2018-07-22[[:space:]]18:44:42.318301/** filter=lfs diff=lfs merge=lfs -text
 models/cnn_encoder_decoder/cfcimednet-28x28-hand-labeled-mnist-end-to-end-adam/[[:space:]]2018-07-24/[[:space:]]13/:12/:20.317601/** filter=lfs diff=lfs merge=lfs -text
+data/mnist/processed/** filter=lfs diff=lfs merge=lfs -text
+data/mnist/raw/** filter=lfs diff=lfs merge=lfs -text
