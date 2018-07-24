@@ -45,10 +45,12 @@ class Trainer:
         dmp -> DMP created from the trajectory
         """
 
+        n=int(image.shape[1]**(0.5))
+
         fig = plt.figure()
         if image is not None:
-            plt.imshow((np.reshape(image, (40, 40))),
-                       cmap='gray', extent=[0, 41, 41, 0])
+            plt.imshow((np.reshape(image, (n, n))),
+                       cmap='gray', extent=[0, n+1, n+1, 0])
 
         if dmp is not None:
             dmp.joint()
