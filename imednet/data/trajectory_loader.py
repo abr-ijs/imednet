@@ -80,4 +80,4 @@ class TrajectoryLoader:
         folder -> the string path to the folder containing the trajectory files
         n -> the sequential number of the desired trajectory
         """
-        return trajectory_loader.load(trajectory_loader.getTrajectoryFile(folder,n))
+        return TrajectoryLoader.load(TrajectoryLoader.getTrajectoryFile(folder,n))

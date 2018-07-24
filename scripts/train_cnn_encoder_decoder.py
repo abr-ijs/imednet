@@ -21,6 +21,7 @@ sys.path.append(dirname(dirname(realpath(__file__))))
 
 from imednet.models.encoder_decoder import CNNEncoderDecoderNet, TrainingParameters
 from imednet.data.smnist_loader import MatLoader
+from imednet.data.trajectory_loader import TrajectoryLoader
 from imednet.trainers.encoder_decoder_trainer import Trainer
 
 
@@ -28,6 +29,8 @@ from imednet.trainers.encoder_decoder_trainer import Trainer
 date = datetime.now()
 
 # Set defaults
+default_mnist_path = os.path.join(dirname(dirname(realpath(__file__))), 'data/mnist')
+default_hand_labeled_traj_path = os.path.join(dirname(dirname(realpath(__file__))), 'data/trajectories')
 default_data_path = os.path.join(dirname(dirname(realpath(__file__))), 'data/s-mnist/40x40-smnist.mat')
 default_model_save_path = os.path.join(dirname(dirname(realpath(__file__))),
                                        'models/cnn_encoder_decoder',
@@ -41,6 +44,8 @@ default_hidden_layer_sizes = ['20', '35']
 # Parse arguments
 description = 'Train a cnn-encoder-decoder network on image/trajectory data.'
 parser = argparse.ArgumentParser(description=description)
+parser.add_argument('--load-hand-labeled-mnist-data', action='store_true', default=False,
+                    help='load hand-labeled MNIST data')
 parser.add_argument('--data-path', type=str, default=default_data_path,
                     help='data path (default: "{}")'.format(str(default_data_path)))
 parser.add_argument('--model-save-path', type=str, default=default_model_save_path,
@@ -72,17 +77,61 @@ net_description_save_path = os.path.join(args.model_save_path, 'network_descript
 net_description_file = open(net_description_save_path, 'w')
 net_description_file.write('Network created: ' + str(date))
 
-# Load data and scale it
-images, outputs, scale, or_tr = MatLoader.load_data(args.data_path)
-
 # Set up DMP parameters
 N = 25
 sampling_time = 0.1
 
+# Load data and scale it
+# TODO: Create proper pytorch data loaders and clean up all of this data loading
+# logic later.
+if args.load_hand_labeled_mnist_data:
+    print('Loading hand-labeled MNIST data...')
+
+    # Get the available indices for hand-labeled MNIST trajectory data
+    available_traj_indices = np.array(TrajectoryLoader.getAvailableTrajectoriesNumbers(default_hand_labeled_traj_path))
+
+    # Select the good sample subset
+    good_sample_indices = np.arange(0,100)
+    good_sample_indices = np.append(good_sample_indices, np.arange(200,4500))
+    good_sample_indices = np.append(good_sample_indices, np.arange(5000,5100))
+    sample_indices = available_traj_indices[good_sample_indices]
+   
+    # Load MNIST data
+    print('Loading MNIST images...')
+    mnist_images, mnist_labels = Trainer.load_mnist_data(default_mnist_path)
+    sample_mnist_images = mnist_images[sample_indices]
+    sample_mnist_labels = mnist_labels[sample_indices]
+
+    # Load the good, available hand-labeled trajectories
+    print('Loading hand-labeled trajectories...')
+    sample_trajectories = Trainer.load_trajectories(default_hand_labeled_traj_path, sample_indices)
+
+    # Create DMPs from the trajectories
+    print('Creating DMPs from hand-labeled trajectories...')
+    sample_dmps = Trainer.create_dmps(sample_trajectories, N, sampling_time)
+
+    # Load and scale data
+    print('Loading and scaling data...')
+    images, outputs, scale = Trainer.get_data_for_network(sample_mnist_images, sample_dmps)
+    input_size = 784
+    # output_size = 2*N + 7
+    output_size = 2*N + 6
+
+    # Convert data to numpy (format required by Trainer)
+    images = images.numpy()
+    outputs = outputs.numpy()
+
+    print('...finished loading hand-labeled MNIST data!')
+else:
+    images, outputs, scale, or_tr = MatLoader.load_data(args.data_path)
+    input_size = 1600
+    output_size = 2*N + 4
+
+print('images.shape: {}'.format(images.shape))
+print('outputs.shape: {}'.format(outputs.shape))
+
 # Define layer sizes
-input_size = 1600
 hidden_layer_sizes = list(map(int, args.hidden_layer_sizes))
-output_size = 2*N + 4
 layer_sizes = [input_size] + hidden_layer_sizes + [output_size]
 
 # Load the model
@@ -151,10 +200,14 @@ net_description_file.write('\nLayer sizes: ' + str(layer_sizes))
 np.save(os.path.join(args.model_save_path, 'layer_sizes'), np.asarray(layer_sizes))
 
 # Save data scaling to file
-np.save(os.path.join(args.model_save_path, 'scale_x_min'), scale.x_min)
-np.save(os.path.join(args.model_save_path, 'scale_x_max'), scale.x_max)
-np.save(os.path.join(args.model_save_path, 'scale_y_min'), scale.y_min)
-np.save(os.path.join(args.model_save_path, 'scale_y_max'), scale.y_max)
+# TODO: Fix this mess later.
+if args.load_hand_labeled_mnist_data:
+    np.save(os.path.join(args.model_save_path, 'scale'), scale)    
+else:
+    np.save(os.path.join(args.model_save_path, 'scale_x_min'), scale.x_min)
+    np.save(os.path.join(args.model_save_path, 'scale_x_max'), scale.x_max)
+    np.save(os.path.join(args.model_save_path, 'scale_y_min'), scale.y_min)
+    np.save(os.path.join(args.model_save_path, 'scale_y_max'), scale.y_max)
 
 # Save training parameters to file
 net_description_file.write('\nOptimizer: {}'.format(args.optimizer))
