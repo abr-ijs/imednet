@@ -1,8 +1,58 @@
+import os
+import re
+import importlib
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
 import numpy as np
 
+from imednet.data.smnist_loader import Mapping
 from imednet.models.mnist_cnn import Net as MNISTNet
 from imednet.utils.dmp_layer import DMPIntegrator, DMPParameters
+
+
+def load_model(model_path):
+    # Read network description file
+    with open(os.path.join(model_path, 'network_description.txt')) as f:
+        network_description_str = f.read()
+
+    # Get the model class from the network description and
+    # dynamically import it.
+    model_module_class_str = re.search('Model: (.+?)\n',
+                                       network_description_str).group(1)
+    model_module_str = os.path.splitext(model_module_class_str)[0]
+    model_class_str = os.path.splitext(model_module_class_str)[1][1:]
+    model_module = importlib.import_module(model_module_str)
+    model_class = getattr(model_module, model_class_str)
+
+    # Get the pre-trained CNN model load path from the network description
+    if model_class_str == 'CNNEncoderDecoderNet':
+        pre_trained_cnn_model_path = re.search('Pre-trained CNN model load path: (.+?)\n', network_description_str).group(1)
+
+    # Load layer sizes
+    layer_sizes = np.load(os.path.join(model_path, 'layer_sizes.npy')).tolist()
+
+    # Load scaling
+    try:
+        scaling = Mapping()
+        scaling.x_max = np.load(os.path.join(model_path, 'scale_x_max.npy'))
+        scaling.x_min = np.load(os.path.join(model_path, 'scale_x_min.npy'))
+        scaling.y_max = np.load(os.path.join(model_path, 'scale_y_max.npy'))
+        scaling.y_min = np.load(os.path.join(model_path, 'scale_y_min.npy'))
+    except:
+        scaling = np.load(os.path.join(model_path, 'scale.npy'))
+
+    # Load the model
+    if model_class_str == 'CNNEncoderDecoderNet':
+        model = model_class(pre_trained_cnn_model_path, layer_sizes, scaling)
+    else:
+        model = model_class(layer_sizes, None, scaling)
+
+    # Load the model state parameters
+    state = torch.load(os.path.join(model_path, 'net_parameters'))
+    model.load_state_dict(state)
+
+    return model
 
 
 class TrainingParameters():
@@ -264,3 +314,77 @@ class CNNEncoderDecoderNet(torch.nn.Module):
 
     def isCuda(self):
         return self.input_layer.weight.is_cuda
+
+
+class STIMEDNet(torch.nn.Module):
+    def __init__(self,
+                 pretrained_imednet_model_path,
+                 image_size=[40, 40, 1]):
+        """
+        image_size: [H, W, C]
+        """
+        super(STIMEDNet, self).__init__()
+
+        # Save the image size
+        self.image_size = image_size
+
+        # Load the IMEDNet model
+        self.imednet_model = load_model(pretrained_imednet_model_path)
+
+        # Spatial transformer localization-network
+        self.localization = nn.Sequential(
+            nn.Conv2d(1, 8, kernel_size=7),
+            nn.MaxPool2d(2, stride=2),
+            nn.ReLU(True),
+            nn.Conv2d(8, 10, kernel_size=5),
+            nn.MaxPool2d(2, stride=2),
+            nn.ReLU(True)
+        )
+
+        # Calculate localizer output size by running a
+        # dummy image through the localizer.
+        self.localizer_out_size = np.prod(np.asarray(
+            self.localization(torch.zeros(1,
+                                          self.image_size[2],
+                                          self.image_size[0],
+                                          self.image_size[1])).shape[1:])) 
+
+        # Regressor for the 3 * 2 affine matrix
+        self.fc_loc = nn.Sequential(
+            nn.Linear(self.localizer_out_size, 32),
+            nn.ReLU(True),
+            nn.Linear(32, 3 * 2)
+        )
+
+        # Initialize the weights/bias with identity transformation
+        self.fc_loc[2].weight.data.zero_()
+        self.fc_loc[2].bias.data.copy_(torch.tensor([1, 0, 0, 0, 1, 0], dtype=torch.float))
+
+    # Spatial transformer network forward function
+    def stn(self, x):
+        xs = self.localization(x)
+        xs = xs.view(-1, self.localizer_out_size)
+        theta = self.fc_loc(xs)
+        theta = theta.view(-1, 2, 3)
+
+        grid = F.affine_grid(theta, x.size())
+        x = F.grid_sample(x, grid)
+
+        return x
+
+    def forward(self, x):
+        """
+        """
+        # Resize the input
+        x = x.view(-1, self.image_size[2], self.image_size[0], self.image_size[1])
+
+        # Transform the input
+        x = self.stn(x)
+
+        # Run the transformed input through the pretrained CIMEDNet model
+        output = self.imednet_model(x)
+
+        return output
+
+    def isCuda(self):
+        return self.imednet_model.input_layer.weight.is_cuda
