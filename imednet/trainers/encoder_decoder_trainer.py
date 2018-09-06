@@ -177,7 +177,7 @@ class Trainer:
             output_data = None
             scale = 1
         return input_data, output_data, scale
-
+    
 
     def get_dmp_from_image(self, network,image, N, sampling_time, cuda = False):
         if cuda:
@@ -458,14 +458,14 @@ class Trainer:
             else:
                 optimizer = torch.optim.Adam(model.parameters(), eps = 0.001)
         elif optimizer_type.lower() == 'sgd':
-            if learning_rate and mometum:
-                optimizer = torch.optim.SGD(self.parameters(), lr=learning_rate, mometum=momentum)
+            if learning_rate and momentum:
+                optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum)
             elif learning_rate:
-                optimizer = torch.optim.SGD(self.parameters(), lr=learning_rate)
+                optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
             elif momentum:
-                optimizer = torch.optim.SGD(self.parameters(), momentum=momentum)
+                optimizer = torch.optim.SGD(model.parameters(), momentum=momentum)
             else:
-                optimizer = torch.optim.SGD(self.parameters())
+                optimizer = torch.optim.SGD(model.parameters())
         elif optimizer_type.lower() == 'adagrad':
             if learning_rate and decay:
                 optimizer = torch.optim.Adagrad(model.parameters(), lr=learning_rate, lr_decay = decay[0], weight_decay = decay[1]) 

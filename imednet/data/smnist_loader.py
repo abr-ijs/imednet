@@ -12,17 +12,18 @@ class Mapping:
 
 
 class MatLoader:
-    def load_data(file, load_original_trajectories=False):
+    def load_data(file,
+                  load_original_trajectories=False,
+                  image_key='imageArray',
+                  traj_key='trajArray',
+                  dmp_params_key='DMPParamsArray',
+                  dmp_traj_key='DMPTrajArray'):
         # Load data struct
         data = sio.loadmat(file)
 
         # Parse data struct
         if 'Data' in data:
             data = data['Data']
-            image_key = 'imageArray'
-            traj_key = 'trajArray'
-            dmp_params_key = 'DMPParamsArray'
-            dmp_traj_key = 'DMPTrajArray'
         # Backward compatibility with old format
         elif 'slike' in data:
             data = data['slike']

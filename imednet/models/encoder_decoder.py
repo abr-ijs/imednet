@@ -261,8 +261,13 @@ class CNNEncoderDecoderNet(torch.nn.Module):
 
         # Load the MNIST CNN model
         self.cnn_model = MNISTNet()
+
         # Load the pretrained weights
-        self.cnn_model.load_state_dict(torch.load(pretrained_model_path))
+        try:
+            self.cnn_model.load_state_dict(torch.load(pretrained_model_path))
+        except:
+            self.cnn_model.load_state_dict(torch.load(os.path.join('../', pretrained_model_path)))
+
         # Chop off the FC layers (2 of them) + dropout layer,
         # leaving just the two conv layers.
         self.cnn_model = torch.nn.Sequential(*list(self.cnn_model.modules())[1:-3])
@@ -319,7 +324,8 @@ class CNNEncoderDecoderNet(torch.nn.Module):
 class STIMEDNet(torch.nn.Module):
     def __init__(self,
                  pretrained_imednet_model_path,
-                 image_size=[40, 40, 1]):
+                 image_size=[40, 40, 1],
+                 scale=None):
         """
         image_size: [H, W, C]
         """
@@ -354,11 +360,15 @@ class STIMEDNet(torch.nn.Module):
             nn.Linear(self.localizer_out_size, 32),
             nn.ReLU(True),
             nn.Linear(32, 3 * 2)
+
         )
 
         # Initialize the weights/bias with identity transformation
         self.fc_loc[2].weight.data.zero_()
         self.fc_loc[2].bias.data.copy_(torch.tensor([1, 0, 0, 0, 1, 0], dtype=torch.float))
+
+        self.scale = scale
+        self.loss = 0
 
     # Spatial transformer network forward function
     def stn(self, x):
@@ -381,7 +391,7 @@ class STIMEDNet(torch.nn.Module):
         # Transform the input
         x = self.stn(x)
 
-        # Run the transformed input through the pretrained CIMEDNet model
+        # Run the transformed input through the pretrained IMEDNet model
         output = self.imednet_model(x)
 
         return output
