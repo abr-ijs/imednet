@@ -674,7 +674,8 @@ class Trainer:
 
         return best_nn_parameters
 
-    def train_dmp(self, model, images, outputs, path, train_param, file, learning_rate=1e-4, momentum=0, decay=[0, 0]):
+    def train_dmp(self, model, images, outputs, path, train_param, file,
+                  optimizer_type='SCG', learning_rate=1e-4, momentum=0, decay=[0, 0]):
         """
         teaches the network using provided data
 
@@ -755,18 +756,42 @@ class Trainer:
         print('finish dividing')
 
         criterion = torch.nn.MSELoss(size_average=True)  # For calculating loss (mean squared error)
-        # optimizer = torch.optim.SGD(self.parameters(), lr=learning_rate, mometum=momentum) # for updating weights
-        # optimizer = torch.optim.Adagrad(model.parameters(), lr=learning_rate, lr_decay = decay[0], weight_decay = decay[1]) #, momentum=momentum) # for updating weights
-        # optimizer = torch.optim.Adam(model.parameters(), eps = 0.001 )
-        # optimizer = torch.optim.SGD(model.parameters(), lr = 0.4) # for updating weights
-        # optimizer = torch.optim.RMSprop(model.parameters())
 
-        optimizer = SCG(model.parameters())
-        # optimizer = Adam(model.parameters(), lr = 0.0001, amsgrad=True)
-        # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 200)
+        # Set up optimizer
+        if optimizer_type.lower() == 'customadam':
+            if learning_rate:
+                optimizer = Adam(model.parameters(), lr=learning_rate, amsgrad=True)
+            else:
+                optimizer = Adam(model.parameters(), amsgrad=True)
+        elif optimizer_type.lower() == 'adam':
+            if learning_rate:
+                optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, eps = 0.001)
+            else:
+                optimizer = torch.optim.Adam(model.parameters(), eps = 0.001)
+        elif optimizer_type.lower() == 'sgd':
+            if learning_rate and momentum:
+                optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum)
+            elif learning_rate:
+                optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+            elif momentum:
+                optimizer = torch.optim.SGD(model.parameters(), momentum=momentum)
+            else:
+                optimizer = torch.optim.SGD(model.parameters())
+        elif optimizer_type.lower() == 'adagrad':
+            if learning_rate and decay:
+                optimizer = torch.optim.Adagrad(model.parameters(), lr=learning_rate, lr_decay = decay[0], weight_decay = decay[1]) 
+            elif learning_rate:
+                optimizer = torch.optim.Adagrad(model.parameters(), lr=learning_rate)
+            elif decay:
+                optimizer = torch.optim.Adagrad(model.parameters(), lr_decay = decay[0], weight_decay = decay[1]) 
+            else:
+                optimizer = torch.optim.Adagrad(model.parameters())
+        elif optimizer_type.lower() == 'rmsprop':
+            optimizer = torch.optim.RMSprop(model.parameters())
+        else:
+            optimizer = SCG(filter(lambda p: p.requires_grad, model.parameters()))
 
         y_val = model(input_data_validate_b)
-
         oldValLoss = criterion(y_val, output_data_validate_b[:, :])
         bestValLoss = oldValLoss
         best_nn_parameters = copy.deepcopy(model.state_dict())

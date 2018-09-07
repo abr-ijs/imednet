@@ -14,7 +14,7 @@ import numpy as np
 from os.path import dirname, realpath
 sys.path.append(dirname(dirname(realpath(__file__))))
 
-from imednet.models.encoder_decoder import STIMEDNet, TrainingParameters
+from imednet.models.encoder_decoder import STIMEDNet, FullSTIMEDNet, TrainingParameters
 from imednet.data.smnist_loader import MatLoader
 from imednet.data.trajectory_loader import TrajectoryLoader
 from imednet.trainers.encoder_decoder_trainer import Trainer
@@ -33,6 +33,7 @@ default_model_save_path = os.path.join(dirname(dirname(realpath(__file__))),
 default_imednet_model_load_path = os.path.join(dirname(dirname(realpath(__file__))),
                                            'models/cnn_encoder_decoder/cfcimednet-40x40-smnist-end-to-end-adam 2018-07-22 17:11:17.144898/')
 default_model_load_path = None
+default_network_type = 'partial'
 default_optimizer = 'adam'
 default_learning_rate = 0.0005
 default_momentum = 0.5
@@ -64,6 +65,8 @@ parser.add_argument('--launch-gui', action='store_true', default=False,
                     help='launch GUI control panel')
 parser.add_argument('--device', type=int, default=0,
                     help='select CUDA device (default: 0)')
+parser.add_argument('--network-type', type=str, default=default_network_type,
+                    help='network type (default: "{}")'.format(str(default_network_type)))
 parser.add_argument('--optimizer', type=str, default=default_optimizer,
                     help='optimizer (default: "{}")'.format(str(default_optimizer)))
 parser.add_argument('--learning-rate', type=float, default=default_learning_rate,
@@ -133,33 +136,44 @@ if args.load_hand_labeled_mnist_data:
 else:
     if args.use_transformed_images:
         images, outputs, scale, or_tr = MatLoader.load_data(args.data_path,
-                                                            image_key='trans_imageArray')
+                                                            image_key='trans_imageArray',
+                                                            load_original_trajectories=True)
     elif args.use_transformed_trajectories:
         images, outputs, scale, or_tr = MatLoader.load_data(args.data_path,
                                                             traj_key='trans_trajArray',
                                                             dmp_params_key='TransDMPParamsArray',
-                                                            dmp_traj_key='TransDMPTrajArray')
+                                                            dmp_traj_key='TransDMPTrajArray',
+                                                            load_original_trajectories=True)
     elif args.use_transformed_images and args.use_transformed_trajectories:
         images, outputs, scale, or_tr = MatLoader.load_data(args.data_path,
                                                             image_key='trans_imageArray',
                                                             traj_key='trans_trajArray',
                                                             dmp_params_key='TransDMPParamsArray',
-                                                            dmp_traj_key='TransDMPTrajArray')
+                                                            dmp_traj_key='TransDMPTrajArray',
+                                                            load_original_trajectories=True)
     else:
-        images, outputs, scale, or_tr = MatLoader.load_data(args.data_path)
+        images, outputs, scale, or_tr = MatLoader.load_data(args.data_path,
+                                                            load_original_trajectories=True)
 
     input_size = images.shape[1]
     output_size = 2*N + 4
 
-print('images.shape: {}'.format(images.shape))
-print('outputs.shape: {}'.format(outputs.shape))
+# print('images.shape: {}'.format(images.shape))
+# print('outputs.shape: {}'.format(outputs.shape))
+# print('len(or_tr[0]): {}'.format(len(or_tr[0])))
 
 # Define layer sizes
 hidden_layer_sizes = list(map(int, args.hidden_layer_sizes))
 layer_sizes = [input_size] + hidden_layer_sizes + [output_size]
 
 # Load the model
-model = STIMEDNet(args.imednet_model_load_path, scale=scale)
+if args.network_type == 'full':
+    model = FullSTIMEDNet(args.imednet_model_load_path, scale=scale)
+    model.register_buffer('dmp_p', model.dmp_params.data_tensor)
+    model.register_buffer('scale_t', model.dmp_params.scale_tensor)
+    model.register_buffer('param_grad', model.dmp_params.grad_tensor)
+else:
+    model = STIMEDNet(args.imednet_model_load_path, scale=scale)
 
 # Freeze pretrained IMEDNet weights
 if not args.end_to_end:
@@ -195,7 +209,7 @@ trainer = Trainer(launch_tensorboard=args.launch_tensorboard,
                   launch_gui=args.launch_gui)
 
 # Save model parameters to file
-torch.save(model, (os.path.join(args.model_save_path, 'model.pt')))
+# torch.save(model, (os.path.join(args.model_save_path, 'model.pt')))
 
 # Save model type to file
 net_description_file.write('\nModel: imednet.models.encoder_decoder.STIMEDNet')
@@ -241,13 +255,28 @@ if args.model_load_path:
     trainer.indeks = np.load(net_indeks_path)
 
 # Train
-best_nn_parameters = trainer.train(model, images, outputs,
-                                   args.model_save_path,
-                                   train_param,
-                                   net_description_file,
-                                   optimizer_type=args.optimizer,
-                                   learning_rate=args.learning_rate,
-                                   momentum=args.momentum)
+if args.network_type == 'full':
+    original_traj = []
+    for i in range(0,images.shape[0]):
+        c,c1,c2 = zip(*or_tr[i])
+        original_traj.append(c)
+        original_traj.append(c1)
+        
+    best_nn_parameters = trainer.train_dmp(model, images, original_traj,
+                                           args.model_save_path,
+                                           train_param,
+                                           net_description_file,
+                                           optimizer_type=args.optimizer,
+                                           learning_rate=args.learning_rate,
+                                           momentum=args.momentum)
+else:
+    best_nn_parameters = trainer.train(model, images, outputs,
+                                       args.model_save_path,
+                                       train_param,
+                                       net_description_file,
+                                       optimizer_type=args.optimizer,
+                                       learning_rate=args.learning_rate,
+                                       momentum=args.momentum)
 
 # Save model
 np.save(os.path.join(args.model_save_path, 'net_indeks'), trainer.indeks)

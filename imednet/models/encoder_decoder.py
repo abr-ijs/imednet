@@ -398,3 +398,107 @@ class STIMEDNet(torch.nn.Module):
 
     def isCuda(self):
         return self.imednet_model.input_layer.weight.is_cuda
+
+
+class FullSTIMEDNet(torch.nn.Module):
+    def __init__(self,
+                 pretrained_imednet_model_path,
+                 image_size=[40, 40, 1],
+                 scale=None):
+        """
+        image_size: [H, W, C]
+        """
+        super(FullSTIMEDNet, self).__init__()
+
+        # Save the image size
+        self.image_size = image_size
+
+        # Load the IMEDNet model
+        self.imednet_model = load_model(pretrained_imednet_model_path)
+
+        # Spatial transformer localization-network
+        self.localization = nn.Sequential(
+            nn.Conv2d(1, 8, kernel_size=7),
+            nn.MaxPool2d(2, stride=2),
+            nn.ReLU(True),
+            nn.Conv2d(8, 10, kernel_size=5),
+            nn.MaxPool2d(2, stride=2),
+            nn.ReLU(True)
+        )
+
+        # Calculate localizer output size by running a
+        # dummy image through it.
+        dummy_image = torch.zeros(1,
+                                  self.image_size[2],
+                                  self.image_size[0],
+                                  self.image_size[1])
+        dummy_localizer_out = self.localization(dummy_image)
+        self.localizer_out_size = np.prod(np.asarray(dummy_localizer_out.shape[1:])) 
+
+        # Regressor for the 3 * 2 affine matrix
+        self.fc_loc = nn.Sequential(
+            nn.Linear(self.localizer_out_size, 32),
+            nn.ReLU(True),
+            nn.Linear(32, 3 * 2)
+        )
+
+        # Calculate regressor output size by running the output of
+        # the localizer through it.
+        # dummy_fc_loc_out = self.fc_loc(dummy_localizer_out)
+        # self.fc_loc_out_size = 
+
+        # Initialize the weights/bias with identity transformation
+        self.fc_loc[2].weight.data.zero_()
+        self.fc_loc[2].bias.data.copy_(torch.tensor([1, 0, 0, 0, 1, 0], dtype=torch.float))
+
+        self.scale = scale
+        self.loss = 0
+
+        self.dmp_params = DMPParameters(25, 3, 0.01, 2, scale)
+        self.dmp_integrator = DMPIntegrator()
+
+    # Spatial transformer network forward function
+    def stn(self, x):
+        xs = self.localization(x)
+        xs = xs.view(-1, self.localizer_out_size)
+        theta = self.fc_loc(xs)
+        theta = theta.view(-1, 2, 3)
+
+        grid = F.affine_grid(theta, x.size())
+        x = F.grid_sample(x, grid)
+
+        return x, theta
+
+    def forward(self, x):
+        """
+        """
+        # Resize the input image
+        x = x.view(-1, self.image_size[2], self.image_size[0], self.image_size[1])
+
+        # Image Transformer:
+        # Rectify the input image using the spatial transformer network (STN)
+        # such that the attended object is transformed to its canonical form.
+        x, theta = self.stn(x)
+
+        # Image-to-Motion Encoder-Decoder:
+        # Run the rectified image through the pre-trained IMEDNet model in
+        # order to predict DMP parameters for the canonical associated motion
+        # trajectory of the attended object.
+        x = self.imednet_model(x)
+
+        # Motion Transformer:
+        # 1. Integrate the DMP to calculate the predicted canonical motion trajectory.
+        x = self.dmp_integrator.apply(x, self.dmp_p, self.param_grad, self.scale_t)
+        # 2. Generate an inverted transform using the theta parameters from the STN.
+        # Convert theta to a tensor of 3x3 square matrices, T.
+        T = torch.cat((theta, torch.as_tensor([[[0.0, 0.0, 1.0]]]).repeat([theta.shape[0],1,1]).cuda()), 1)
+        T_invs = [T_i.inverse() for T_i in torch.functional.unbind(T)]
+        T_inv = torch.stack(T_invs)
+        print('T_inv.shape: {}'.format(T_inv.shape))
+        print('x.shape: {}'.format(x.shape))
+        output = torch.mul(T_inv.view(3, 3, T_inv.shape[0], 1).repeat(1, 1, 1, x.shape[1]), x)
+
+        return output
+
+    def isCuda(self):
+        return self.imednet_model.input_layer.weight.is_cuda
