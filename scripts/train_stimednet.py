@@ -63,6 +63,8 @@ parser.add_argument('--launch-tensorboard', action='store_true', default=False,
                     help='launch tensorboard process')
 parser.add_argument('--launch-gui', action='store_true', default=False,
                     help='launch GUI control panel')
+parser.add_argument('--plot-freq', type=int, default=0,
+                    help='set tensorboard plot visualization frequency (default: 0)')
 parser.add_argument('--device', type=int, default=0,
                     help='select CUDA device (default: 0)')
 parser.add_argument('--network-type', type=str, default=default_network_type,
@@ -206,7 +208,8 @@ train_param.validation_ratio = 0.15
 train_param.test_ratio = 0.15
 train_param.val_fail = args.val_fail
 trainer = Trainer(launch_tensorboard=args.launch_tensorboard,
-                  launch_gui=args.launch_gui)
+                  launch_gui=args.launch_gui,
+                  plot_freq=args.plot_freq)
 
 # Save model parameters to file
 # torch.save(model, (os.path.join(args.model_save_path, 'model.pt')))

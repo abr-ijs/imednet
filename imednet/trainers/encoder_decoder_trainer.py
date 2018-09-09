@@ -34,9 +34,13 @@ class Trainer:
     indeks = []
     resetting_optimizer = False
 
-    def __init__(self, launch_tensorboard=False, launch_gui=False):
+    def __init__(self,
+                 launch_tensorboard=False,
+                 launch_gui=False,
+                 plot_freq=0):
         self._launch_tensorboard = launch_tensorboard
         self._launch_gui = launch_gui
+        self.plot_freq = plot_freq
         signal.signal(signal.SIGINT, self._signal_handler)
 
     def _signal_handler(self, sig, frame):
@@ -44,8 +48,7 @@ class Trainer:
         Handles signal interrupts by the user, e.g. Ctrl-C.
         """
         print('Training terminated by user!')
-        self.user_stop = "User stop"
-        self.train = False
+        self.cancel_training()
         
     def show_dmp(self, image, trajectory, dmp, plot=False, save=-1):
         """
@@ -519,6 +522,9 @@ class Trainer:
             if self._launch_gui:
                 root.update()
 
+            if t > 0 and t % self.plot_freq == 0:
+                self.plot_im = True
+
             t = t+1
             i = 0
             j = train_param.batch_size
@@ -853,6 +859,9 @@ class Trainer:
 
             if self._launch_gui:
                 root.update()
+
+            if t > 0 and t % self.plot_freq == 0:
+                self.plot_im = True
 
             t = t + 1
             i = 0
