@@ -15,6 +15,8 @@ import math
 import random
 from torch.autograd import Variable
 import matplotlib.pyplot as plt
+import signal
+import sys
 
 from imednet.data.trajectory_loader import TrajectoryLoader
 from imednet.utils.dmp_class import DMP
@@ -35,7 +37,16 @@ class Trainer:
     def __init__(self, launch_tensorboard=False, launch_gui=False):
         self._launch_tensorboard = launch_tensorboard
         self._launch_gui = launch_gui
+        signal.signal(signal.SIGINT, self._signal_handler)
 
+    def _signal_handler(self, sig, frame):
+        """
+        Handles signal interrupts by the user, e.g. Ctrl-C.
+        """
+        print('Training terminated by user!')
+        self.user_stop = "User stop"
+        self.train = False
+        
     def show_dmp(self, image, trajectory, dmp, plot=False, save=-1):
         """
         Plots and shows mnist image, trajectory and dmp to one picture
