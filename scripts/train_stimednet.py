@@ -212,7 +212,7 @@ trainer = Trainer(launch_tensorboard=args.launch_tensorboard,
 # torch.save(model, (os.path.join(args.model_save_path, 'model.pt')))
 
 # Save model type to file
-net_description_file.write('\nModel: imednet.models.encoder_decoder.STIMEDNet')
+net_description_file.write('\nModel: imednet.models.encoder_decoder.FullSTIMEDNet')
 
 # Save data path
 if args.data_path:
@@ -261,7 +261,7 @@ if args.network_type == 'full':
         c,c1,c2 = zip(*or_tr[i])
         original_traj.append(c)
         original_traj.append(c1)
-        
+
     best_nn_parameters = trainer.train_dmp(model, images, original_traj,
                                            args.model_save_path,
                                            train_param,

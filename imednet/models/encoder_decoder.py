@@ -441,22 +441,32 @@ class FullSTIMEDNet(torch.nn.Module):
             nn.ReLU(True),
             nn.Linear(32, 3 * 2)
         )
-
-        # Calculate regressor output size by running the output of
-        # the localizer through it.
-        # dummy_fc_loc_out = self.fc_loc(dummy_localizer_out)
-        # self.fc_loc_out_size = 
+    
+        # Regressor for the 3 * 3 affine transform matrix
+        self.fc_T = nn.Sequential(
+            nn.Linear(2*3, 32),
+            nn.ReLU(True),
+            # nn.Dropout2d(),
+            nn.Linear(32, 32),
+            nn.ReLU(True),
+            # nn.Dropout2d(),
+            nn.Linear(32, 3 * 3)
+        )
 
         # Initialize the weights/bias with identity transformation
         self.fc_loc[2].weight.data.zero_()
         self.fc_loc[2].bias.data.copy_(torch.tensor([1, 0, 0, 0, 1, 0], dtype=torch.float))
+        
+        # Initialize the weights/bias with identity transformation
+        self.fc_T[4].weight.data.zero_()
+        self.fc_T[4].bias.data.copy_(torch.tensor([1, 0, 0, 0, 1, 0, 0, 0, 1], dtype=torch.float))
 
         self.scale = scale
         self.loss = 0
 
         self.dmp_params = DMPParameters(25, 3, 0.01, 2, scale)
         self.dmp_integrator = DMPIntegrator()
-
+    
     # Spatial transformer network forward function
     def stn(self, x):
         xs = self.localization(x)
@@ -468,6 +478,38 @@ class FullSTIMEDNet(torch.nn.Module):
         x = F.grid_sample(x, grid)
 
         return x, theta
+        # return x
+    
+    # Batch matrix inverse
+    # See: https://stackoverflow.com/questions/46595157/how-to-apply-the-torch-inverse-function-of-pytorch-to-every-sample-in-the-batc
+    def b_inv(self, b_mat):
+        eye = b_mat.new_ones(b_mat.size(-1)).diag().expand_as(b_mat)
+        b_inv, _ = torch.gesv(eye, b_mat)
+        return b_inv
+        
+    # Motion transformer network forward function
+    def mtn(self, x, theta):
+    # def mtn(self, x):
+        # 1. Integrate the DMPs to calculate the predicted canonical motion trajectories.
+        x = self.dmp_integrator.apply(x, self.dmp_p, self.param_grad, self.scale_t)
+        # 2. Generate inverted transforms using the theta parameters from the STN.
+        # Convert theta to a tensor of 3x3 square matrices, T.
+        T = torch.cat((theta, torch.as_tensor([[[0.0, 0.0, 1.0]]]).repeat([theta.shape[0],1,1]).cuda()), 1)
+        T = self.fc_T(theta.view(-1,2*3))
+        # Calculate the inverted transforms.
+        # T_invs = [T_i.inverse() for T_i in torch.functional.unbind(T)]
+        # T_inv = torch.stack(T_invs)
+        T_inv = self.b_inv(T.view(-1,3,3))
+        # T_inv = self.fc_T(theta.view(-1,2*3)).view(-1,3,3)
+        # 3. Reshape the DMP integrator output into vector trajectories.
+        x_traj_vectors = x.view(int(x.shape[0]/2),2,x.shape[1]).transpose(0,1)
+        x_traj_vectors_with_ones = torch.cat((x_traj_vectors, torch.ones(1,int(x.shape[0]/2),x.shape[1]).cuda()), 0).cuda()
+        # 4. Do the transformations.
+        transformed_x_traj_vectors = torch.einsum('kij,ikl->ikl', [T_inv, x_traj_vectors_with_ones])[0:2,:,:]
+        # 5. Reshape the transformed trajectories to conform with the expected output format.
+        output = transformed_x_traj_vectors.transpose(1,0).contiguous().view(x.shape[0], x.shape[1])
+
+        return output
 
     def forward(self, x):
         """
@@ -476,28 +518,21 @@ class FullSTIMEDNet(torch.nn.Module):
         x = x.view(-1, self.image_size[2], self.image_size[0], self.image_size[1])
 
         # Image Transformer:
-        # Rectify the input image using the spatial transformer network (STN)
-        # such that the attended object is transformed to its canonical form.
+        # Rectify the input images using the spatial transformer network (STN)
+        # such that the attended objects are transformed to their canonical forms.
         x, theta = self.stn(x)
+        # x = self.stn(x)
 
         # Image-to-Motion Encoder-Decoder:
-        # Run the rectified image through the pre-trained IMEDNet model in
+        # Run the rectified images through the pre-trained IMEDNet model in
         # order to predict DMP parameters for the canonical associated motion
-        # trajectory of the attended object.
+        # trajectories of the attended object.
         x = self.imednet_model(x)
 
         # Motion Transformer:
-        # 1. Integrate the DMP to calculate the predicted canonical motion trajectory.
-        x = self.dmp_integrator.apply(x, self.dmp_p, self.param_grad, self.scale_t)
-        # 2. Generate an inverted transform using the theta parameters from the STN.
-        # Convert theta to a tensor of 3x3 square matrices, T.
-        T = torch.cat((theta, torch.as_tensor([[[0.0, 0.0, 1.0]]]).repeat([theta.shape[0],1,1]).cuda()), 1)
-        T_invs = [T_i.inverse() for T_i in torch.functional.unbind(T)]
-        T_inv = torch.stack(T_invs)
-        print('T_inv.shape: {}'.format(T_inv.shape))
-        print('x.shape: {}'.format(x.shape))
-        output = torch.mul(T_inv.view(3, 3, T_inv.shape[0], 1).repeat(1, 1, 1, x.shape[1]), x)
-
+        output = self.mtn(x, theta)
+        # output = self.mtn(x)
+        
         return output
 
     def isCuda(self):
