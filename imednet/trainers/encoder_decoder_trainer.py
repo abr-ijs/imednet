@@ -616,6 +616,15 @@ class Trainer:
                     writer.add_scalars('data/var', var_dict, t)
 
                 if self.plot_im:
+                    
+                    try:
+                        plt.subplot(211)
+                        stn_val_image, stn_val_theta = model.stn(input_data_validate[0].reshape(-1,1,40,40))
+                        plt.imshow(np.reshape(stn_val_image.data[0].cpu().numpy(), (40, 40)), cmap='gray', extent=[0, 40, 40, 0])
+                        plt.subplot(212)
+                    except:
+                        pass
+
                     plot_vector = torch.cat((output_data_validate[0,0:1], y_val[0, :]), 0)
                     dmp_v = self.create_dmp(plot_vector, model.scale, 0.01, 25, True)
                     dmp = self.create_dmp(output_data_validate[0,:], model.scale, 0.01, 25, True)
@@ -967,6 +976,14 @@ class Trainer:
 
                 if self.plot_im:
                     fig = plt.figure()
+
+                    try:
+                        plt.subplot(211)
+                        stn_val_image, stn_val_theta = model.stn(input_data_validate[0].reshape(-1,1,40,40))
+                        plt.imshow(np.reshape(stn_val_image.data[0].cpu().numpy(), (40, 40)), cmap='gray', extent=[0, 40, 40, 0])
+                        plt.subplot(212)
+                    except:
+                        pass
 
                     plt.imshow((np.reshape(input_data_validate.data[0].cpu().numpy(), (40, 40))), cmap='gray', extent=[0, 40, 40, 0])
 
