@@ -136,19 +136,19 @@ if args.load_hand_labeled_mnist_data:
 
     print('...finished loading hand-labeled MNIST data!')
 else:
-    if args.use_transformed_images:
+    if args.use_transformed_images and args.use_transformed_trajectories:
+        images, outputs, scale, or_tr = MatLoader.load_data(args.data_path,
+                                                            image_key='trans_imageArray',
+                                                            traj_key='trans_trajArray',
+                                                            dmp_params_key='TransDMPParamsArray',
+                                                            dmp_traj_key='TransDMPTrajArray',
+                                                            load_original_trajectories=True)
+    elif args.use_transformed_images:
         images, outputs, scale, or_tr = MatLoader.load_data(args.data_path,
                                                             image_key='trans_imageArray',
                                                             load_original_trajectories=True)
     elif args.use_transformed_trajectories:
         images, outputs, scale, or_tr = MatLoader.load_data(args.data_path,
-                                                            traj_key='trans_trajArray',
-                                                            dmp_params_key='TransDMPParamsArray',
-                                                            dmp_traj_key='TransDMPTrajArray',
-                                                            load_original_trajectories=True)
-    elif args.use_transformed_images and args.use_transformed_trajectories:
-        images, outputs, scale, or_tr = MatLoader.load_data(args.data_path,
-                                                            image_key='trans_imageArray',
                                                             traj_key='trans_trajArray',
                                                             dmp_params_key='TransDMPParamsArray',
                                                             dmp_traj_key='TransDMPTrajArray',
