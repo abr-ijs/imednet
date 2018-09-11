@@ -47,16 +47,16 @@ parser.add_argument('--load-hand-labeled-mnist-data', action='store_true', defau
                     help='load hand-labeled MNIST data')
 parser.add_argument('--data-path', type=str, default=default_data_path,
                     help='data path (default: "{}")'.format(str(default_data_path)))
-parser.add_argument('--use-transformed-images', action='store_true', default=False,
-                    help='use transformed images from the loaded dataset')
-parser.add_argument('--use-transformed-trajectories', action='store_true', default=False,
-                    help='use transformed trajectories/DMPs from the loaded dataset')
 parser.add_argument('--model-save-path', type=str, default=default_model_save_path,
                     help='model save path (default: "{}")'.format(str(default_model_save_path)))
 parser.add_argument('--model-load-path', type=str, default=None,
                     help='model load path (default: "{}")'.format(str(default_model_load_path)))
 parser.add_argument('--imednet-model-load-path', type=str, default=default_imednet_model_load_path,
                     help='IMEDNet model load path (default: "{}")'.format(str(default_imednet_model_load_path)))
+parser.add_argument('--use-transformed-images', action='store_true', default=False,
+                    help='use transformed images from the loaded dataset')
+parser.add_argument('--use-transformed-trajectories', action='store_true', default=False,
+                    help='use transformed trajectories/DMPs from the loaded dataset')
 parser.add_argument('--end-to-end', action='store_true', default=False,
                     help='fine-tune the weights in all layers (unfreeze pre-trained IMEDNet weights)')
 parser.add_argument('--launch-tensorboard', action='store_true', default=False,
@@ -171,9 +171,9 @@ layer_sizes = [input_size] + hidden_layer_sizes + [output_size]
 # Load the model
 if args.network_type == 'full':
     model = FullSTIMEDNet(args.imednet_model_load_path, scale=scale)
-    model.register_buffer('dmp_p', model.dmp_params.data_tensor)
-    model.register_buffer('scale_t', model.dmp_params.scale_tensor)
-    model.register_buffer('param_grad', model.dmp_params.grad_tensor)
+    # model.register_buffer('dmp_p', model.dmp_params.data_tensor)
+    # model.register_buffer('scale_t', model.dmp_params.scale_tensor)
+    # model.register_buffer('param_grad', model.dmp_params.grad_tensor)
 else:
     model = STIMEDNet(args.imednet_model_load_path, scale=scale)
 

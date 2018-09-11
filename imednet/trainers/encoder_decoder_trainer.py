@@ -49,7 +49,7 @@ class Trainer:
         """
         print('Training terminated by user!')
         self.cancel_training()
-        
+
     def show_dmp(self, image, trajectory, dmp, plot=False, save=-1):
         """
         Plots and shows mnist image, trajectory and dmp to one picture
@@ -59,6 +59,7 @@ class Trainer:
         dmp -> DMP created from the trajectory
         """
 
+        print('image.shape: {}'.format(image.shape))
         n=int(image.shape[1]**(0.5))
 
         fig = plt.figure()
@@ -522,7 +523,7 @@ class Trainer:
             if self._launch_gui:
                 root.update()
 
-            if t > 0 and t % self.plot_freq == 0:
+            if t > 0 and self.plot_freq != 0 and t % self.plot_freq == 0:
                 self.plot_im = True
 
             t = t+1
@@ -616,7 +617,9 @@ class Trainer:
                     writer.add_scalars('data/var', var_dict, t)
 
                 if self.plot_im:
-                    
+
+                    # Try plotting spatial transformer network (STN) output
+                    # if model contains an STN module (e.g. STIMEDNet)
                     try:
                         plt.subplot(211)
                         stn_val_image, stn_val_theta = model.stn(input_data_validate[0].reshape(-1,1,40,40))
@@ -869,7 +872,7 @@ class Trainer:
             if self._launch_gui:
                 root.update()
 
-            if t > 0 and t % self.plot_freq == 0:
+            if t > 0 and self.plot_freq != 0 and t % self.plot_freq == 0:
                 self.plot_im = True
 
             t = t + 1
@@ -977,6 +980,8 @@ class Trainer:
                 if self.plot_im:
                     fig = plt.figure()
 
+                    # Try plotting spatial transformer network (STN) output
+                    # if model contains an STN module (e.g. STIMEDNet)
                     try:
                         plt.subplot(211)
                         stn_val_image, stn_val_theta = model.stn(input_data_validate[0].reshape(-1,1,40,40))
@@ -989,7 +994,7 @@ class Trainer:
 
                     plt.plot(output_data_validate.data[0].cpu().numpy(), output_data_validate.data[1].cpu().numpy(), '--r', label='dmp')
 
-                    plt.plot(y_val.data[0].cpu().numpy(),y_val.data[1].cpu().numpy(), '-g', label='trajectory')
+                    plt.plot(y_val.data[0].cpu().numpy(), y_val.data[1].cpu().numpy(), '-g', label='trajectory')
                     plt.legend()
                     plt.xlim([0, 40])
                     plt.ylim([40, 0])

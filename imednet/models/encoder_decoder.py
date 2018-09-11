@@ -441,7 +441,7 @@ class FullSTIMEDNet(torch.nn.Module):
             nn.ReLU(True),
             nn.Linear(32, 3 * 2)
         )
-    
+
         # Regressor for the 3 * 3 affine transform matrix
         self.fc_T = nn.Sequential(
             nn.Linear(2*3, 32),
@@ -456,7 +456,7 @@ class FullSTIMEDNet(torch.nn.Module):
         # Initialize the weights/bias with identity transformation
         self.fc_loc[2].weight.data.zero_()
         self.fc_loc[2].bias.data.copy_(torch.tensor([1, 0, 0, 0, 1, 0], dtype=torch.float))
-        
+
         # Initialize the weights/bias with identity transformation
         self.fc_T[4].weight.data.zero_()
         self.fc_T[4].bias.data.copy_(torch.tensor([1, 0, 0, 0, 1, 0, 0, 0, 1], dtype=torch.float))
@@ -466,7 +466,16 @@ class FullSTIMEDNet(torch.nn.Module):
 
         self.dmp_params = DMPParameters(25, 3, 0.01, 2, scale)
         self.dmp_integrator = DMPIntegrator()
-    
+
+        self.register_buffer('dmp_p', self.dmp_params.data_tensor)
+        self.register_buffer('scale_t', self.dmp_params.scale_tensor)
+        self.register_buffer('param_grad', self.dmp_params.grad_tensor)
+
+        if self.isCuda():
+            self.dmp_p.cuda()
+            self.scale_t.cuda()
+            self.param_grad.cuda()
+
     # Spatial transformer network forward function
     def stn(self, x):
         xs = self.localization(x)
@@ -479,19 +488,21 @@ class FullSTIMEDNet(torch.nn.Module):
 
         return x, theta
         # return x
-    
+
     # Batch matrix inverse
     # See: https://stackoverflow.com/questions/46595157/how-to-apply-the-torch-inverse-function-of-pytorch-to-every-sample-in-the-batc
     def b_inv(self, b_mat):
         eye = b_mat.new_ones(b_mat.size(-1)).diag().expand_as(b_mat)
         b_inv, _ = torch.gesv(eye, b_mat)
         return b_inv
-        
+
     # Motion transformer network forward function
     def mtn(self, x, theta):
     # def mtn(self, x):
         # 1. Integrate the DMPs to calculate the predicted canonical motion trajectories.
         x = self.dmp_integrator.apply(x, self.dmp_p, self.param_grad, self.scale_t)
+        # print('NETWORK: x.shape: {}'.format(x.shape))
+        # print('NETWORK: x[:,0]: {}'.format(x[:,0]))
 
         # 2. Generate inverted transforms using the theta parameters from the STN.
         # Convert theta to a tensor of 3x3 square matrices, T.
@@ -503,25 +514,39 @@ class FullSTIMEDNet(torch.nn.Module):
         T_inv = self.b_inv(T.view(-1,3,3))
         # T_inv = self.fc_T(theta.view(-1,2*3)).view(-1,3,3)
 
-        # 3. Reshape the DMP integrator output into vector trajectories.
-        x_traj_vectors = x.view(int(x.shape[0]/2),2,x.shape[1]).transpose(0,1)
-        x_traj_vectors_with_ones = torch.cat((x_traj_vectors, torch.ones(1,int(x.shape[0]/2),x.shape[1]).cuda()), 0).cuda()
+        # # 3. Reshape the DMP integrator output into vector trajectories.
+        x_traj_vectors = x.view(int(x.shape[0]/2), 2, x.shape[1]).transpose(0,1)
+        x_traj_vectors_with_ones = torch.cat((x_traj_vectors, torch.ones(1,int(x.shape[0]/2), x.shape[1]).cuda()), 0).cuda()
+        # # print('x_traj_vectors_with_ones.shape: {}'.format(x_traj_vectors_with_ones.shape))
+        # # print('x_traj_vectors_with_ones[:,:,0]: {}'.format(x_traj_vectors_with_ones[:,:,0]))
 
         # 4. Do the transformations.
-        transformed_x_traj_vectors = torch.einsum('kij,ikl->ikl', [T_inv, x_traj_vectors_with_ones])[0:2,:,:]
+        # print('T_inv.shape: {}'.format(T_inv.shape))
+        # print('NETWORK: x_traj_vectors_with_ones.shape: {}'.format(x_traj_vectors_with_ones.shape))
+        # print('NETWORK: x_traj_vectors_with_ones[:,0,0:5]: {}'.format(x_traj_vectors_with_ones[:,:,0:5]))
+        transformed_x_traj_vectors = torch.einsum('nij,jnm->nim', [T_inv[:,0:2,:], x_traj_vectors_with_ones])
+        # transformed_x_traj_vectors = torch.einsum('kij,ikl->ikl', [T_inv, x_traj_vectors_with_ones])[0:2,:,:]
 
         # 5. Reshape the transformed trajectories to conform with the expected output format.
-        output = transformed_x_traj_vectors.transpose(1,0).contiguous().view(x.shape[0], x.shape[1])
-
-	# Sanity check: Perform the above steps with the identity transform.
-        # T = torch.eye(3,3).repeat([theta.shape[0],1,1]).cuda()
-        # # T = torch.eye(3,3).repeat([int(x.shape[0]/2),1,1]).cuda()
-        # T_inv = self.b_inv(T.view(-1,3,3))
-        # x_traj_vectors = x.view(int(x.shape[0]/2),2,x.shape[1]).transpose(0,1)
-        # x_traj_vectors_with_ones = torch.cat((x_traj_vectors, torch.ones(1,int(x.shape[0]/2),x.shape[1]).cuda()), 0).cuda()
-        # transformed_x_traj_vectors = torch.einsum('kij,ikl->ikl', [T_inv, x_traj_vectors_with_ones])[0:2,:,:]
-        # # transformed_x_traj_vectors = x_traj_vectors_with_ones[0:2,:,:]
         # output = transformed_x_traj_vectors.transpose(1,0).contiguous().view(x.shape[0], x.shape[1])
+        output = transformed_x_traj_vectors.view(x.shape[0], x.shape[1])
+
+        # # Sanity check: Perform the above steps with the identity transform.
+        # # T = torch.eye(3,3).repeat([theta.shape[0],1,1]).cuda()
+        # # T = torch.eye(3,3).repeat([int(x.shape[0]/2),1,1]).cuda()
+        # # T_inv = self.b_inv(T.view(-1,3,3))
+        # T_inv = torch.eye(3,3).repeat([theta.shape[0],1,1]).cuda()
+        # # x_traj_vectors = x.view(int(x.shape[0]/2),2,x.shape[1]).transpose(0,1)
+        # # x_traj_vectors_with_ones = torch.cat((x_traj_vectors, torch.ones(1,int(x.shape[0]/2),x.shape[1]).cuda()), 0).cuda()
+        # # transformed_x_traj_vectors = torch.einsum('kij,ikl->ikl', [T_inv, x_traj_vectors_with_ones])[0:2,:,:]
+        # transformed_x_traj_vectors = torch.einsum('nij,jnm->nim', [T_inv[:,0:2,:], x_traj_vectors_with_ones])
+        # # transformed_x_traj_vectors = x_traj_vectors_with_ones[0:2,:,:]
+        # # output = transformed_x_traj_vectors.transpose(1,0).contiguous().view(x.shape[0], x.shape[1])
+        # output = transformed_x_traj_vectors.view(x.shape[0], x.shape[1])
+        # # print('output.shape: {}'.format(output.shape))
+        # # print('output[:,0]: {}'.format(output[:,0]))
+        # # print('x[:,0] - output[:,0]: {}'.format(x[:,0] - output[:,0]))
+        # print('x - output: {}'.format(x - output))
 
         return output
 
@@ -546,7 +571,7 @@ class FullSTIMEDNet(torch.nn.Module):
         # Motion Transformer:
         output = self.mtn(x, theta)
         # output = self.mtn(x)
-        
+
         return output
 
     def isCuda(self):

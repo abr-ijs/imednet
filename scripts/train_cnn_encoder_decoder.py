@@ -38,7 +38,10 @@ default_model_save_path = os.path.join(dirname(dirname(realpath(__file__))),
 default_cnn_model_load_path = os.path.join(dirname(dirname(realpath(__file__))),
                                            'models/mnist_cnn/mnist_cnn.model')
 default_model_load_path = None
-default_optimizer = 'SCG'
+default_optimizer = 'adam'
+default_learning_rate = 0.0005
+default_momentum = 0.5
+default_val_fail = 60
 default_hidden_layer_sizes = ['20', '35']
 
 # Parse arguments
@@ -54,6 +57,10 @@ parser.add_argument('--model-load-path', type=str, default=None,
                     help='model load path (default: "{}")'.format(str(default_model_load_path)))
 parser.add_argument('--cnn-model-load-path', type=str, default=default_cnn_model_load_path,
                     help='cnn model load path (default: "{}")'.format(str(default_cnn_model_load_path)))
+parser.add_argument('--use-transformed-images', action='store_true', default=False,
+                    help='use transformed images from the loaded dataset')
+parser.add_argument('--use-transformed-trajectories', action='store_true', default=False,
+                    help='use transformed trajectories/DMPs from the loaded dataset')
 parser.add_argument('--end-to-end', action='store_true', default=False,
                     help='fine-tune the weights in all layers (unfreeze pretrained CNN weights)')
 parser.add_argument('--launch-tensorboard', action='store_true', default=False,
@@ -66,6 +73,12 @@ parser.add_argument('--device', type=int, default=0,
                     help='select CUDA device (default: 0)')
 parser.add_argument('--optimizer', type=str, default=default_optimizer,
                     help='optimizer (default: "{}")'.format(str(default_optimizer)))
+parser.add_argument('--learning-rate', type=float, default=default_learning_rate,
+                    help='learning rate (default: "{}")'.format(str(default_learning_rate)))
+parser.add_argument('--momentum', type=float, default=default_momentum,
+                    help='momentum (default: "{}")'.format(str(default_momentum)))
+parser.add_argument('--val-fail', type=int, default=default_val_fail,
+                    help='maximum number of epochs stopping criterion for improving best validation loss (default: "{}")'.format(str(default_val_fail)))
 parser.add_argument('--hidden-layer-sizes', nargs='+', default=default_hidden_layer_sizes,
                     help='hidden layer sizes (default: {})'.format(' '.join(default_hidden_layer_sizes)))
 args = parser.parse_args()
@@ -125,7 +138,26 @@ if args.load_hand_labeled_mnist_data:
 
     print('...finished loading hand-labeled MNIST data!')
 else:
-    images, outputs, scale, or_tr = MatLoader.load_data(args.data_path)
+    if args.use_transformed_images and args.use_transformed_trajectories:
+        images, outputs, scale, or_tr = MatLoader.load_data(args.data_path,
+                                                            image_key='trans_imageArray',
+                                                            traj_key='trans_trajArray',
+                                                            dmp_params_key='TransDMPParamsArray',
+                                                            dmp_traj_key='TransDMPTrajArray',
+                                                            load_original_trajectories=True)
+    elif args.use_transformed_images:
+        images, outputs, scale, or_tr = MatLoader.load_data(args.data_path,
+                                                            image_key='trans_imageArray',
+                                                            load_original_trajectories=True)
+    elif args.use_transformed_trajectories:
+        images, outputs, scale, or_tr = MatLoader.load_data(args.data_path,
+                                                            traj_key='trans_trajArray',
+                                                            dmp_params_key='TransDMPParamsArray',
+                                                            dmp_traj_key='TransDMPTrajArray',
+                                                            load_original_trajectories=True)
+    else:
+        images, outputs, scale, or_tr = MatLoader.load_data(args.data_path,
+                                                            load_original_trajectories=True)
     input_size = 1600
     output_size = 2*N + 4
 
@@ -214,8 +246,8 @@ else:
 
 # Save training parameters to file
 net_description_file.write('\nOptimizer: {}'.format(args.optimizer))
-net_description_file.write('\nLearning rate: {}'.format(learning_rate))
-net_description_file.write('\nMomentum: {}'.format(momentum))
+net_description_file.write('\nLearning rate: {}'.format(args.learning_rate))
+net_description_file.write('\nMomentum: {}'.format(args.momentum))
 
 # Load previously trained model
 if args.model_load_path:
@@ -228,8 +260,8 @@ best_nn_parameters = trainer.train(model, images, outputs,
                                    train_param,
                                    net_description_file,
                                    optimizer_type=optimizer,
-                                   learning_rate=learning_rate,
-                                   momentum=momentum)
+                                   learning_rate=args.learning_rate,
+                                   momentum=args.momentum)
 
 # Save model
 np.save(os.path.join(args.model_save_path, 'net_indeks'), trainer.indeks)
