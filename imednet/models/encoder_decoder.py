@@ -501,8 +501,6 @@ class FullSTIMEDNet(torch.nn.Module):
     # def mtn(self, x):
         # 1. Integrate the DMPs to calculate the predicted canonical motion trajectories.
         x = self.dmp_integrator.apply(x, self.dmp_p, self.param_grad, self.scale_t)
-        # print('NETWORK: x.shape: {}'.format(x.shape))
-        # print('NETWORK: x[:,0]: {}'.format(x[:,0]))
 
         # 2. Generate inverted transforms using the theta parameters from the STN.
         # Convert theta to a tensor of 3x3 square matrices, T.
@@ -517,35 +515,25 @@ class FullSTIMEDNet(torch.nn.Module):
         # # 3. Reshape the DMP integrator output into vector trajectories.
         x_traj_vectors = x.view(int(x.shape[0]/2), 2, x.shape[1]).transpose(0,1)
         x_traj_vectors_with_ones = torch.cat((x_traj_vectors, torch.ones(1,int(x.shape[0]/2), x.shape[1]).cuda()), 0).cuda()
-        # # print('x_traj_vectors_with_ones.shape: {}'.format(x_traj_vectors_with_ones.shape))
-        # # print('x_traj_vectors_with_ones[:,:,0]: {}'.format(x_traj_vectors_with_ones[:,:,0]))
 
         # 4. Do the transformations.
-        # print('T_inv.shape: {}'.format(T_inv.shape))
-        # print('NETWORK: x_traj_vectors_with_ones.shape: {}'.format(x_traj_vectors_with_ones.shape))
-        # print('NETWORK: x_traj_vectors_with_ones[:,0,0:5]: {}'.format(x_traj_vectors_with_ones[:,:,0:5]))
         transformed_x_traj_vectors = torch.einsum('nij,jnm->nim', [T_inv[:,0:2,:], x_traj_vectors_with_ones])
-        # transformed_x_traj_vectors = torch.einsum('kij,ikl->ikl', [T_inv, x_traj_vectors_with_ones])[0:2,:,:]
 
         # 5. Reshape the transformed trajectories to conform with the expected output format.
-        # output = transformed_x_traj_vectors.transpose(1,0).contiguous().view(x.shape[0], x.shape[1])
         output = transformed_x_traj_vectors.view(x.shape[0], x.shape[1])
 
-        # # Sanity check: Perform the above steps with the identity transform.
+        # Sanity check: Perform the above steps with the identity transform.
         # # T = torch.eye(3,3).repeat([theta.shape[0],1,1]).cuda()
         # # T = torch.eye(3,3).repeat([int(x.shape[0]/2),1,1]).cuda()
         # # T_inv = self.b_inv(T.view(-1,3,3))
         # T_inv = torch.eye(3,3).repeat([theta.shape[0],1,1]).cuda()
-        # # x_traj_vectors = x.view(int(x.shape[0]/2),2,x.shape[1]).transpose(0,1)
-        # # x_traj_vectors_with_ones = torch.cat((x_traj_vectors, torch.ones(1,int(x.shape[0]/2),x.shape[1]).cuda()), 0).cuda()
-        # # transformed_x_traj_vectors = torch.einsum('kij,ikl->ikl', [T_inv, x_traj_vectors_with_ones])[0:2,:,:]
+        # x_traj_vectors = x.view(int(x.shape[0]/2),2,x.shape[1]).transpose(0,1)
+        # x_traj_vectors_with_ones = torch.cat((x_traj_vectors, torch.ones(1,int(x.shape[0]/2),x.shape[1]).cuda()), 0).cuda()
         # transformed_x_traj_vectors = torch.einsum('nij,jnm->nim', [T_inv[:,0:2,:], x_traj_vectors_with_ones])
         # # transformed_x_traj_vectors = x_traj_vectors_with_ones[0:2,:,:]
         # # output = transformed_x_traj_vectors.transpose(1,0).contiguous().view(x.shape[0], x.shape[1])
         # output = transformed_x_traj_vectors.view(x.shape[0], x.shape[1])
-        # # print('output.shape: {}'.format(output.shape))
-        # # print('output[:,0]: {}'.format(output[:,0]))
-        # # print('x[:,0] - output[:,0]: {}'.format(x[:,0] - output[:,0]))
+        # # This should be all zeros:
         # print('x - output: {}'.format(x - output))
 
         return output

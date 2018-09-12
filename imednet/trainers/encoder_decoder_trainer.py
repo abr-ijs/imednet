@@ -54,18 +54,31 @@ class Trainer:
         """
         Plots and shows mnist image, trajectory and dmp to one picture
 
-        image -> mnist image of size 784
+        image -> [HxW] or [H,W] or [H,W,C] shaped image.
         trajectory -> a trajectory containing all the points in format point = [x,y]
         dmp -> DMP created from the trajectory
         """
-
-        print('image.shape: {}'.format(image.shape))
-        n=int(image.shape[1]**(0.5))
+        C = None
+        try:
+            H, W, C = image.shape
+        except:
+            try:
+                H, W = image.shape
+            except:
+                try:
+                    image = image.squeeze()
+                    H = W = int(np.sqrt(image.shape))
+                    image = image.reshape(H,W)
+                except Exception as e:
+                    raise ValueError('Could not interpret image format!')
 
         fig = plt.figure()
+
         if image is not None:
-            plt.imshow((np.reshape(image, (n, n))),
-                       cmap='gray', extent=[0, n+1, n+1, 0])
+            if C:
+                plt.imshow(image, extent=[0, H+1, W+1, 0])
+            else:
+                plt.imshow(image, cmap='gray', extent=[0, H+1, W+1, 0])
 
         if dmp is not None:
             dmp.joint()
@@ -81,6 +94,7 @@ class Trainer:
 
         fig.canvas.draw()
         matrix = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
+        matrix = matrix.reshape(fig.canvas.get_width_height()[::-1]+(3,))
         #if save != -1:
         #    plt.savefig("images/" + str(save) + ".pdf")
         #    plt.close(fig)
@@ -89,8 +103,7 @@ class Trainer:
         if plot:
             plt.show()
 
-        # return matrix.reshape(fig.canvas.get_width_height()[::-1]+(3,))
-        return fig
+        return fig, matrix
 
     def load_mnist_data(mnist_folder):
         """
@@ -633,7 +646,7 @@ class Trainer:
                     dmp = self.create_dmp(output_data_validate[0,:], model.scale, 0.01, 25, True)
                     dmp.joint()
                     dmp_v.joint()
-                    mat = self.show_dmp((input_data_validate.data[0]).cpu().numpy(), dmp.Y , dmp_v, plot=False)
+                    _,mat = self.show_dmp((input_data_validate.data[0]).cpu().numpy(), dmp.Y , dmp_v, plot=False)
                     a = output_data_validate[0, :]
                     writer.add_image('image'+str(t), mat)
                     self.plot_im = False
