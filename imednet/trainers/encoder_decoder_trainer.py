@@ -651,7 +651,7 @@ class Trainer:
                     writer.add_image('image'+str(t), mat)
                     self.plot_im = False
 
-                    torch.save(model.state_dict(), path + '/net_parameters' +str(t))
+                    # torch.save(model.state_dict(), path + '/net_parameters' +str(t))
 
             if (t - 1) % train_param.test_interval == 0:
                 y_test = model(input_data_test)
@@ -859,7 +859,7 @@ class Trainer:
         writer.add_image('image' + str(0), mat)
         self.plot_im = False
 
-        torch.save(model.state_dict(), path + '/net_parameters' + str(0))
+        # torch.save(model.state_dict(), path + '/net_parameters' + str(0))
 
         # Infinite epochs
         if train_param.epochs == -1:
@@ -1019,7 +1019,8 @@ class Trainer:
 
                     writer.add_image('image' + str(t), mat)
                     self.plot_im = False
-                    torch.save(model.state_dict(), path + '/net_parameters' + str(t))
+
+                    # torch.save(model.state_dict(), path + '/net_parameters' + str(t))
 
             if (t - 1) % train_param.test_interval == 0:
                 y_test = model(input_data_test)
