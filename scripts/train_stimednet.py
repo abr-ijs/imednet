@@ -160,20 +160,16 @@ else:
     input_size = images.shape[1]
     output_size = 2*N + 4
 
-# print('images.shape: {}'.format(images.shape))
-# print('outputs.shape: {}'.format(outputs.shape))
-# print('len(or_tr[0]): {}'.format(len(or_tr[0])))
-
 # Define layer sizes
 hidden_layer_sizes = list(map(int, args.hidden_layer_sizes))
 layer_sizes = [input_size] + hidden_layer_sizes + [output_size]
+image_size=[images.shape[1], images.shape[2], 1]
 
 # Load the model
 if args.network_type == 'full':
-    model = FullSTIMEDNet(args.imednet_model_load_path, scale=scale)
-    # model.register_buffer('dmp_p', model.dmp_params.data_tensor)
-    # model.register_buffer('scale_t', model.dmp_params.scale_tensor)
-    # model.register_buffer('param_grad', model.dmp_params.grad_tensor)
+    model = FullSTIMEDNet(args.imednet_model_load_path,
+                          scale=scale,
+                          image_size=image_size)
 else:
     model = STIMEDNet(args.imednet_model_load_path, scale=scale)
 
@@ -236,6 +232,10 @@ if args.imednet_model_load_path:
 # Save layer sizes to file
 net_description_file.write('\nLayer sizes: ' + str(layer_sizes))
 np.save(os.path.join(args.model_save_path, 'layer_sizes'), np.asarray(layer_sizes))
+
+# Save layer sizes to file
+net_description_file.write('\nImage size: ' + str(image_size))
+np.save(os.path.join(args.model_save_path, 'image_size'), np.asarray(image_size))
 
 # Save data scaling to file
 # TODO: Fix this mess later.

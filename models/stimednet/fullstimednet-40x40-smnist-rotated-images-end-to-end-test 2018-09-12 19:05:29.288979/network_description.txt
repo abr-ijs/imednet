@@ -1,0 +1,40 @@
+Network created: 2018-09-12 19:05:29.288979
+Model: imednet.models.encoder_decoder.FullSTIMEDNet
+Data path: data/s-mnist/40x40-smnist-rotated.mat
+Model save path: /home0/barry.ridge/Research/Projects/ATR/imednet/models/stimednet/fullstimednet-40x40-smnist-rotated-images-end-to-end-test 2018-09-12 19:05:29.288979
+Pre-trained IMEDNet model load path: /home0/barry.ridge/Research/Projects/ATR/imednet/models/cnn_encoder_decoder/cfcimednet-40x40-smnist-end-to-end-adam 2018-07-22 17:11:17.144898/
+Layer sizes: [1600, 20, 35, 54]
+Optimizer: adam
+Learning rate: 0.0005
+Momentum: 0.5
+ Setting parameters for learning:
+   - Samples of data: 3000
+   - Epochs: -1
+   - Batch size: 128
+   - training ratio: 0.7
+   - validation ratio: 0.15
+   - test ratio: 0.15
+     -   validation_interval: 1
+     -  test_interval: 1
+     -   log_interval: 1
+     -   cuda = True
+     -  Validation fail: 100
+Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    eps: 0.001
+    lr: 0.0005
+    weight_decay: 0
+)
+MSELoss()
+ saving_epochs = 426
+ Learning finished with this parameters:
+   - Number of epochs: 527
+   - Last train loss: tensor(1.7092, device='cuda:0')
+   - Last validation loss: tensor(5.4927, device='cuda:0', grad_fn=<MseLossBackward>)
+   Last test loss: tensor(5.8994, device='cuda:0')
+   - Elapsed time: 291.16673
+   - last validation count: 101
+     -   Stop criterion: max validation fail reached
+     -  Minimal gradient: tensor(0., device='cuda:0')

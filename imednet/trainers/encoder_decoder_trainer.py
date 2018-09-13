@@ -838,26 +838,26 @@ class Trainer:
         bestValLoss = oldValLoss
         best_nn_parameters = copy.deepcopy(model.state_dict())
 
-        fig = plt.figure()
+        # fig = plt.figure()
 
-        plt.imshow((np.reshape(input_data_validate_b.data[0].cpu().numpy(), (40, 40))), cmap='gray',
-                   extent=[0, 40, 40, 0])
+        # plt.imshow((np.reshape(input_data_validate_b.data[0].cpu().numpy(), (40, 40))), cmap='gray',
+        #            extent=[0, 40, 40, 0])
 
-        plt.plot(output_data_validate_b.data[0].cpu().numpy(), output_data_validate_b.data[1].cpu().numpy(), '--r',
-                 label='dmp')
+        # plt.plot(output_data_validate_b.data[0].cpu().numpy(), output_data_validate_b.data[1].cpu().numpy(), '--r',
+        #          label='dmp')
 
-        plt.plot(y_val.data[0].cpu().numpy(), y_val.data[1].cpu().numpy(), '-g', label='trajectory')
-        plt.legend()
-        plt.xlim([0, 40])
-        plt.ylim([40, 0])
+        # plt.plot(y_val.data[0].cpu().numpy(), y_val.data[1].cpu().numpy(), '-g', label='trajectory')
+        # plt.legend()
+        # plt.xlim([0, 40])
+        # plt.ylim([40, 0])
 
-        fig.canvas.draw()
-        matrix = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
+        # fig.canvas.draw()
+        # matrix = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
 
-        mat = matrix.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+        # mat = matrix.reshape(fig.canvas.get_width_height()[::-1] + (3,))
 
-        writer.add_image('image' + str(0), mat)
-        self.plot_im = False
+        # writer.add_image('image' + str(0), mat)
+        # self.plot_im = False
 
         # torch.save(model.state_dict(), path + '/net_parameters' + str(0))
 
@@ -993,24 +993,46 @@ class Trainer:
                 if self.plot_im:
                     fig = plt.figure()
 
-                    # Try plotting spatial transformer network (STN) output
-                    # if model contains an STN module (e.g. STIMEDNet)
+                    # Set up sub-plotting if the model has an STN module
                     try:
-                        plt.subplot(211)
-                        stn_val_image, stn_val_theta = model.stn(input_data_validate[0].reshape(-1,1,40,40))
-                        plt.imshow(np.reshape(stn_val_image.data[0].cpu().numpy(), (40, 40)), cmap='gray', extent=[0, 40, 40, 0])
-                        plt.subplot(212)
+                        assert(model.stn)
+                        plt.subplot(121)
                     except:
                         pass
 
-                    plt.imshow((np.reshape(input_data_validate.data[0].cpu().numpy(), (40, 40))), cmap='gray', extent=[0, 40, 40, 0])
-
-                    plt.plot(output_data_validate.data[0].cpu().numpy(), output_data_validate.data[1].cpu().numpy(), '--r', label='dmp')
-
-                    plt.plot(y_val.data[0].cpu().numpy(), y_val.data[1].cpu().numpy(), '-g', label='trajectory')
+                    try:
+                        plt.imshow(np.reshape(input_data_validate.data[0].cpu().numpy(), (model.image_size[0], model.image_size[1])),
+                                   cmap='gray', extent=[0, model.image_size[0], model.image_size[1], 0])
+                    except:
+                        try:
+                            plt.imshow(np.reshape(input_data_validate.data[0].cpu().numpy(), (model.image_size, model.image_size)),
+                                       cmap='gray', extent=[0, model.image_size, model.image_size, 0])
+                        except:
+                            raise
+                    
+                    plt.plot(output_data_validate.data[0].cpu().numpy(), output_data_validate.data[1].cpu().numpy(), '-b', label='actual')
+                    plt.plot(y_val.data[0].cpu().numpy(), y_val.data[1].cpu().numpy(), '-r', label='predicted')
                     plt.legend()
-                    plt.xlim([0, 40])
-                    plt.ylim([40, 0])
+                    try:
+                        plt.xlim([0, model.image_size[0]])
+                        plt.ylim([model.image_size[1], 0])
+                    except:
+                        try:
+                            plt.xlim([0, model.image_size])
+                            plt.ylim([model.image_size, 0])
+                        except:
+                            raise
+
+                    
+		    # Try plotting spatial transformer network (STN) output
+                    # if model contains an STN module (e.g. STIMEDNet)
+                    try:
+                        assert(model.stn)
+                        plt.subplot(122)
+                        stn_val_image, stn_val_theta = model.stn(input_data_validate[0].reshape(-1,model.image_size[2],model.image_size[0],model.image_size[1]))
+                        plt.imshow(np.reshape(stn_val_image.data[0].cpu().numpy(), (model.grid_size[0], model.grid_size[1])), cmap='gray', extent=[0, model.grid_size[0], model.grid_size[1], 0])
+                    except:
+                        raise
 
                     fig.canvas.draw()
                     matrix = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')

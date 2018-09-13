@@ -404,17 +404,29 @@ class FullSTIMEDNet(torch.nn.Module):
     def __init__(self,
                  pretrained_imednet_model_path,
                  image_size=[40, 40, 1],
+                 grid_size=None,
                  scale=None):
         """
         image_size: [H, W, C]
+        grid_size: [H, W, C]
         """
         super(FullSTIMEDNet, self).__init__()
 
-        # Save the image size
+        # Save the image size input arg
         self.image_size = image_size
 
         # Load the IMEDNet model
         self.imednet_model = load_model(pretrained_imednet_model_path)
+
+        # Save the grid size input arg or infer it
+        # from the IMEDNet mode
+	# TODO: Fix all of these image size recording issues!
+        if grid_size:
+            self.grid_size = grid_size
+        else:
+            self.grid_size = [self.imednet_model.image_size,
+                              self.imednet_model.image_size,
+                              1]
 
         # Spatial transformer localization-network
         self.localization = nn.Sequential(
@@ -433,6 +445,7 @@ class FullSTIMEDNet(torch.nn.Module):
                                   self.image_size[0],
                                   self.image_size[1])
         dummy_localizer_out = self.localization(dummy_image)
+        self.localizer_out_shape = dummy_localizer_out.shape
         self.localizer_out_size = np.prod(np.asarray(dummy_localizer_out.shape[1:])) 
 
         # Regressor for the 3 * 2 affine matrix
@@ -482,12 +495,12 @@ class FullSTIMEDNet(torch.nn.Module):
         xs = xs.view(-1, self.localizer_out_size)
         theta = self.fc_loc(xs)
         theta = theta.view(-1, 2, 3)
-
-        grid = F.affine_grid(theta, x.size())
+        
+        grid_size = torch.Size([x.shape[0], self.grid_size[2], self.grid_size[0], self.grid_size[1]])
+        grid = F.affine_grid(theta, grid_size)
         x = F.grid_sample(x, grid)
 
         return x, theta
-        # return x
 
     # Batch matrix inverse
     # See: https://stackoverflow.com/questions/46595157/how-to-apply-the-torch-inverse-function-of-pytorch-to-every-sample-in-the-batc
@@ -498,18 +511,18 @@ class FullSTIMEDNet(torch.nn.Module):
 
     # Motion transformer network forward function
     def mtn(self, x, theta):
-    # def mtn(self, x):
         # 1. Integrate the DMPs to calculate the predicted canonical motion trajectories.
         x = self.dmp_integrator.apply(x, self.dmp_p, self.param_grad, self.scale_t)
 
         # 2. Generate inverted transforms using the theta parameters from the STN.
         # Convert theta to a tensor of 3x3 square matrices, T.
-        T = torch.cat((theta, torch.as_tensor([[[0.0, 0.0, 1.0]]]).repeat([theta.shape[0],1,1]).cuda()), 1)
+        # T = torch.cat((theta, torch.as_tensor([[[0.0, 0.0, 1.0]]]).repeat([theta.shape[0],1,1]).cuda()), 1)
         # T = self.fc_T(theta.view(-1,2*3))
         # Calculate the inverted transforms.
         # T_invs = [T_i.inverse() for T_i in torch.functional.unbind(T)]
         # T_inv = torch.stack(T_invs)
-        T_inv = self.b_inv(T.view(-1,3,3))
+        # T_inv = self.b_inv(T.view(-1,3,3))
+        # T_inv = T
         # T_inv = self.fc_T(theta.view(-1,2*3)).view(-1,3,3)
 
         # # 3. Reshape the DMP integrator output into vector trajectories.
@@ -517,7 +530,8 @@ class FullSTIMEDNet(torch.nn.Module):
         x_traj_vectors_with_ones = torch.cat((x_traj_vectors, torch.ones(1,int(x.shape[0]/2), x.shape[1]).cuda()), 0).cuda()
 
         # 4. Do the transformations.
-        transformed_x_traj_vectors = torch.einsum('nij,jnm->nim', [T_inv[:,0:2,:], x_traj_vectors_with_ones])
+        # transformed_x_traj_vectors = torch.einsum('nij,jnm->nim', [T_inv[:,0:2,:], x_traj_vectors_with_ones])
+        transformed_x_traj_vectors = torch.einsum('nij,jnm->nim', [theta, x_traj_vectors_with_ones])
 
         # 5. Reshape the transformed trajectories to conform with the expected output format.
         output = transformed_x_traj_vectors.view(x.shape[0], x.shape[1])
@@ -526,6 +540,7 @@ class FullSTIMEDNet(torch.nn.Module):
         # # T = torch.eye(3,3).repeat([theta.shape[0],1,1]).cuda()
         # # T = torch.eye(3,3).repeat([int(x.shape[0]/2),1,1]).cuda()
         # # T_inv = self.b_inv(T.view(-1,3,3))
+
         # T_inv = torch.eye(3,3).repeat([theta.shape[0],1,1]).cuda()
         # x_traj_vectors = x.view(int(x.shape[0]/2),2,x.shape[1]).transpose(0,1)
         # x_traj_vectors_with_ones = torch.cat((x_traj_vectors, torch.ones(1,int(x.shape[0]/2),x.shape[1]).cuda()), 0).cuda()

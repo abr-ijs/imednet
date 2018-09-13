@@ -35,7 +35,7 @@ class MatLoader:
         # Load images
         images = []
         for image in data[image_key][0, 0][0]:
-            images.append(image.astype('float').reshape(40*40))
+            images.append(image.astype('float'))
         images = np.array(images)
 
         # Load DMPs
