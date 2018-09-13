@@ -37,6 +37,8 @@ default_network_type = 'partial'
 default_optimizer = 'adam'
 default_learning_rate = 0.0005
 default_momentum = 0.5
+default_lr_decay = None
+default_weight_decay = None
 default_val_fail = 60
 default_hidden_layer_sizes = ['20', '35']
 
@@ -75,6 +77,10 @@ parser.add_argument('--learning-rate', type=float, default=default_learning_rate
                     help='learning rate (default: "{}")'.format(str(default_learning_rate)))
 parser.add_argument('--momentum', type=float, default=default_momentum,
                     help='momentum (default: "{}")'.format(str(default_momentum)))
+parser.add_argument('--lr-decay', type=float, default=default_lr_decay,
+                    help='learning rate decay (default: "{}")'.format(str(default_lr_decay)))
+parser.add_argument('--weight-decay', type=float, default=default_weight_decay,
+                    help='weight decay (default: "{}")'.format(str(default_weight_decay)))
 parser.add_argument('--val-fail', type=int, default=default_val_fail,
                     help='maximum number of epochs stopping criterion for improving best validation loss (default: "{}")'.format(str(default_val_fail)))
 parser.add_argument('--hidden-layer-sizes', nargs='+', default=default_hidden_layer_sizes,
@@ -108,7 +114,7 @@ if args.load_hand_labeled_mnist_data:
     good_sample_indices = np.append(good_sample_indices, np.arange(200,4500))
     good_sample_indices = np.append(good_sample_indices, np.arange(5000,5100))
     sample_indices = available_traj_indices[good_sample_indices]
-   
+
     # Load MNIST data
     print('Loading MNIST images...')
     mnist_images, mnist_labels = Trainer.load_mnist_data(default_mnist_path)
@@ -271,7 +277,9 @@ if args.network_type == 'full':
                                            net_description_file,
                                            optimizer_type=args.optimizer,
                                            learning_rate=args.learning_rate,
-                                           momentum=args.momentum)
+                                           momentum=args.momentum,
+                                           lr_decay=args.lr_decay,
+                                           weight_decay=args.weight_decay)
 else:
     best_nn_parameters = trainer.train(model, images, outputs,
                                        args.model_save_path,
@@ -279,7 +287,9 @@ else:
                                        net_description_file,
                                        optimizer_type=args.optimizer,
                                        learning_rate=args.learning_rate,
-                                       momentum=args.momentum)
+                                       momentum=args.momentum,
+                                       lr_decay=args.lr_decay,
+                                       weight_decay=args.weight_decay)
 
 # Save model
 np.save(os.path.join(args.model_save_path, 'net_indeks'), trainer.indeks)

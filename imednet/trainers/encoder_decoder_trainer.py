@@ -392,7 +392,8 @@ class Trainer:
         return input_data_train, output_data_train, input_data_test, output_data_test, input_data_validate, output_data_validate
 
     def train(self, model, images, outputs, path, train_param, file,
-                    optimizer_type='SCG', learning_rate=1e-4, momentum=0, decay=[0,0]):
+              optimizer_type='SCG', learning_rate=None,
+              momentum=None, lr_decay=None, weight_decay=None):
         """
         Trains the network using provided data
 
@@ -474,10 +475,12 @@ class Trainer:
             else:
                 optimizer = Adam(model.parameters(), amsgrad=True)
         elif optimizer_type.lower() == 'adam':
-            if learning_rate:
-                optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, eps = 0.001)
+            if learning_rate and weight_decay:
+                optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay, eps=0.001)
+            elif learning_rate:
+                optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, eps=0.001)
             else:
-                optimizer = torch.optim.Adam(model.parameters(), eps = 0.001)
+                optimizer = torch.optim.Adam(model.parameters(), eps=0.001)
         elif optimizer_type.lower() == 'sgd':
             if learning_rate and momentum:
                 optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum)
@@ -488,12 +491,20 @@ class Trainer:
             else:
                 optimizer = torch.optim.SGD(model.parameters())
         elif optimizer_type.lower() == 'adagrad':
-            if learning_rate and decay:
-                optimizer = torch.optim.Adagrad(model.parameters(), lr=learning_rate, lr_decay = decay[0], weight_decay = decay[1]) 
+            if learning_rate and lr_decay and weight_decay:
+                optimizer = torch.optim.Adagrad(model.parameters(), lr=learning_rate, lr_decay=lr_decay, weight_decay=weight_decay)
+            elif learning_rate and lr_decay:
+                optimizer = torch.optim.Adagrad(model.parameters(), lr=learning_rate, lr_decay=lr_decay)
+            elif learning_rate and weight_decay:
+                optimizer = torch.optim.Adagrad(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
             elif learning_rate:
                 optimizer = torch.optim.Adagrad(model.parameters(), lr=learning_rate)
-            elif decay:
-                optimizer = torch.optim.Adagrad(model.parameters(), lr_decay = decay[0], weight_decay = decay[1]) 
+            elif lr_decay and weight_decay:
+                optimizer = torch.optim.Adagrad(model.parameters(), lr_decay=lr_decay, weight_decay=weight_decay)
+            elif lr_decay:
+                optimizer = torch.optim.Adagrad(model.parameters(), lr_decay=lr_decay)
+            elif lr_decay:
+                optimizer = torch.optim.Adagrad(model.parameters(), lr_decay=lr_decay)
             else:
                 optimizer = torch.optim.Adagrad(model.parameters())
         elif optimizer_type.lower() == 'rmsprop':
@@ -591,6 +602,7 @@ class Trainer:
                     bestValLoss = val_loss.data.item()
                     best_nn_parameters = copy.deepcopy(model.state_dict())
                     saving_epochs = t
+                    torch.save(model.state_dict(), path + '/net_parameters')
 
                 if val_loss.data.item() > bestValLoss:  # oldValLoss:
                     val_count = val_count+1
@@ -710,7 +722,8 @@ class Trainer:
         return best_nn_parameters
 
     def train_dmp(self, model, images, outputs, path, train_param, file,
-                  optimizer_type='SCG', learning_rate=1e-4, momentum=0, decay=[0, 0]):
+                  optimizer_type='SCG', learning_rate=None, momentum=None,
+                  lr_decay=None, weight_decay=None):
         """
         teaches the network using provided data
 
@@ -792,10 +805,12 @@ class Trainer:
             else:
                 optimizer = Adam(model.parameters(), amsgrad=True)
         elif optimizer_type.lower() == 'adam':
-            if learning_rate:
-                optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, eps = 0.001)
+            if learning_rate and weight_decay:
+                optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay, eps=0.001)
+            elif learning_rate:
+                optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, eps=0.001)
             else:
-                optimizer = torch.optim.Adam(model.parameters(), eps = 0.001)
+                optimizer = torch.optim.Adam(model.parameters(), eps=0.001)
         elif optimizer_type.lower() == 'sgd':
             if learning_rate and momentum:
                 optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum)
@@ -806,12 +821,20 @@ class Trainer:
             else:
                 optimizer = torch.optim.SGD(model.parameters())
         elif optimizer_type.lower() == 'adagrad':
-            if learning_rate and decay:
-                optimizer = torch.optim.Adagrad(model.parameters(), lr=learning_rate, lr_decay = decay[0], weight_decay = decay[1]) 
+            if learning_rate and lr_decay and weight_decay:
+                optimizer = torch.optim.Adagrad(model.parameters(), lr=learning_rate, lr_decay=lr_decay, weight_decay=weight_decay)
+            elif learning_rate and lr_decay:
+                optimizer = torch.optim.Adagrad(model.parameters(), lr=learning_rate, lr_decay=lr_decay)
+            elif learning_rate and weight_decay:
+                optimizer = torch.optim.Adagrad(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
             elif learning_rate:
                 optimizer = torch.optim.Adagrad(model.parameters(), lr=learning_rate)
-            elif decay:
-                optimizer = torch.optim.Adagrad(model.parameters(), lr_decay = decay[0], weight_decay = decay[1]) 
+            elif lr_decay and weight_decay:
+                optimizer = torch.optim.Adagrad(model.parameters(), lr_decay=lr_decay, weight_decay=weight_decay)
+            elif lr_decay:
+                optimizer = torch.optim.Adagrad(model.parameters(), lr_decay=lr_decay)
+            elif lr_decay:
+                optimizer = torch.optim.Adagrad(model.parameters(), lr_decay=lr_decay)
             else:
                 optimizer = torch.optim.Adagrad(model.parameters())
         elif optimizer_type.lower() == 'rmsprop':
@@ -920,6 +943,7 @@ class Trainer:
                     bestValLoss = val_loss
                     best_nn_parameters = copy.deepcopy(model.state_dict())
                     saving_epochs = t
+                    torch.save(model.state_dict(), path + '/net_parameters')
 
                 if val_loss > bestValLoss:  # oldValLoss:
                     val_count = val_count + 1
@@ -994,7 +1018,7 @@ class Trainer:
                         stn_val_image, stn_val_theta = model.stn(input_data_validate[0].reshape(-1,model.image_size[2],model.image_size[0],model.image_size[1]))
                         plt.imshow(np.reshape(stn_val_image.data[0].cpu().numpy(), (model.grid_size[0], model.grid_size[1])), cmap='gray', extent=[0, model.grid_size[0], model.grid_size[1], 0])
                     except:
-                        raise
+                        pass
 
                     fig.canvas.draw()
                     matrix = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')

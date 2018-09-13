@@ -19,7 +19,7 @@ import numpy as np
 from os.path import dirname, realpath
 sys.path.append(dirname(dirname(realpath(__file__))))
 
-from imednet.models.encoder_decoder import CNNEncoderDecoderNet, TrainingParameters
+from imednet.models.encoder_decoder import CNNEncoderDecoderNet, FullCNNEncoderDecoderNet, TrainingParameters
 from imednet.data.smnist_loader import MatLoader
 from imednet.data.trajectory_loader import TrajectoryLoader
 from imednet.trainers.encoder_decoder_trainer import Trainer
@@ -38,9 +38,12 @@ default_model_save_path = os.path.join(dirname(dirname(realpath(__file__))),
 default_cnn_model_load_path = os.path.join(dirname(dirname(realpath(__file__))),
                                            'models/mnist_cnn/mnist_cnn.model')
 default_model_load_path = None
+default_network_type = 'partial'
 default_optimizer = 'adam'
 default_learning_rate = 0.0005
 default_momentum = 0.5
+default_lr_decay = None
+default_weight_decay = None
 default_val_fail = 60
 default_hidden_layer_sizes = ['20', '35']
 
@@ -71,12 +74,18 @@ parser.add_argument('--plot-freq', type=int, default=0,
                     help='set tensorboard plot visualization frequency (default: 0)')
 parser.add_argument('--device', type=int, default=0,
                     help='select CUDA device (default: 0)')
+parser.add_argument('--network-type', type=str, default=default_network_type,
+                    help='network type (default: "{}")'.format(str(default_network_type)))
 parser.add_argument('--optimizer', type=str, default=default_optimizer,
                     help='optimizer (default: "{}")'.format(str(default_optimizer)))
 parser.add_argument('--learning-rate', type=float, default=default_learning_rate,
                     help='learning rate (default: "{}")'.format(str(default_learning_rate)))
 parser.add_argument('--momentum', type=float, default=default_momentum,
                     help='momentum (default: "{}")'.format(str(default_momentum)))
+parser.add_argument('--lr-decay', type=float, default=default_lr_decay,
+                    help='learning rate decay (default: "{}")'.format(str(default_lr_decay)))
+parser.add_argument('--weight-decay', type=float, default=default_weight_decay,
+                    help='weight decay (default: "{}")'.format(str(default_weight_decay)))
 parser.add_argument('--val-fail', type=int, default=default_val_fail,
                     help='maximum number of epochs stopping criterion for improving best validation loss (default: "{}")'.format(str(default_val_fail)))
 parser.add_argument('--hidden-layer-sizes', nargs='+', default=default_hidden_layer_sizes,
@@ -169,7 +178,10 @@ hidden_layer_sizes = list(map(int, args.hidden_layer_sizes))
 layer_sizes = [input_size] + hidden_layer_sizes + [output_size]
 
 # Load the model
-model = CNNEncoderDecoderNet(args.cnn_model_load_path, layer_sizes, scale)
+if args.network_type == 'full':
+    model = FullCNNEncoderDecoderNet(args.cnn_model_load_path, layer_sizes, scale)
+else:
+    model = CNNEncoderDecoderNet(args.cnn_model_load_path, layer_sizes, scale)
 
 # Freeze pretrained CNN weights
 if not args.end_to_end:
@@ -196,20 +208,17 @@ else:
 train_param = TrainingParameters()
 device = args.device
 train_param.epochs = -1
-optimizer = args.optimizer
-learning_rate = 0.0005
-momentum = 0.5
 train_param.batch_size = 128
 train_param.training_ratio = 0.7
 train_param.validation_ratio = 0.15
 train_param.test_ratio = 0.15
-train_param.val_fail = 60
+train_param.val_fail = args.val_fail
 trainer = Trainer(launch_tensorboard=args.launch_tensorboard,
                   launch_gui=args.launch_gui,
                   plot_freq=args.plot_freq)
 
 # Save model parameters to file
-torch.save(model, (os.path.join(args.model_save_path, 'model.pt')))
+# torch.save(model, (os.path.join(args.model_save_path, 'model.pt')))
 
 # Save model type to file
 net_description_file.write('\nModel: imednet.models.encoder_decoder.CNNEncoderDecoderNet')
@@ -255,13 +264,32 @@ if args.model_load_path:
     trainer.indeks = np.load(net_indeks_path)
 
 # Train
-best_nn_parameters = trainer.train(model, images, outputs,
-                                   args.model_save_path,
-                                   train_param,
-                                   net_description_file,
-                                   optimizer_type=optimizer,
-                                   learning_rate=args.learning_rate,
-                                   momentum=args.momentum)
+if args.network_type == 'full':
+    original_traj = []
+    for i in range(0,images.shape[0]):
+        c,c1,c2 = zip(*or_tr[i])
+        original_traj.append(c)
+        original_traj.append(c1)
+
+    best_nn_parameters = trainer.train_dmp(model, images, original_traj,
+                                           args.model_save_path,
+                                           train_param,
+                                           net_description_file,
+                                           optimizer_type=args.optimizer,
+                                           learning_rate=args.learning_rate,
+                                           momentum=args.momentum,
+                                           lr_decay=args.lr_decay,
+                                           weight_decay=args.weight_decay)
+else:
+    best_nn_parameters = trainer.train(model, images, outputs,
+                                       args.model_save_path,
+                                       train_param,
+                                       net_description_file,
+                                       optimizer_type=args.optimizer,
+                                       learning_rate=args.learning_rate,
+                                       momentum=args.momentum,
+                                       lr_decay=args.lr_decay,
+                                       weight_decay=args.weight_decay)
 
 # Save model
 np.save(os.path.join(args.model_save_path, 'net_indeks'), trainer.indeks)

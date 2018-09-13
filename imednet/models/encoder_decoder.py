@@ -25,7 +25,7 @@ def load_model(model_path):
     model_class = getattr(model_module, model_class_str)
 
     # Get the pre-trained CNN model load path from the network description
-    if model_class_str == 'CNNEncoderDecoderNet':
+    if model_class_str == 'CNNEncoderDecoderNet' or model_class_str == 'FullCNNEncoderDecoderNet':
         pretrained_cnn_model_path = re.search('Pre-trained CNN model load path: (.+?)\n', network_description_str).group(1)
     elif model_class_str == 'STIMEDNet' or model_class_str == 'FullSTIMEDNet':
         pretrained_imednet_model_path = re.search('Pre-trained IMEDNet model load path: (.+?)\n', network_description_str).group(1)
@@ -51,7 +51,7 @@ def load_model(model_path):
         scaling = np.load(os.path.join(model_path, 'scale.npy'))
 
     # Load the model
-    if model_class_str == 'CNNEncoderDecoderNet':
+    if model_class_str == 'CNNEncoderDecoderNet' or model_class_str == 'FullCNNEncoderDecoderNet':
         model = model_class(pretrained_cnn_model_path=pretrained_cnn_model_path,
                             layer_sizes=layer_sizes,
                             scale=scaling)
@@ -269,7 +269,8 @@ class CNNEncoderDecoderNet(torch.nn.Module):
                  layer_sizes=[784, 200, 50],
                  scale=None):
         """
-        Creates a pretrained CNN + Encoder-Decoder network.
+        Creates a convolutional image-to-motion encoder-decoder
+        (CIMEDNet) network without DMP integration.
 
         layer_sizes -> list containing layer inputs/ouptuts
                        (minimum length = 3)
@@ -328,17 +329,115 @@ class CNNEncoderDecoderNet(torch.nn.Module):
 
         x = x.view(-1, 1, self.image_size, self.image_size)
 
-        # x = self.firstLayer(x)
-        # x = x.view(-1, self.convSize)
+        # Run the input through the pretrained CNN
+        x = self.cnn_model(x)
+        x = x.view(-1, self.conv2_size)
+
+        x = activation_fn(self.input_layer(x))
+
+        for layer in self.middle_layers:
+            x = activation_fn(layer(x))
+
+        output = self.output_layer(x)
+
+        return output
+
+    def isCuda(self):
+        return self.input_layer.weight.is_cuda
+
+
+class FullCNNEncoderDecoderNet(torch.nn.Module):
+    def __init__(self,
+                 pretrained_cnn_model_path=None,
+                 layer_sizes=[784, 200, 50],
+                 scale=None):
+        """
+        Creates a full convolutional image-to-motion encoder-decoder
+        (CIMEDNet) network with DMP integration.
+
+        layer_sizes -> list containing layer inputs/ouptuts
+                       (minimum length = 3)
+
+            example:
+                layer_sizes = [784,500,200,50]
+                input_layer -> torch.nn.Linear(784,500)
+                middle_layers -> [torch.nn.Linear(500,200)]
+                output_layer -> torch.nn.Linear(200,50)
+        """
+        super(FullCNNEncoderDecoderNet, self).__init__()
+
+        # Initialize MNIST CNN model
+        self.cnn_model = MNISTNet()
+
+        # Load the pretrained weights
+        if pretrained_cnn_model_path:
+            try:
+                self.cnn_model.load_state_dict(torch.load(pretrained_cnn_model_path))
+            except:
+                self.cnn_model.load_state_dict(torch.load(os.path.join('../', pretrained_cnn_model_path)))
+
+        # Chop off the FC layers (2 of them) + dropout layer,
+        # leaving just the two conv layers.
+        self.cnn_model = torch.nn.Sequential(*list(self.cnn_model.modules())[1:-3])
+        # Get the output size of the last conv layer
+        self.image_size = int(np.sqrt(layer_sizes[0]))
+        self.conv1 = self.cnn_model[0].state_dict()['weight'].size()
+        self.conv1_W = self.image_size - self.conv1[2] + 1
+        self.conv1_size = (self.conv1_W)**2 * self.conv1[0]
+        self.conv2 = self.cnn_model[1].state_dict()['weight'].size()
+        self.conv2_W = self.conv1_W - self.conv2[2] + 1
+        self.conv2_size = (self.conv2_W)**2 * self.conv2[0]
+
+        # Set up the input layer for encoder-decoder part
+        self.input_layer = torch.nn.Linear(self.conv2_size, layer_sizes[1])
+
+        self.middle_layers = []
+        for i in range(1, len(layer_sizes) - 2):
+            layer = torch.nn.Linear(layer_sizes[i], layer_sizes[i+1])
+            self.middle_layers.append(layer)
+            self.add_module("middle_layer_" + str(i), layer)
+        self.output_layer = torch.nn.Linear(layer_sizes[-2], layer_sizes[-1])
+        self.scale = scale
+        self.loss = 0
+
+        self.dmp_params = DMPParameters(25, 3, 0.01, 2, scale)
+        self.dmp_integrator = DMPIntegrator()
+
+        self.register_buffer('dmp_p', self.dmp_params.data_tensor)
+        self.register_buffer('scale_t', self.dmp_params.scale_tensor)
+        self.register_buffer('param_grad', self.dmp_params.grad_tensor)
+
+        if self.isCuda():
+            self.dmp_p.cuda()
+            self.scale_t.cuda()
+            self.param_grad.cuda()
+
+    def forward(self, x):
+        """
+        Defines the layers connections
+
+        forward(x) -> result of forward propagation through network
+        x -> input to the Network
+        """
+        # activation_fn = torch.nn.ReLU6()
+        activation_fn = torch.nn.Tanh()
+
+        x = x.view(-1, 1, self.image_size, self.image_size)
 
         # Run the input through the pretrained CNN
         x = self.cnn_model(x)
         x = x.view(-1, self.conv2_size)
 
         x = activation_fn(self.input_layer(x))
+
         for layer in self.middle_layers:
             x = activation_fn(layer(x))
-        output = self.output_layer(x)
+
+        x = self.output_layer(x)
+
+        # Integrate the DMPs to calculate the predicted output trajectories
+        output = self.dmp_integrator.apply(x, self.dmp_p, self.param_grad, self.scale_t)
+
         return output
 
     def isCuda(self):
