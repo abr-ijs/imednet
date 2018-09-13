@@ -17,9 +17,8 @@ def load_model(model_path):
         network_description_str = f.read()
 
     # Get the model class from the network description and
-    # dynamically import it.
-    model_module_class_str = re.search('Model: (.+?)\n',
-                                       network_description_str).group(1)
+    # dynamically import it
+    model_module_class_str = re.search('Model: (.+?)\n', network_description_str).group(1)
     model_module_str = os.path.splitext(model_module_class_str)[0]
     model_class_str = os.path.splitext(model_module_class_str)[1][1:]
     model_module = importlib.import_module(model_module_str)
@@ -27,24 +26,48 @@ def load_model(model_path):
 
     # Get the pre-trained CNN model load path from the network description
     if model_class_str == 'CNNEncoderDecoderNet':
-        pre_trained_cnn_model_path = re.search('Pre-trained CNN model load path: (.+?)\n', network_description_str).group(1)
+        pretrained_cnn_model_path = re.search('Pre-trained CNN model load path: (.+?)\n', network_description_str).group(1)
+    elif model_class_str == 'STIMEDNet' or model_class_str == 'FullSTIMEDNet':
+        pretrained_imednet_model_path = re.search('Pre-trained IMEDNet model load path: (.+?)\n', network_description_str).group(1)
 
     # Load layer sizes
     layer_sizes = np.load(os.path.join(model_path, 'layer_sizes.npy')).tolist()
+
+    # Get the image size from the network description
+    try:
+        image_size_str = re.search('Image size: \[(.+?)\]\n', network_description_str).group(1)
+        image_size = [int(s) for s in image_size_str.split(',')]
+    except:
+        pass
 
     # Load scaling
     try:
         scaling = Mapping()
         scaling.x_max = np.load(os.path.join(model_path, 'scale_x_max.npy'))
         scaling.x_min = np.load(os.path.join(model_path, 'scale_x_min.npy'))
-        scaling.y_max = np.load(os.path.join(model_path, 'scale_y_max.npy'))
-        scaling.y_min = np.load(os.path.join(model_path, 'scale_y_min.npy'))
+        scaling.y_max = np.float(np.load(os.path.join(model_path, 'scale_y_max.npy')))
+        scaling.y_min = np.float(np.load(os.path.join(model_path, 'scale_y_min.npy')))
     except:
         scaling = np.load(os.path.join(model_path, 'scale.npy'))
 
     # Load the model
     if model_class_str == 'CNNEncoderDecoderNet':
-        model = model_class(pre_trained_cnn_model_path, layer_sizes, scaling)
+        model = model_class(pretrained_cnn_model_path=pretrained_cnn_model_path,
+                            layer_sizes=layer_sizes,
+                            scale=scaling)
+        model.cuda()
+    elif model_class_str == 'STIMEDNet' or model_class_str == 'FullSTIMEDNet':
+        try:
+            model = model_class(pretrained_imednet_model_path=pretrained_imednet_model_path,
+                                scale=scaling,
+                                image_size=image_size)
+        except:
+            try:
+                model = model_class(pretrained_imednet_model_path=pretrained_imednet_model_path,
+                                    scale=scaling)
+            except:
+                raise
+        model.cuda()
     else:
         model = model_class(layer_sizes, None, scaling)
 
@@ -242,7 +265,7 @@ class DMPEncoderDecoderNet(torch.nn.Module):
 
 class CNNEncoderDecoderNet(torch.nn.Module):
     def __init__(self,
-                 pretrained_model_path,
+                 pretrained_cnn_model_path=None,
                  layer_sizes=[784, 200, 50],
                  scale=None):
         """
@@ -259,14 +282,15 @@ class CNNEncoderDecoderNet(torch.nn.Module):
         """
         super(CNNEncoderDecoderNet, self).__init__()
 
-        # Load the MNIST CNN model
+        # Initialize MNIST CNN model
         self.cnn_model = MNISTNet()
 
         # Load the pretrained weights
-        try:
-            self.cnn_model.load_state_dict(torch.load(pretrained_model_path))
-        except:
-            self.cnn_model.load_state_dict(torch.load(os.path.join('../', pretrained_model_path)))
+        if pretrained_cnn_model_path:
+            try:
+                self.cnn_model.load_state_dict(torch.load(pretrained_cnn_model_path))
+            except:
+                self.cnn_model.load_state_dict(torch.load(os.path.join('../', pretrained_cnn_model_path)))
 
         # Chop off the FC layers (2 of them) + dropout layer,
         # leaving just the two conv layers.
@@ -323,7 +347,7 @@ class CNNEncoderDecoderNet(torch.nn.Module):
 
 class STIMEDNet(torch.nn.Module):
     def __init__(self,
-                 pretrained_imednet_model_path,
+                 pretrained_imednet_model_path=None,
                  image_size=[40, 40, 1],
                  scale=None):
         """
@@ -335,7 +359,10 @@ class STIMEDNet(torch.nn.Module):
         self.image_size = image_size
 
         # Load the IMEDNet model
-        self.imednet_model = load_model(pretrained_imednet_model_path)
+        if pretrained_imednet_model_path:
+            self.imednet_model = load_model(pretrained_imednet_model_path)
+        else:
+            self.imednet_model = CNNEncoderDecoderNet()
 
         # Spatial transformer localization-network
         self.localization = nn.Sequential(
@@ -391,6 +418,7 @@ class STIMEDNet(torch.nn.Module):
         # Transform the input
         x = self.stn(x)
 
+
         # Run the transformed input through the pretrained IMEDNet model
         output = self.imednet_model(x)
 
@@ -416,11 +444,14 @@ class FullSTIMEDNet(torch.nn.Module):
         self.image_size = image_size
 
         # Load the IMEDNet model
-        self.imednet_model = load_model(pretrained_imednet_model_path)
+        if pretrained_imednet_model_path:
+            self.imednet_model = load_model(pretrained_imednet_model_path)
+        else:
+            self.imednet_model = CNNEncoderDecoderNet()
 
         # Save the grid size input arg or infer it
         # from the IMEDNet mode
-	# TODO: Fix all of these image size recording issues!
+        # TODO: Fix all of these image size recording issues!
         if grid_size:
             self.grid_size = grid_size
         else:
@@ -495,7 +526,7 @@ class FullSTIMEDNet(torch.nn.Module):
         xs = xs.view(-1, self.localizer_out_size)
         theta = self.fc_loc(xs)
         theta = theta.view(-1, 2, 3)
-        
+
         grid_size = torch.Size([x.shape[0], self.grid_size[2], self.grid_size[0], self.grid_size[1]])
         grid = F.affine_grid(theta, grid_size)
         x = F.grid_sample(x, grid)

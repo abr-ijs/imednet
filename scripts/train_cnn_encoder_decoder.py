@@ -158,7 +158,7 @@ else:
     else:
         images, outputs, scale, or_tr = MatLoader.load_data(args.data_path,
                                                             load_original_trajectories=True)
-    input_size = 1600
+    input_size = images.shape[1] * images.shape[2]
     output_size = 2*N + 4
 
 print('images.shape: {}'.format(images.shape))

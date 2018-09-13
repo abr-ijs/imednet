@@ -452,13 +452,6 @@ class Trainer:
             window = webbrowser.open_new('http://localhost:6006')
 
         if train_param.cuda:
-            '''model = model.double().cuda()
-            input_data_train_b = input_data_train_b.double().cuda()
-            output_data_train_b = output_data_train_b.double().cuda()
-            input_data_test_b = input_data_test_b.double().cuda()
-            output_data_test_b = output_data_test_b.double().cuda()
-            input_data_validate_b = input_data_validate_b.double().cuda()
-            output_data_validate_b = output_data_validate_b.double().cuda()'''
             torch.cuda.set_device(train_param.device)
             model = model.cuda()
             input_data_train_b = input_data_train_b.cuda()
@@ -779,13 +772,6 @@ class Trainer:
             window = webbrowser.open_new('http://localhost:6006')
 
         if train_param.cuda:
-            '''model = model.double().cuda()
-            input_data_train_b = input_data_train_b.double().cuda()
-            output_data_train_b = output_data_train_b.double().cuda()
-            input_data_test_b = input_data_test_b.double().cuda()
-            output_data_test_b = output_data_test_b.double().cuda()
-            input_data_validate_b = input_data_validate_b.double().cuda()
-            output_data_validate_b = output_data_validate_b.double().cuda()'''
             torch.cuda.set_device(train_param.device)
             model = model.cuda()
             input_data_train_b = input_data_train_b.cuda()
@@ -837,29 +823,6 @@ class Trainer:
         oldValLoss = criterion(y_val, output_data_validate_b[:, :])
         bestValLoss = oldValLoss
         best_nn_parameters = copy.deepcopy(model.state_dict())
-
-        # fig = plt.figure()
-
-        # plt.imshow((np.reshape(input_data_validate_b.data[0].cpu().numpy(), (40, 40))), cmap='gray',
-        #            extent=[0, 40, 40, 0])
-
-        # plt.plot(output_data_validate_b.data[0].cpu().numpy(), output_data_validate_b.data[1].cpu().numpy(), '--r',
-        #          label='dmp')
-
-        # plt.plot(y_val.data[0].cpu().numpy(), y_val.data[1].cpu().numpy(), '-g', label='trajectory')
-        # plt.legend()
-        # plt.xlim([0, 40])
-        # plt.ylim([40, 0])
-
-        # fig.canvas.draw()
-        # matrix = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
-
-        # mat = matrix.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-
-        # writer.add_image('image' + str(0), mat)
-        # self.plot_im = False
-
-        # torch.save(model.state_dict(), path + '/net_parameters' + str(0))
 
         # Infinite epochs
         if train_param.epochs == -1:
@@ -1009,7 +972,7 @@ class Trainer:
                                        cmap='gray', extent=[0, model.image_size, model.image_size, 0])
                         except:
                             raise
-                    
+
                     plt.plot(output_data_validate.data[0].cpu().numpy(), output_data_validate.data[1].cpu().numpy(), '-b', label='actual')
                     plt.plot(y_val.data[0].cpu().numpy(), y_val.data[1].cpu().numpy(), '-r', label='predicted')
                     plt.legend()
@@ -1023,8 +986,7 @@ class Trainer:
                         except:
                             raise
 
-                    
-		    # Try plotting spatial transformer network (STN) output
+                    # Try plotting spatial transformer network (STN) output
                     # if model contains an STN module (e.g. STIMEDNet)
                     try:
                         assert(model.stn)
