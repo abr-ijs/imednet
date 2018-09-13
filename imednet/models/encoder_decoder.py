@@ -418,7 +418,6 @@ class STIMEDNet(torch.nn.Module):
         # Transform the input
         x = self.stn(x)
 
-
         # Run the transformed input through the pretrained IMEDNet model
         output = self.imednet_model(x)
 
@@ -533,54 +532,20 @@ class FullSTIMEDNet(torch.nn.Module):
 
         return x, theta
 
-    # Batch matrix inverse
-    # See: https://stackoverflow.com/questions/46595157/how-to-apply-the-torch-inverse-function-of-pytorch-to-every-sample-in-the-batc
-    def b_inv(self, b_mat):
-        eye = b_mat.new_ones(b_mat.size(-1)).diag().expand_as(b_mat)
-        b_inv, _ = torch.gesv(eye, b_mat)
-        return b_inv
-
     # Motion transformer network forward function
     def mtn(self, x, theta):
         # 1. Integrate the DMPs to calculate the predicted canonical motion trajectories.
         x = self.dmp_integrator.apply(x, self.dmp_p, self.param_grad, self.scale_t)
 
-        # 2. Generate inverted transforms using the theta parameters from the STN.
-        # Convert theta to a tensor of 3x3 square matrices, T.
-        # T = torch.cat((theta, torch.as_tensor([[[0.0, 0.0, 1.0]]]).repeat([theta.shape[0],1,1]).cuda()), 1)
-        # T = self.fc_T(theta.view(-1,2*3))
-        # Calculate the inverted transforms.
-        # T_invs = [T_i.inverse() for T_i in torch.functional.unbind(T)]
-        # T_inv = torch.stack(T_invs)
-        # T_inv = self.b_inv(T.view(-1,3,3))
-        # T_inv = T
-        # T_inv = self.fc_T(theta.view(-1,2*3)).view(-1,3,3)
-
-        # # 3. Reshape the DMP integrator output into vector trajectories.
+        # 2. Reshape the DMP integrator output into vector trajectories.
         x_traj_vectors = x.view(int(x.shape[0]/2), 2, x.shape[1]).transpose(0,1)
         x_traj_vectors_with_ones = torch.cat((x_traj_vectors, torch.ones(1,int(x.shape[0]/2), x.shape[1]).cuda()), 0).cuda()
 
-        # 4. Do the transformations.
-        # transformed_x_traj_vectors = torch.einsum('nij,jnm->nim', [T_inv[:,0:2,:], x_traj_vectors_with_ones])
+        # 3. Do the transformations.
         transformed_x_traj_vectors = torch.einsum('nij,jnm->nim', [theta, x_traj_vectors_with_ones])
 
-        # 5. Reshape the transformed trajectories to conform with the expected output format.
+        # 4. Reshape the transformed trajectories to conform with the expected output format.
         output = transformed_x_traj_vectors.view(x.shape[0], x.shape[1])
-
-        # Sanity check: Perform the above steps with the identity transform.
-        # # T = torch.eye(3,3).repeat([theta.shape[0],1,1]).cuda()
-        # # T = torch.eye(3,3).repeat([int(x.shape[0]/2),1,1]).cuda()
-        # # T_inv = self.b_inv(T.view(-1,3,3))
-
-        # T_inv = torch.eye(3,3).repeat([theta.shape[0],1,1]).cuda()
-        # x_traj_vectors = x.view(int(x.shape[0]/2),2,x.shape[1]).transpose(0,1)
-        # x_traj_vectors_with_ones = torch.cat((x_traj_vectors, torch.ones(1,int(x.shape[0]/2),x.shape[1]).cuda()), 0).cuda()
-        # transformed_x_traj_vectors = torch.einsum('nij,jnm->nim', [T_inv[:,0:2,:], x_traj_vectors_with_ones])
-        # # transformed_x_traj_vectors = x_traj_vectors_with_ones[0:2,:,:]
-        # # output = transformed_x_traj_vectors.transpose(1,0).contiguous().view(x.shape[0], x.shape[1])
-        # output = transformed_x_traj_vectors.view(x.shape[0], x.shape[1])
-        # # This should be all zeros:
-        # print('x - output: {}'.format(x - output))
 
         return output
 
@@ -594,7 +559,6 @@ class FullSTIMEDNet(torch.nn.Module):
         # Rectify the input images using the spatial transformer network (STN)
         # such that the attended objects are transformed to their canonical forms.
         x, theta = self.stn(x)
-        # x = self.stn(x)
 
         # Image-to-Motion Encoder-Decoder:
         # Run the rectified images through the pre-trained IMEDNet model in
@@ -603,8 +567,9 @@ class FullSTIMEDNet(torch.nn.Module):
         x = self.imednet_model(x)
 
         # Motion Transformer:
+        # Integrate the rectified DMP and transform the resulting trajectory
+        # using the theta transformation from the spatial transformer.
         output = self.mtn(x, theta)
-        # output = self.mtn(x)
 
         return output
 
