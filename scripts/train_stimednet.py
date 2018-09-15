@@ -34,6 +34,7 @@ default_imednet_model_load_path = os.path.join(dirname(dirname(realpath(__file__
                                            'models/cnn_encoder_decoder/cfcimednet-40x40-smnist-end-to-end-adam 2018-07-22 17:11:17.144898/')
 default_model_load_path = None
 default_network_type = 'partial'
+default_batch_size = 140
 default_optimizer = 'adam'
 default_learning_rate = 0.0005
 default_momentum = 0.5
@@ -71,6 +72,8 @@ parser.add_argument('--device', type=int, default=0,
                     help='select CUDA device (default: 0)')
 parser.add_argument('--network-type', type=str, default=default_network_type,
                     help='network type (default: "{}")'.format(str(default_network_type)))
+parser.add_argument('--batch-size', type=int, default=default_batch_size,
+                    help='batch size (default: "{}")'.format(str(default_batch_size)))
 parser.add_argument('--optimizer', type=str, default=default_optimizer,
                     help='optimizer (default: "{}")'.format(str(default_optimizer)))
 parser.add_argument('--learning-rate', type=float, default=default_learning_rate,
@@ -204,7 +207,7 @@ else:
 train_param = TrainingParameters()
 device = args.device
 train_param.epochs = -1
-train_param.batch_size = 128
+train_param.batch_size = args.batch_size
 train_param.training_ratio = 0.7
 train_param.validation_ratio = 0.15
 train_param.test_ratio = 0.15
