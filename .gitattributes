@@ -60,3 +60,6 @@ models/cnn_encoder_decoder/cfcimednet-40x40-smnist-rotated-end-to-end-adam[[:spa
 models/cnn_encoder_decoder/cfcimednet-60x60-smnist-rotated-translated-and-scaled-end-to-end-adam[[:space:]]2018-09-13[[:space:]]13:56:36.338849/ filter=lfs diff=lfs merge=lfs -text
 models/cnn_encoder_decoder/fullcfcimednet-60x60-smnist-rotated-translated-and-scaled-end-to-end-adam-weight-decay[[:space:]]2018-09-13[[:space:]]22:11:30.843196/ filter=lfs diff=lfs merge=lfs -text
 models/stimednet/fullstimednet-60x60-smnist-rotated-translated-and-scaled-end-to-end-adam-weight-decay[[:space:]]2018-09-13[[:space:]]21:09:09.711687/ filter=lfs diff=lfs merge=lfs -text
+data/s-mnist/60x60-smnist-rotated-translated-and-scaled-varied-width.mat filter=lfs diff=lfs merge=lfs -text
+data/s-mnist/60x60-smnist-rotated-translated-and-scaled-with-awgn.mat filter=lfs diff=lfs merge=lfs -text
+data/s-mnist/40x40-smnist-rotated-with-awgn.mat filter=lfs diff=lfs merge=lfs -text
