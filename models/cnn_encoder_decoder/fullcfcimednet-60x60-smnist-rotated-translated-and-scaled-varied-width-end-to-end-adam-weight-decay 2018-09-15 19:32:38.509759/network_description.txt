@@ -1,0 +1,40 @@
+Network created: 2018-09-15 19:32:38.509759
+Model: imednet.models.encoder_decoder.CNNEncoderDecoderNet
+Data path: ./data/s-mnist/60x60-smnist-rotated-translated-and-scaled-varied-width.mat
+Model save path: ./models/cnn_encoder_decoder/fullcfcimednet-60x60-smnist-rotated-translated-and-scaled-varied-width-end-to-end-adam 2018-09-15 19:32:38.509759
+Pre-trained CNN model load path: ./models/mnist_cnn/mnist_cnn.model
+Layer sizes: [3600, 600, 200, 20, 35, 54]
+Optimizer: adam
+Learning rate: 0.0005
+Momentum: 0.5
+ Setting parameters for learning:
+   - Samples of data: 20000
+   - Epochs: -1
+   - Batch size: 128
+   - training ratio: 0.7
+   - validation ratio: 0.15
+   - test ratio: 0.15
+     -   validation_interval: 1
+     -  test_interval: 1
+     -   log_interval: 1
+     -   cuda = True
+     -  Validation fail: 60
+Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    eps: 0.001
+    lr: 0.0005
+    weight_decay: 2.5e-05
+)
+MSELoss()
+ saving_epochs = 48
+ Learning finished with this parameters:
+   - Number of epochs: 109
+   - Last train loss: tensor(1.6352, device='cuda:0')
+   - Last validation loss: tensor(6.4201, device='cuda:0', grad_fn=<MseLossBackward>)
+   Last test loss: tensor(6.7932, device='cuda:0')
+   - Elapsed time: 489.014457
+   - last validation count: 61
+     -   Stop criterion: max validation fail reached
+     -  Minimal gradient: tensor(0., device='cuda:0')
