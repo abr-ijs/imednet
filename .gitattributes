@@ -72,3 +72,5 @@ models/cnn_encoder_decoder/fullcfcimednet-40x40-smnist-rotated-end-to-end-adam-w
 models/cnn_encoder_decoder/fullcfcimednet-40x40-smnist-end-to-end-adam-weight-decay[[:space:]]2018-09-15[[:space:]]20:53:34.695017/ filter=lfs diff=lfs merge=lfs -text
 models/stimednet/fullstimednet-60x60-smnist-rotated-translated-and-scaled-varied-width-end-to-end-adam-weight-decay[[:space:]]2018-09-15[[:space:]]21:51:50.571124/ filter=lfs diff=lfs merge=lfs -text
 models/stimednet/fullstimednet-60x60-smnist-rotated-translated-and-scaled-end-to-end-adam-weight-decay[[:space:]]2018-09-15[[:space:]]21:51:53.676603/ filter=lfs diff=lfs merge=lfs -text
+models/stimednet/fullstimednet-40x40-smnist-rotated-end-to-end-adam-weight-decay[[:space:]]2018-09-15[[:space:]]22:31:42.773513/ filter=lfs diff=lfs merge=lfs -text
+models/stimednet/fullstimednet-40x40-smnist-end-to-end-adam-weight-decay[[:space:]]2018-09-15[[:space:]]22:32:43.128511/ filter=lfs diff=lfs merge=lfs -text
