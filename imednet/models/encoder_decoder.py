@@ -26,7 +26,7 @@ def load_model(model_path):
 
     # Get the pre-trained CNN model load path from the network description
     if model_class_str == 'CNNEncoderDecoderNet' or model_class_str == 'FullCNNEncoderDecoderNet':
-        pretrained_cnn_model_path = re.search('Pre-trained CNN model load path: (.+?)\n', network_description_str).group(1)
+        pretrained_cnn_model_path = re.search('Pe-trained CNN model load path: (.+?)\n', network_description_str).group(1)
     elif model_class_str == 'STIMEDNet' or model_class_str == 'FullSTIMEDNet':
         pretrained_imednet_model_path = re.search('Pre-trained IMEDNet model load path: (.+?)\n', network_description_str).group(1)
 
