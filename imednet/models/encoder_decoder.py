@@ -8,7 +8,13 @@ import numpy as np
 
 from imednet.data.smnist_loader import Mapping
 from imednet.models.mnist_cnn import Net as MNISTNet
-from imednet.utils.dmp_layer import DMPIntegrator, DMPParameters
+
+try:
+    from imednet.utils.dmp_layer import DMPIntegrator, DMPParameters
+except ImportError:
+
+    print('No cuda library')
+    from imednet.utils.dmp_layer_no_cuda import DMPIntegrator, DMPParameters
 
 
 def load_model(model_path):
