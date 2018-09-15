@@ -12,12 +12,14 @@ from imednet.models.mnist_cnn import Net as MNISTNet
 try:
     from imednet.utils.dmp_layer import DMPIntegrator, DMPParameters
 except ImportError:
-
     print('No cuda library')
     from imednet.utils.dmp_layer_no_cuda import DMPIntegrator, DMPParameters
 
 
-def load_model(model_path):
+def load_model(model_path, root_path=None):
+    if root_path:
+        model_path = os.path.join(root_path, model_path)
+
     # Read network description file
     with open(os.path.join(model_path, 'network_description.txt')) as f:
         network_description_str = f.read()
@@ -32,7 +34,7 @@ def load_model(model_path):
 
     # Get the pre-trained CNN model load path from the network description
     if model_class_str == 'CNNEncoderDecoderNet' or model_class_str == 'FullCNNEncoderDecoderNet':
-        pretrained_cnn_model_path = re.search('Pe-trained CNN model load path: (.+?)\n', network_description_str).group(1)
+        pretrained_cnn_model_path = re.search('Pre-trained CNN model load path: (.+?)\n', network_description_str).group(1)
     elif model_class_str == 'STIMEDNet' or model_class_str == 'FullSTIMEDNet':
         pretrained_imednet_model_path = re.search('Pre-trained IMEDNet model load path: (.+?)\n', network_description_str).group(1)
 
@@ -60,17 +62,17 @@ def load_model(model_path):
     if model_class_str == 'CNNEncoderDecoderNet' or model_class_str == 'FullCNNEncoderDecoderNet':
         model = model_class(pretrained_cnn_model_path=pretrained_cnn_model_path,
                             layer_sizes=layer_sizes,
-                            scale=scaling)
+                            scale=scaling, root_path=root_path)
         model.cuda()
     elif model_class_str == 'STIMEDNet' or model_class_str == 'FullSTIMEDNet':
         try:
             model = model_class(pretrained_imednet_model_path=pretrained_imednet_model_path,
                                 scale=scaling,
-                                image_size=image_size)
+                                image_size=image_size, root_path=root_path)
         except:
             try:
                 model = model_class(pretrained_imednet_model_path=pretrained_imednet_model_path,
-                                    scale=scaling)
+                                    scale=scaling, root_path=root_path)
             except:
                 raise
         model.cuda()
@@ -147,7 +149,8 @@ class EncoderDecoderNet(torch.nn.Module):
     def __init__(self,
                  layer_sizes=[784, 200, 50],
                  conv=None,
-                 scale=None):
+                 scale=None,
+                 root_path=None):
         """
         Creates a custom Network
 
@@ -207,7 +210,8 @@ class DMPEncoderDecoderNet(torch.nn.Module):
     def __init__(self,
                  layer_sizes=[784, 200, 50],
                  conv=None,
-                 scale=None):
+                 scale=None,
+                 root_path=None):
         """
         Creates a custom Network
 
@@ -273,7 +277,8 @@ class CNNEncoderDecoderNet(torch.nn.Module):
     def __init__(self,
                  pretrained_cnn_model_path=None,
                  layer_sizes=[784, 200, 50],
-                 scale=None):
+                 scale=None,
+                 root_path=None):
         """
         Creates a convolutional image-to-motion encoder-decoder
         (CIMEDNet) network without DMP integration.
@@ -356,7 +361,8 @@ class FullCNNEncoderDecoderNet(torch.nn.Module):
     def __init__(self,
                  pretrained_cnn_model_path=None,
                  layer_sizes=[784, 200, 50],
-                 scale=None):
+                 scale=None,
+                 root_path=None):
         """
         Creates a full convolutional image-to-motion encoder-decoder
         (CIMEDNet) network with DMP integration.
@@ -454,7 +460,8 @@ class STIMEDNet(torch.nn.Module):
     def __init__(self,
                  pretrained_imednet_model_path=None,
                  image_size=[40, 40, 1],
-                 scale=None):
+                 scale=None,
+                 root_path=None):
         """
         image_size: [H, W, C]
         """
@@ -465,9 +472,9 @@ class STIMEDNet(torch.nn.Module):
 
         # Load the IMEDNet model
         if pretrained_imednet_model_path:
-            self.imednet_model = load_model(pretrained_imednet_model_path)
+            self.imednet_model = load_model(pretrained_imednet_model_path, root_path=root_path)
         else:
-            self.imednet_model = CNNEncoderDecoderNet()
+            self.imednet_model = CNNEncoderDecoderNet(root_path=root_path)
 
         # Spatial transformer localization-network
         self.localization = nn.Sequential(
@@ -534,10 +541,11 @@ class STIMEDNet(torch.nn.Module):
 
 class FullSTIMEDNet(torch.nn.Module):
     def __init__(self,
-                 pretrained_imednet_model_path,
+                 pretrained_imednet_model_path=None,
                  image_size=[40, 40, 1],
                  grid_size=None,
-                 scale=None):
+                 scale=None,
+                 root_path=None):
         """
         image_size: [H, W, C]
         grid_size: [H, W, C]
@@ -549,9 +557,9 @@ class FullSTIMEDNet(torch.nn.Module):
 
         # Load the IMEDNet model
         if pretrained_imednet_model_path:
-            self.imednet_model = load_model(pretrained_imednet_model_path)
+            self.imednet_model = load_model(pretrained_imednet_model_path, root_path=root_path)
         else:
-            self.imednet_model = CNNEncoderDecoderNet()
+            self.imednet_model = CNNEncoderDecoderNet(root_path=root_path)
 
         # Save the grid size input arg or infer it
         # from the IMEDNet mode
