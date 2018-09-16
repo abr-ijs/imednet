@@ -109,7 +109,7 @@ train_param.validation_ratio = 0.15
 train_param.test_ratio = 0.15
 train_param.val_fail = 60
 trainer = Trainer(launch_tensorboard=args.launch_tensorboard,
-                  launch_gui=args.launch_gui
+                  launch_gui=args.launch_gui,
                   plot_freq=args.plot_freq)
 
 # Save model to file

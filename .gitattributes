@@ -74,3 +74,7 @@ models/stimednet/fullstimednet-60x60-smnist-rotated-translated-and-scaled-varied
 models/stimednet/fullstimednet-60x60-smnist-rotated-translated-and-scaled-end-to-end-adam-weight-decay[[:space:]]2018-09-15[[:space:]]21:51:53.676603/ filter=lfs diff=lfs merge=lfs -text
 models/stimednet/fullstimednet-40x40-smnist-rotated-end-to-end-adam-weight-decay[[:space:]]2018-09-15[[:space:]]22:31:42.773513/ filter=lfs diff=lfs merge=lfs -text
 models/stimednet/fullstimednet-40x40-smnist-end-to-end-adam-weight-decay[[:space:]]2018-09-15[[:space:]]22:32:43.128511/ filter=lfs diff=lfs merge=lfs -text
+data/s-mnist/40x40-smnist-rotated-seed-42.mat filter=lfs diff=lfs merge=lfs -text
+data/s-mnist/60x60-smnist-rotated-translated-and-scaled-seed-42.mat filter=lfs diff=lfs merge=lfs -text
+data/s-mnist/60x60-smnist-rotated-translated-and-scaled-varied-width-seed-42.mat filter=lfs diff=lfs merge=lfs -text
+data/s-mnist/60x60-smnist-rotated-translated-and-scaled-with-awgn-seed-42.mat filter=lfs diff=lfs merge=lfs -text

@@ -169,9 +169,10 @@ class EncoderDecoderNet(torch.nn.Module):
             self.convSize = (self.imageSize - conv[1] + 1)**2 * conv[0]
             self.firstLayer = torch.nn.Conv2d(1, conv[0], conv[1])
             self.input_layer = torch.nn.Linear(self.convSize, layer_sizes[1])
-
         else:
+            self.input_size = layer_sizes[0]
             self.input_layer = torch.nn.Linear(layer_sizes[0], layer_sizes[1])
+
         self.middle_layers = []
         for i in range(1, len(layer_sizes) - 2):
             layer = torch.nn.Linear(layer_sizes[i], layer_sizes[i+1])
@@ -195,6 +196,8 @@ class EncoderDecoderNet(torch.nn.Module):
             x = x.view(-1, 1, self.imageSize, self.imageSize)
             x = self.firstLayer(x)
             x = x.view(-1, self.convSize)
+        else:
+            x = x.view(-1, self.input_size)
 
         x = activation_fn(self.input_layer(x))
         for layer in self.middle_layers:
@@ -230,9 +233,10 @@ class DMPEncoderDecoderNet(torch.nn.Module):
             self.convSize = (self.imageSize - conv[1] + 1)**2 * conv[0]
             self.firstLayer = torch.nn.Conv2d(1, conv[0], conv[1])
             self.input_layer = torch.nn.Linear(self.convSize, layer_sizes[1])
-
         else:
+            self.input_size = layer_sizes[0]
             self.input_layer = torch.nn.Linear(layer_sizes[0], layer_sizes[1])
+
         self.middle_layers = []
         for i in range(1, len(layer_sizes) - 2):
             layer = torch.nn.Linear(layer_sizes[i], layer_sizes[i+1])
@@ -261,6 +265,8 @@ class DMPEncoderDecoderNet(torch.nn.Module):
             x = x.view(-1, 1, self.imageSize, self.imageSize)
             x = self.firstLayer(x)
             x = x.view(-1, self.convSize)
+        else:
+            x = x.view(-1, self.input_size)
 
         x = activation_fn(self.input_layer(x))
         for layer in self.middle_layers:

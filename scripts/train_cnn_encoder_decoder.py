@@ -170,9 +170,6 @@ else:
     input_size = images.shape[1] * images.shape[2]
     output_size = 2*N + 4
 
-print('images.shape: {}'.format(images.shape))
-print('outputs.shape: {}'.format(outputs.shape))
-
 # Define layer sizes
 hidden_layer_sizes = list(map(int, args.hidden_layer_sizes))
 layer_sizes = [input_size] + hidden_layer_sizes + [output_size]
