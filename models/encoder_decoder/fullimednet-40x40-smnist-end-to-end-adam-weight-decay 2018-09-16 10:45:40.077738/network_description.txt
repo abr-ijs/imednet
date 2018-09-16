@@ -1,0 +1,39 @@
+Network created: 2018-09-16 10:45:40.077738
+Model: imednet.models.encoder_decoder.DMPEncoderDecoderNet
+Data path: ./data/s-mnist/40x40-smnist.mat
+Model save path: ./models/encoder_decoder/fullimednet-40x40-smnist-end-to-end-adam-weight-decay 2018-09-16 10:45:40.077738
+Layer sizes: [1600, 1500, 1300, 1000, 600, 200, 20, 35, 54]
+Optimizer: adam
+Learning rate: 0.0005
+Momentum: 0.5
+ Setting parameters for learning:
+   - Samples of data: 20000
+   - Epochs: -1
+   - Batch size: 140
+   - training ratio: 0.7
+   - validation ratio: 0.15
+   - test ratio: 0.15
+     -   validation_interval: 1
+     -  test_interval: 1
+     -   log_interval: 1
+     -   cuda = True
+     -  Validation fail: 60
+Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    eps: 0.001
+    lr: 0.0005
+    weight_decay: 2.5e-05
+)
+MSELoss()
+ saving_epochs = 167
+ Learning finished with this parameters:
+   - Number of epochs: 228
+   - Last train loss: tensor(0.0322, device='cuda:0')
+   - Last validation loss: tensor(0.1104, device='cuda:0', grad_fn=<MseLossBackward>)
+   Last test loss: tensor(0.1110, device='cuda:0')
+   - Elapsed time: 471.115817
+   - last validation count: 61
+     -   Stop criterion: max validation fail reached
+     -  Minimal gradient: tensor(0., device='cuda:0')

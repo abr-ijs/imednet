@@ -21,6 +21,7 @@ sys.path.append(dirname(dirname(realpath(__file__))))
 
 from imednet.data.smnist_loader import MatLoader, Mapping
 from imednet.trainers.encoder_decoder_trainer import Trainer
+from imednet.encoder_decoder import load_model
 
 # Parse arguments
 description = 'Evaluate image-to-motion network results with dynamic time warping.'
@@ -38,40 +39,43 @@ if not args.model_path or not args.data_path:
     parser.print_help()
     exit(1)
 
-# Read network description file
-with open(os.path.join(args.model_path, 'network_description.txt')) as f:
-    network_description_str = f.read()
+# # Read network description file
+# with open(os.path.join(args.model_path, 'network_description.txt')) as f:
+#     network_description_str = f.read()
+# 
+# # Get the model class from the network description and dynamically import it
+# model_module_class_str = re.search('Model: (.+?)\n', network_description_str).group(1)
+# model_module_str = os.path.splitext(model_module_class_str)[0]
+# model_class_str = os.path.splitext(model_module_class_str)[1][1:]
+# model_module = importlib.import_module(model_module_str)
+# model_class = getattr(model_module, model_class_str)
+# 
+# # Get the pre-trained CNN model load path from the network description
+# if model_class_str == 'CNNEncoderDecoderNet':
+#     pre_trained_cnn_model_path = re.search('Pre-trained CNN model load path: (.+?)\n', network_description_str).group(1)
+# 
+# # Load layer sizes
+# layer_sizes = np.load(os.path.join(args.model_path, 'layer_sizes.npy')).tolist()
+# 
+# # Load scaling
+# scaling = Mapping()
+# scaling.x_max = np.load(os.path.join(args.model_path, 'scale_x_max.npy'))
+# scaling.x_min = np.load(os.path.join(args.model_path, 'scale_x_min.npy'))
+# scaling.y_max = np.load(os.path.join(args.model_path, 'scale_y_max.npy'))
+# scaling.y_min = np.load(os.path.join(args.model_path, 'scale_y_min.npy'))
+# 
+# # Load the model
+# if model_class_str == 'CNNEncoderDecoderNet':
+#     model = model_class(pre_trained_cnn_model_path, layer_sizes, scaling)
+# else:
+#     model = model_class(layer_sizes, None, scaling)
+# 
+# # Load the model state parameters
+# state = torch.load(os.path.join(args.model_path, 'net_parameters'))
+# model.load_state_dict(state)
 
-# Get the model class from the network description and dynamically import it
-model_module_class_str = re.search('Model: (.+?)\n', network_description_str).group(1)
-model_module_str = os.path.splitext(model_module_class_str)[0]
-model_class_str = os.path.splitext(model_module_class_str)[1][1:]
-model_module = importlib.import_module(model_module_str)
-model_class = getattr(model_module, model_class_str)
-
-# Get the pre-trained CNN model load path from the network description
-if model_class_str == 'CNNEncoderDecoderNet':
-    pre_trained_cnn_model_path = re.search('Pre-trained CNN model load path: (.+?)\n', network_description_str).group(1)
-
-# Load layer sizes
-layer_sizes = np.load(os.path.join(args.model_path, 'layer_sizes.npy')).tolist()
-
-# Load scaling
-scaling = Mapping()
-scaling.x_max = np.load(os.path.join(args.model_path, 'scale_x_max.npy'))
-scaling.x_min = np.load(os.path.join(args.model_path, 'scale_x_min.npy'))
-scaling.y_max = np.load(os.path.join(args.model_path, 'scale_y_max.npy'))
-scaling.y_min = np.load(os.path.join(args.model_path, 'scale_y_min.npy'))
-
-# Load the model
-if model_class_str == 'CNNEncoderDecoderNet':
-    model = model_class(pre_trained_cnn_model_path, layer_sizes, scaling)
-else:
-    model = model_class(layer_sizes, None, scaling)
-
-# Load the model state parameters
-state = torch.load(os.path.join(args.model_path, 'net_parameters'))
-model.load_state_dict(state)
+# Load model
+model = load_model(args.model_path)
 
 # Load data and scale it
 print('Loading dataset...')

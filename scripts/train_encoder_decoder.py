@@ -31,7 +31,13 @@ default_model_save_path = os.path.join(dirname(dirname(realpath(__file__))),
                                        'models/encoder_decoder',
                                        'Model ' + str(date))
 default_model_load_path = None
-default_optimizer = 'SCG'
+default_batch_size = 140
+default_optimizer = 'adam'
+default_learning_rate = 0.0005
+default_momentum = 0.5
+default_lr_decay = None
+default_weight_decay = None
+default_val_fail = 60
 default_hidden_layer_sizes = ['1500', '1300', '1000', '600', '200', '20', '35']
 
 # Parse arguments
@@ -51,8 +57,20 @@ parser.add_argument('--plot-freq', type=int, default=0,
                     help='set tensorboard plot visualization frequency (default: 0)')
 parser.add_argument('--device', type=int, default=0,
                     help='select CUDA device (default: 0)')
+parser.add_argument('--batch-size', type=int, default=default_batch_size,
+                    help='batch size (default: "{}")'.format(str(default_batch_size)))
 parser.add_argument('--optimizer', type=str, default=default_optimizer,
                     help='optimizer (default: "{}")'.format(str(default_optimizer)))
+parser.add_argument('--learning-rate', type=float, default=default_learning_rate,
+                    help='learning rate (default: "{}")'.format(str(default_learning_rate)))
+parser.add_argument('--momentum', type=float, default=default_momentum,
+                    help='momentum (default: "{}")'.format(str(default_momentum)))
+parser.add_argument('--lr-decay', type=float, default=default_lr_decay,
+                    help='learning rate decay (default: "{}")'.format(str(default_lr_decay)))
+parser.add_argument('--weight-decay', type=float, default=default_weight_decay,
+                    help='weight decay (default: "{}")'.format(str(default_weight_decay)))
+parser.add_argument('--val-fail', type=int, default=default_val_fail,
+                    help='maximum number of epochs stopping criterion for improving best validation loss (default: "{}")'.format(str(default_val_fail)))
 parser.add_argument('--hidden-layer-sizes', nargs='+', default=default_hidden_layer_sizes,
                     help='hidden layer sizes (default: {})'.format(' '.join(default_hidden_layer_sizes)))
 args = parser.parse_args()
@@ -100,10 +118,9 @@ else:
 train_param = TrainingParameters()
 device = args.device
 train_param.epochs = -1
-optimizer = args.optimizer
 learning_rate = 0.0005
 momentum = 0.5
-train_param.batch_size = 128
+train_param.batch_size = args.batch_size
 train_param.training_ratio = 0.7
 train_param.validation_ratio = 0.15
 train_param.test_ratio = 0.15
@@ -142,8 +159,8 @@ np.save(os.path.join(args.model_save_path, 'scale_y_max'), scale.y_max)
 
 # Save training parameters to file
 net_description_file.write('\nOptimizer: {}'.format(args.optimizer))
-net_description_file.write('\nLearning rate: {}'.format(learning_rate))
-net_description_file.write('\nMomentum: {}'.format(momentum))
+net_description_file.write('\nLearning rate: {}'.format(args.learning_rate))
+net_description_file.write('\nMomentum: {}'.format(args.momentum))
 
 # Load previously trained model
 if args.model_load_path:
@@ -157,9 +174,11 @@ best_nn_parameters = trainer.train(model,
                                    args.model_save_path,
                                    train_param,
                                    net_description_file,
-                                   optimizer_type=optimizer,
-                                   learning_rate=learning_rate,
-                                   momentum=momentum)
+                                   optimizer_type=args.optimizer,
+                                   learning_rate=args.learning_rate,
+                                   momentum=args.momentum,
+                                   lr_decay=args.lr_decay,
+                                   weight_decay=args.weight_decay)
 
 # Save model
 np.save(os.path.join(args.model_save_path, 'net_indeks'), trainer.indeks)

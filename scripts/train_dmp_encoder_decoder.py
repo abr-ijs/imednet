@@ -31,6 +31,7 @@ default_model_save_path = os.path.join(dirname(dirname(realpath(__file__))),
                                        'models/dmp_encoder_decoder',
                                        'Model ' + str(date))
 default_model_load_path = None
+default_batch_size = 140
 default_optimizer = 'adam'
 default_learning_rate = 0.0005
 default_momentum = 0.5
@@ -62,6 +63,8 @@ parser.add_argument('--plot-freq', type=int, default=0,
                     help='set tensorboard plot visualization frequency (default: 0)')
 parser.add_argument('--device', type=int, default=0,
                     help='select CUDA device (default: 0)')
+parser.add_argument('--batch-size', type=int, default=default_batch_size,
+                    help='batch size (default: "{}")'.format(str(default_batch_size)))
 parser.add_argument('--optimizer', type=str, default=default_optimizer,
                     help='optimizer (default: "{}")'.format(str(default_optimizer)))
 parser.add_argument('--learning-rate', type=float, default=default_learning_rate,
@@ -187,7 +190,7 @@ train_param.epochs = -1
 optimizer = args.optimizer
 learning_rate = 0.0005
 momentum = 0.5
-train_param.batch_size = 128
+train_param.batch_size = args.batch_size
 train_param.training_ratio = 0.7
 train_param.validation_ratio = 0.15
 train_param.test_ratio = 0.15

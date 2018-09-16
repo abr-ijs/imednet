@@ -78,3 +78,8 @@ data/s-mnist/40x40-smnist-rotated-seed-42.mat filter=lfs diff=lfs merge=lfs -tex
 data/s-mnist/60x60-smnist-rotated-translated-and-scaled-seed-42.mat filter=lfs diff=lfs merge=lfs -text
 data/s-mnist/60x60-smnist-rotated-translated-and-scaled-varied-width-seed-42.mat filter=lfs diff=lfs merge=lfs -text
 data/s-mnist/60x60-smnist-rotated-translated-and-scaled-with-awgn-seed-42.mat filter=lfs diff=lfs merge=lfs -text
+models/encoder_decoder/fullimednet-40x40-smnist-end-to-end-adam-weight-decay[[:space:]]2018-09-16[[:space:]]10:45:40.077738/ filter=lfs diff=lfs merge=lfs -text
+models/encoder_decoder/fullimednet-40x40-smnist-rotated-end-to-end-adam-weight-decay[[:space:]]2018-09-16[[:space:]]10:28:30.751381/ filter=lfs diff=lfs merge=lfs -text
+models/encoder_decoder/fullimednet-40x40-smnist-rotated-end-to-end-adam-weight-decay[[:space:]]2018-09-16[[:space:]]10:28:30.751381/ filter=lfs diff=lfs merge=lfs -text
+models/encoder_decoder/fullimednet-60x60-smnist-rotated-translated-and-scaled-end-to-end-adam-weight-decay[[:space:]]2018-09-16[[:space:]]10:56:14.750293/ filter=lfs diff=lfs merge=lfs -text
+models/encoder_decoder/fullimednet-60x60-smnist-rotated-translated-and-scaled-varied-width-end-to-end-adam-weight-decay[[:space:]]2018-09-16[[:space:]]10:46:22.681506/ filter=lfs diff=lfs merge=lfs -text
