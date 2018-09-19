@@ -64,6 +64,12 @@ def load_model(model_path, root_path=None):
                             layer_sizes=layer_sizes,
                             scale=scaling, root_path=root_path)
         model.cuda()
+    elif model_class_str == 'DMPEncoderDecoderNet':
+        model = model_class(layer_sizes, None, scaling, root_path=root_path)
+        model.register_buffer('DMPp', model.DMPparam.data_tensor)
+        model.register_buffer('scale_t', model.DMPparam.scale_tensor)
+        model.register_buffer('param_grad', model.DMPparam.grad_tensor)
+        model.cuda()
     elif model_class_str == 'STIMEDNet' or model_class_str == 'FullSTIMEDNet':
         try:
             model = model_class(pretrained_imednet_model_path=pretrained_imednet_model_path,

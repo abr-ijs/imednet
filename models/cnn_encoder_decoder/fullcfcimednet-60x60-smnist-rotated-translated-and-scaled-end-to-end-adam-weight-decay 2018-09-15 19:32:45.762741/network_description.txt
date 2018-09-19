@@ -1,5 +1,5 @@
 Network created: 2018-09-15 19:32:45.762741
-Model: imednet.models.encoder_decoder.CNNEncoderDecoderNet
+Model: imednet.models.encoder_decoder.FullCNNEncoderDecoderNet
 Data path: ./data/s-mnist/60x60-smnist-rotated-translated-and-scaled.mat
 Model save path: ./models/cnn_encoder_decoder/fullcfcimednet-60x60-smnist-rotated-translated-and-scaled-end-to-end-adam 2018-09-15 19:32:45.762741
 Pre-trained CNN model load path: ./models/mnist_cnn/mnist_cnn.model

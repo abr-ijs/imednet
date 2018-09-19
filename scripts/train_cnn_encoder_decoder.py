@@ -221,7 +221,10 @@ trainer = Trainer(launch_tensorboard=args.launch_tensorboard,
 # torch.save(model, (os.path.join(args.model_save_path, 'model.pt')))
 
 # Save model type to file
-net_description_file.write('\nModel: imednet.models.encoder_decoder.CNNEncoderDecoderNet')
+if args.network_type == 'full':
+    net_description_file.write('\nModel: imednet.models.encoder_decoder.FullCNNEncoderDecoderNet')
+else:
+    net_description_file.write('\nModel: imednet.models.encoder_decoder.CNNEncoderDecoderNet')
 
 # Save data path
 if args.data_path:
